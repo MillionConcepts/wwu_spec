@@ -1,0 +1,103 @@
+{% extends "layouts/base.html" %}
+
+{% load static %}
+
+{% block content %}
+  <style>
+  p {
+    margin: 0em;
+  }
+  table td {
+    border-top: none !important;
+  }
+  </style>
+  {% if metaResults %}
+  
+    <div id="meta2">
+      <div class = "container section">
+        <div class = "card section warm-content">
+          <form method="GET" name="resultsform">
+            <div id="meta" class = "section center-align">
+              <button type="submit" name="graphForm" formaction="/mars/graph/" class="btn btn-success">Graph</button>
+              <button type="submit" name="export" formaction="/mars/export/" class="btn btn-success">Export</button>
+            </div>
+
+
+  {{search_formset.management_form}}
+
+
+            <!--- Search Forms --->
+            <div style="display:None">
+              {% for search_form in search_formset.forms %}
+                {{search_form.sample_id}}
+                {{search_form.id}}
+              {% endfor %}
+            </div>
+
+            <div class="container section">
+              <input id="selectAllBox" type="checkbox" name="selection" onClick="toggle(this)"/>
+              <label name="selectAllLabel" for="selectAllBox" > Select All</label>
+            </div>
+
+            <div class= "container section">
+            <!---<table class="table table-hover"> -->
+                {% for result in metaResults %}
+                  <table class="table table-hover">
+                  <tr style = "border-bottom: thin black solid">
+                    <td>
+                      <input type="checkbox" name="selection" id="option{{ result.id }}" value={{result.id}}>
+                      <label for="option{{result.id }}"></label>
+                    </td>
+                    <td> <p><b> Sample ID:</b>            {{ result.sample_id}} </p>
+                    <p><b> Sample name:</b>       {{ result.sample_name }} </p>
+                    <p><b> Material class:</b>      {{ result.material_class }} </p>
+                    <p><b> Sample type:</b>       {{ result.sample_type }} </p>
+                    <p><b>Formula:</b>            {{ result.formula }} </p>
+                    <p><b> Description:</b>        {{ result.sample_desc }} </p>
+                    <p><b> Database of origin:</b> {{ result.origin }} </p>
+                    <p><b> Locality:</b>           {{ result.locality }} </p>
+                    <p><b> Grain size:</b>         {{ result.grain_size }} </p>
+                    <p><b> Viewing geometry:</b>   {{ result.view_geom }} </p>
+                    <p><b> Resolution:</b>         {{ result.resolution }} </p>
+                    <p><b> Wavelength range:</b>  {{ result.min_reflectance}} - {{result.max_reflectance}} nm </p>
+                    <p><b> Composition: </b>        {{ result.composition }} </p>
+                    <p><b> References: </b>        {{ result.references }} </p>
+                    <p><b> Other Information: </b>        {{ result.other }} </p>
+                    {% if result.image %}
+                      {% with 'sample_images/'|add:result.image as sample_image %}
+                      <p><b>Image:</b><p><img class = "sampleImage" src={% static sample_image%}></p></td>
+                      {% endwith %}
+                      <div class="divider"></div>
+                    {% else %}
+                      <p><b>Image:</b> None</td>
+                    {% endif %}
+                  </tr>
+                  </table>
+                {% endfor %}
+                
+            <!--</table> -->
+          </div>
+            <br>
+            <br>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div id="meta" class="container section">
+      <div class="card-panel center-align" style="background:rgba(255,255,255,.8)">
+        <p>Please select a sample to view the meta data.</p>
+      </div>
+    </div>
+  {% endif %}
+
+
+  <script language="JavaScript">
+    function toggle(source){
+      checkboxes = document.getElementsByName("selection");
+      for(var i=0, n=checkboxes.length; i<n; i++){
+        checkboxes[i].checked = source.checked;
+      }
+    }
+  </script>
+{% endblock %}
