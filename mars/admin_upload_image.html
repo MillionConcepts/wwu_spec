@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Admin Upload Image</title>   
+    </head>
+    <body>
+    <!-- List of uploaded documents -->
+
+        <!-- Upload form. Note enctype attribute! -->
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>{{ form.non_field_errors }}</p>
+            <p>{{ form.image.label_tag }} {{ form.image.help_text }}</p>
+            <p>
+                {{ form.image.errors }}
+                {{ form.image }}
+            </p>
+            <p><input type="submit" value="Upload" /></p>
+        </form>
+    </body>
+</html> 

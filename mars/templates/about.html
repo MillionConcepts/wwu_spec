@@ -1,0 +1,36 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block content %}
+<div class="container section">
+  <div class="row">
+    <div class="col s10 push-s1 warm-content" style="padding:20px">
+      <h5>About</h5>
+      <p>The Western Washington University Vis-NIR Spectroscopy Database is an online tool for searching, graphing, and downloading publicly-available laboratory spectra. We have developed this tool to aid in our research group's analyses of hyper- and multi-spectral imaging data of planetary surfaces, and to share laboratory data acquired by WWU's Mars Spectroscopy Lab. We hope that this web tool will be a useful resource for other planetary researchers and the larger scientific community.</p>
+      <p>This is a beta version of the tool that has been made available to a limited subset of the Mars science community for testing. We want to hear from you if you have spectra to contribute or if you have ideas about how we can make the site more useful.</p>
+      <p>Want to contribute? <a href="{{CSVFormat.document.url}}">Format your data</a> and contact Melissa Rice (ricem5@wwu.edu).</p>
+      <br>
+      <h5>Data Sources</h5>
+      {% for database in databases %} 
+      <p>{{database.name}}
+          - <a href={{database.url}}>{{database.url}}</a>
+            {{database.description}}
+            {{database.citation}}</p>
+          {% if not forloop.last %}
+          <div class="divider"></div>
+          {% endif%}
+          {% endfor %}
+      </div>
+      </div>
+    </div>
+  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+  <script>window.jQuery || document.write('<script src="{% static 'js/vendor/jquery-1.12.0.min.js' %}"><\/script>')</script>
+  <script src="{% static 'js/plugins.js' %}"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/materialize.min.js' %}"></script>
+
+  <script language="JavaScript">
+    $(document).ready(function() {
+        $('.collapsible').collapsible();
+    });
+  </script>
+{% endblock %}

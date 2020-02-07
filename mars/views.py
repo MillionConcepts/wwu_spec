@@ -1,0 +1,462 @@
+import io
+import zipfile
+import json
+import csv
+import datetime as dt
+from operator import or_
+from functools import reduce
+from ast import literal_eval
+
+from PIL import Image
+
+from django.shortcuts import render, redirect, reverse
+
+from django.views import generic
+from django.forms.formsets import formset_factory
+from django.core.paginator import Paginator
+
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.template import RequestContext
+
+from mars.forms import *
+from mars.models import *
+from mars.utils import *
+
+
+def search(request):
+    search_formset = formset_factory(SearchForm)
+
+    choice_fields = {
+        "database_choices": [Database, "name"],
+        "sampletype_choices": [SampleType, "name"],
+    }
+    autocomplete_fields = {
+        "sample_names": (Sample, "sample_name"),
+        "material_classes": (Sample, "material_class"),
+        "sample_ids": (Sample, "sample_id"),
+    }
+
+    # comprehensions from utils.py
+
+    choice_data = make_choice_list(choice_fields)
+    autocomplete_data = make_autocomplete_list(autocomplete_fields)
+
+    formset_field_params = dict(**choice_data, **autocomplete_data)
+
+    page_params = {"search_formset": search_formset}
+
+    return render(request, "search.html", dict(**page_params, **formset_field_params))
+
+
+def results(request):
+
+    print("foo")
+    print(request.GET)
+
+    search_results_id_list = []
+    search_results = Sample.objects.none()
+    selected_spectra = Sample.objects.none()
+    SearchFormSet = formset_factory(SearchForm)
+
+    # deliver an empty page for malformed requests.
+    # also deliver clean data for each form while we're at it.
+
+    try:
+        search_formset = SearchFormSet(request.GET)
+        for search_form in search_formset:
+            search_form.is_valid()
+    except:
+        return render(
+            request,
+            "results.html",
+            {
+                "page_ids": None,
+                "selected_ids": None,
+                "page_choices": None,
+                "page_results": None,
+                "search_results": None,
+                "search_formset": None,
+            },
+        )
+
+    sortParams = request.GET.getlist("sort_params", ["sample_id"])
+
+    # double underscore in these field names is an ugly but compact way to access the
+    # ForeignKey object fields
+
+    searchable_fields = [
+        "sample_name",
+        "sample_id",
+        "material_class",
+        "origin__name",
+        "sample_type__name",
+    ]
+
+    numeric_constraints = ["min_included_range", "max_included_range"]
+
+    for search_form in search_formset:
+
+        form_results = Sample.objects.all().order_by(*sortParams)
+
+        for field in searchable_fields:
+            entry = search_form.cleaned_data.get(field,None)
+            if entry:
+                if entry != "Any":
+                    # allow exact phrase searches
+                    query = field + "__iexact"
+                    if form_results.filter(**{query: entry}):
+                        form_results = form_results.filter(**{query: entry})
+                    # otherwise treat multiple words as an 'or' search
+                    else:
+                        query = field + "__icontains"
+                        filters = [form_results.filter(**{query: word}) for word in entry.split(' ')]
+                        form_results = reduce(or_,filters)
+
+
+            # the utility of spectrum limit constraints as part of UX is unclear to me
+            # _must_ have a band makes sense to me
+            # _cannot_ have a band does not
+            # so leaving this in but it's presently vestigial
+
+        for field in numeric_constraints:
+            entry = search_form.cleaned_data.get(field)
+            if entry:
+                if field == "min_included_range":
+                    query = "min_reflectance__lte"
+                elif field == "max_included_range":
+                    query = "max_reflectance__gte"
+                form_results = form_results.filter(**{query: entry})
+
+        # add in 'search all fields' functionality
+        entry = search_form.cleaned_data.get("any_field")
+        if entry:
+            form_results = form_results & search_all_samples(entry)
+        search_results = search_results | form_results
+
+    selections = request.GET.getlist("selection")
+
+    selected_spectra = Sample.objects.filter(id__in=selections)
+
+    selected_list = []
+    for spectra in selected_spectra:
+        selected_list.append(spectra.id)
+
+    for result in search_results:
+        search_results_id_list.append(result.id)
+
+    paginator = Paginator(search_results, 10)
+    page_selected = int(request.GET.get("page_selected", 1))
+    page_results = paginator.page(page_selected)
+    page_choices = range(
+        max(1, page_selected - 3), min(page_selected + 4, paginator.num_pages + 1)
+    )
+
+    page_ids = []
+    for sample in page_results.object_list:
+        page_ids.append(sample.id)
+
+    return render(
+        request,
+        "results.html",
+        {
+            "search_formset": search_formset,
+            "page_ids": page_ids,
+            "selected_ids": selected_list,
+            "page_choices": page_choices,
+            "page_results": page_results,
+            "search_results": search_results_id_list,
+            "sort_params": sortParams,
+        },
+    )
+
+
+def graph(request):
+
+    if request.method == "GET":
+        if "graphForm" in request.GET:
+
+            selections = request.GET.getlist("selection")
+            prevSelectedList = request.GET.getlist("prev_selected")
+            selections = list(set(selections + prevSelectedList))
+
+            SearchFormSet = formset_factory(SearchForm)
+            search_formset = SearchFormSet(request.GET)
+
+            samples = Sample.objects.filter(id__in=selections)
+
+            dumplist = [obj.as_json() for obj in samples]
+
+            json_string = json.dumps(dumplist)
+
+            filtersets = [filterset.name for filterset in FilterSet.objects.all()]
+            filtersets+=[filterset.name+"_no_illumination" for filterset in FilterSet.objects.all()]
+            return render(
+                request,
+                "graph.html",
+                {
+                    "selected_ids": selections,
+                    "graphResults": samples,
+                    "graphJSON": json_string,
+                    "search_formset": search_formset,
+                    "filtersets": filtersets
+                },
+            )
+
+
+def meta(request):
+    if request.method == "GET":
+        if "meta" in request.GET:
+            selections = request.GET.getlist("selection")
+            prevSelectedList = request.GET.getlist("prev_selected")
+
+            SearchFormSet = formset_factory(SearchForm)
+            search_formset = SearchFormSet(request.GET)
+
+            selections = list(set(selections + prevSelectedList))
+            samples = Sample.objects.filter(id__in=selections)
+        dictionaries = [obj.as_dict() for obj in samples]
+        return render(
+            request,
+            "meta.html",
+            {
+                "search_formset": search_formset,
+                "metaResults": samples,
+                "reflectancedict": dictionaries,
+            },
+        )
+
+
+def export(request):
+    selections = request.GET.getlist("selection")
+
+    # TODO: is this actually desired?
+    # prevSelectedList = request.POST.getlist("prev_selected")
+
+    selections = list(selections)
+    samples = Sample.objects.filter(id__in=selections)
+    zip_buffer = io.BytesIO()
+    field_list = [[field.verbose_name, field.name] for field in Sample._meta.fields]
+    field_list.sort()
+
+    with zipfile.ZipFile(zip_buffer, "w") as output:
+
+        # write each sample line-by-line into text buffer,
+        # also splitting reflectance dictionary into lines
+
+        for sample in samples:
+            text_buffer = io.StringIO()
+            writer = csv.writer(text_buffer)
+            for field in field_list:
+                if field[1] not in ["image", "id", "reflectance","filename","import_notes","simulated_spectra","flagged"]:
+                    writer.writerow([field[0], getattr(sample, field[1])])
+            writer.writerow(["Wavelength"])
+            for row in literal_eval(sample.reflectance):
+                writer.writerow([row[0], row[1]])
+            writer.writerow(["Simulated Spectra"])
+            sim_spectra = sample.write_sims()
+            writer.writerow(sim_spectra)
+            text_buffer.seek(0)
+
+            # write csv into zip buffer
+
+            output.writestr(sample.sample_id + ".csv", text_buffer.read())
+
+            # write image into zip buffer
+
+            if sample.image:
+                filename = settings.SAMPLE_IMAGE_PATH + "/" + sample.image
+                output.write(filename, arcname=sample.image)
+    zip_buffer.seek(0)
+
+    # name the zip file and send it as http
+
+    date = dt.datetime.today().strftime("%y-%m-%d")
+    response = HttpResponse(zip_buffer, content_type="application/zip")
+    response["Content-Disposition"] = "attachment; filename=spectra-%s.zip;" % date
+
+    return response
+
+
+def upload(request):
+    if request.method == "POST":
+        form = uploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = request.FILES["file"]
+
+        if uploaded_file.name[-3:] == "csv":
+            upload_results = handle_csv_upload(uploaded_file)
+        elif uploaded_file.name[-3:] == "zip":
+            upload_results = handle_zipped_upload(uploaded_file)
+        else:
+            headline = "File upload failed."
+            upload_errors = ["Please upload a csv or zip file."]
+
+            return render(
+                request,
+                "upload.html",
+                {"form": form, "headline": headline, "upload_errors": upload_errors},
+            )
+
+        successful = []
+        unsuccessful = []
+        # we get an integer flag at the beginning from handle_zipped_upload
+        if isinstance(upload_results[0], int):
+            if upload_results[0] == 0:
+                upload_errors = upload_results[1]
+                return render(
+                    request,
+                    "upload.html",
+                    {"form": form, "upload_errors": upload_errors},
+                )
+
+            elif upload_results[0] == 1:
+                headline = "No samples uploaded successfully."
+                unsuccessful = [
+                    {
+                        "filename": upload_result["filename"],
+                        "errors": upload_result["errors"],
+                    }
+                    for upload_result in upload_results[1]
+                ]
+
+            else:
+                headline = "The following samples uploaded successfully."
+                successful = [
+                    {
+                        "filename": file_result["filename"],
+                        "sample": file_result["sample"],
+                        "warnings": file_result["sample"].import_notes,
+                    }
+                    for file_result in upload_results[1]
+                ]
+
+                if upload_results[0] == 2:
+                    unsuccessful = [
+                        {
+                            "filename": file_result["filename"],
+                            "sample": file_result["sample"],
+                            "errors": file_result["errors"],
+                        }
+                        for file_result in upload_results[2]
+                    ]
+
+        # and here's the logic for displaying the results of a
+        # single CSV file upload
+        # it might be better to concatenate both of these into a single, distinct function
+        # now that we're handling multisamples
+
+        else:
+            if upload_results[0]["errors"] is not None:
+                headline = (
+                    upload_results[0]["filename"] + " did not upload successfully."
+                )
+                unsuccessful = [
+                    {
+                        "filename": upload_results[0]["filename"],
+                        "errors": upload_results[0]["errors"],
+                    }
+                ]
+            else:
+                headline = upload_results[0]["filename"] + "uploaded successfully."
+                successful = [
+                    {
+                        "filename": upload_result["filename"],
+                        "sample": upload_result["sample"],
+                        "warnings": upload_result["sample"].import_notes,
+                    }
+                    for upload_result in upload_results
+                ]
+
+        return render(
+            request,
+            "upload.html",
+            {
+                "form": form,
+                "successful": successful,
+                "unsuccessful": unsuccessful,
+                "headline": headline,
+            },
+        )
+
+    else:
+        form = uploadForm()  # A empty, unbound form
+        return render(request, "upload.html", {"form": form})
+
+
+def admin_upload_image(request, ids):
+    ids = literal_eval(ids)
+    if len(ids) > 1:
+        warn_multiple = True
+    else:
+        warn_multiple = False
+
+    if request.method == "POST":
+        form = AdminUploadImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                image = PIL.Image.open(request.FILES["file"])
+            except:
+                return HttpResponse("The image file couldn't be parsed.")
+            samples = Sample.objects.filter(id__in=ids)
+            for sample in samples:
+                sample.image = image
+                sample.clean()
+                sample.save()
+            return HttpResponse("Upload successful.")
+            # maybe redirect to metadata
+    else:
+        form = AdminUploadImageForm()  # A empty, unbound form
+
+    return render(
+        request,
+        "admin_upload_image.html",
+        {"ids": ids, "form": form, "warn_multiple": warn_multiple},
+    )
+
+
+def about(request):
+    databases = Database.objects.all()
+    return render(request, "about.html", {"databases": databases})
+
+
+# debug:
+
+
+def test(request):
+    return render(request, "test.html")
+
+
+def search_strip(request):
+    search_formset = formset_factory(SearchForm)
+
+    choice_fields = {
+        "database_choices": [Database, "name"],
+        "sampletype_choices": [SampleType, "name"],
+    }
+    autocomplete_fields = {
+        "sample_names": (Sample, "sample_name"),
+        "material_classes": (Sample, "material_class"),
+        "sample_ids": (Sample, "sample_id"),
+    }
+
+    # comprehensions from utils.py
+
+    choice_data = make_choice_list(choice_fields)
+    autocomplete_data = make_autocomplete_list(autocomplete_fields)
+
+    formset_field_params = dict(**choice_data, **autocomplete_data)
+
+    page_params = {"search_formset": search_formset}
+
+    return render(
+        request, "search_strip.html", dict(**page_params, **formset_field_params)
+    )
+
+
+def flag_sample(request):
+
+    id = request.POST.get("flagID", None)
+    sample = Sample.objects.get(id__icontains=id)
+    sample.flagged = "flagged"
+    sample.save()
+    return JsonResponse({"flagged": True})
