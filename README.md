@@ -33,7 +33,11 @@ WWU Vis-NIR spectrographic database
 * updated to python 3.x / django 3.x. Backend changes related to update not specified here in detail.
 * Extensively refactored Python and JS code for maintainability and extensibility. Individual changes too numerous to list.
 * Broad visual redesign.
-* replaced postgreSQL with SQLite (more maintainable, portable, and performant for small database size with few concurrent users)Altered all existing database models; changes included fields inappropriately referring to 'mineral' properties to 'sample' or 'material' as appropriateimproved behavior of autocomplete dialogsmass sample type flagging actions replaced with broader mass editing functionalityadded image upload and processing functionality
+* replaced postgreSQL with SQLite (more maintainable, portable, and performant for small database size with few concurrent users)
+* Altered all existing database models; changes included fields inappropriately referring to 'mineral' properties to 'sample' or 'material' as appropriate
+* improved behavior of autocomplete dialogs
+* mass sample type flagging actions replaced with broader mass editing functionality
+* added image upload and processing functionality
 * added associated image download and display functionality
 * improved upload input processing and UX 
 * added capability to insert filter sets and illumination conditions into database
