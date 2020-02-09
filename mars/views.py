@@ -378,7 +378,7 @@ def upload(request):
         )
 
     else:
-        form = uploadForm()  # A empty, unbound form
+        form = uploadForm()
         return render(request, "upload.html", {"form": form})
 
 
@@ -404,7 +404,7 @@ def admin_upload_image(request, ids):
             return HttpResponse("Upload successful.")
             # maybe redirect to metadata
     else:
-        form = AdminUploadImageForm()  # A empty, unbound form
+        form = AdminUploadImageForm()
 
     return render(
         request,
