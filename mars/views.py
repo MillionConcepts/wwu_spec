@@ -49,8 +49,7 @@ def search(request):
 
 
 def results(request):
-
-    print("foo")
+    
     print(request.GET)
 
     search_results_id_list = []
