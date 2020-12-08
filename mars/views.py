@@ -15,7 +15,7 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from mars.forms import SearchForm, make_choice_list, uploadForm, \
+from mars.forms import SearchForm, uploadForm, \
     AdminUploadImageForm
 from mars.models import Database, Sample, SampleType, FilterSet, Library
 from mars.utils import make_autocomplete_list, search_all_samples, \

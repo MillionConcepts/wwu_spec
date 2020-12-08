@@ -1,0 +1,41 @@
+/* table {
+  width: 100%;
+  height: 65%;
+  table-layout: fixed;
+  }
+
+  tr:after {
+    content: ' ';
+    display: table-row;
+    visibility: hidden;
+    clear: both;
+  }
+
+  thead th, tbody td {
+    display:table-row;
+    height: 30px;
+    width: 200px;
+  }
+
+  tbody {
+    height: 65vh;
+    overflow-y: auto;
+  }
+
+  thead {
+
+  }
+
+div.scrolling-area {
+  height: 50px;
+  overflow: auto;
+}
+
+table thead tr {
+  top: 0;
+  position: absolute;
+}
+*/
+
+.bodycontainer { max-height: 450px; width: 100%; margin: 0; overflow-y: auto; }
+.table-scrollable { margin: 0; padding: 0; }

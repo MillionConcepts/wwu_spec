@@ -12,27 +12,31 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+# SECURITY NOTE: you'll have to generate a new secret key file
+# on new deployments.
+from .secretkey import SECRET_KEY
+
+SECRET_KEY = SECRET_KEY
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'cnrmajr+$6t+2zfr2c_c^r#6s8la11@$a-ob=7ok6%6bg$%@$+'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+# Don't run with this on either!
+# ALLOWED_HOSTS = ['*']
+# add public-facing ip of host to this
+ALLOWED_HOSTS = ["127.0.0.1"]
 
 # Application definition
 # consider removing django-extensions for production
 # this is for jupyter during dev
-
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -74,7 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wwu_spec.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -84,7 +88,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -104,7 +107,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -118,15 +120,17 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static_in_env","static_root")
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Static files are sent to the root file, which could be on a different server
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static_in_pro","our_static"),
+    os.path.join(BASE_DIR, "static_in_pro", "our_static")
 ]
 
-SAMPLE_IMAGE_PATH = os.path.join(BASE_DIR, "static_in_pro/our_static/sample_images")
+SAMPLE_IMAGE_PATH = os.path.join(BASE_DIR,
+                                 "static_in_pro/our_static/sample_images")
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
