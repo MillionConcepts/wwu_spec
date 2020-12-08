@@ -21,7 +21,8 @@ def search_all_samples(entry):
         if field.name not in ["origin", "sample_type", "id"]
     ]
     queries += [
-        {field + "__name__icontains": entry} for field in ["origin", "sample_type"]
+        {field + "__name__icontains": entry} for field in
+        ["origin", "sample_type"]
     ]
     filter_list = [Sample.objects.filter(**query) for query in queries]
     return reduce(or_query, filter_list)
@@ -52,8 +53,8 @@ def make_autocomplete_list(autocomplete_fields):
         autocomplete_data[autocomplete_category] = [
             name
             for name in model.objects.values_list(field, flat=True)
-            .order_by(field)
-            .distinct()
+                .order_by(field)
+                .distinct()
             if name != ""
         ]
     return autocomplete_data
@@ -85,12 +86,14 @@ def parse_sample_csv(meta_array, warnings, errors):
             if input_field == "nan":
                 warnings.append(
                     "Warning: a row in the input was interpreted as NaN."
-                    + " This is generally harmless and caused by idiosyncracies"
+                    + "This is generally harmless and caused by "
+                      "idiosyncracies "
                     + " in how pandas.read_csv handles stray separators."
                 )
             elif input_field == "data id":
                 warnings.append(
-                    "Warning: the Data ID field is recognized for legacy purposes but is not used by the"
+                    "Warning: the Data ID field is recognized for legacy "
+                    "purposes but is not used by the "
                     + " database unless you have not provided a Sample ID."
                 )
                 field_dict["sample_id"] = column[1]
@@ -108,14 +111,16 @@ def parse_sample_csv(meta_array, warnings, errors):
                 )
         elif field_search.size > 1:
             errors.append(
-                "Error: " + column[0] + " appears to be assigned more than once."
+                "Error: " + column[
+                    0] + " appears to be assigned more than once."
             )
         else:
             active_field = field_names[field_search][0][0]
             if "reflectance" in active_field:
                 warnings.append(
-                    "The minimum and maximum reflectance fields are recognized for legacy purposes"
-                    + " but the database actually computes these values from the reflectance data."
+                    "The minimum and maximum reflectance fields are "
+                    "recognized for legacy purposes but the database actually"
+                    " computes these values from the reflectance data."
                 )
             else:
                 field_dict[active_field] = str(column[1]).strip()
@@ -128,7 +133,8 @@ def check_sample_csv(field_dict, warnings, errors):
     # and assigns a sample ID if not present
     if "sample_type" in field_dict.keys():
         if field_dict["sample_type"] not in [
-            sample_type.typeOfSample for sample_type in SampleType.objects.all()
+            sample_type.typeOfSample for sample_type in
+            SampleType.objects.all()
         ]:
             errors.append(
                 field_dict["sample_type"] + " is not an allowable sample type."
@@ -144,7 +150,8 @@ def check_sample_csv(field_dict, warnings, errors):
             active_database = str(field_dict["origin"]).strip()
             warnings.append(
                 active_database
-                + " was not previously listed among our affiliate databases and has been added as a database of origin."
+                + "was not previously listed among our affiliate databases "
+                  "and has been added as a database of origin. "
             )
             new_database = Database(name=active_database)
             new_database.save()
@@ -155,7 +162,8 @@ def check_sample_csv(field_dict, warnings, errors):
             "No name was provided for the sample in"
             + field_dict["filename"]
             + ".it has been"
-            "assigned the placeholder identifier " + field_dict["sample_id"] + "."
+              "assigned the placeholder identifier " + field_dict[
+                "sample_id"] + "."
         )
     return field_dict, warnings, errors
 
@@ -215,17 +223,20 @@ def ingest_sample_csv(csv_file):
 
     refl_start = refl_search[0]
     meta_array = np.array(csv_in[0:, 0:refl_start])
-    refl_array = np.array(csv_in[0:, refl_start + 1 :])
+    refl_array = np.array(csv_in[0:, refl_start + 1:])
     try:
         refl_array = refl_array.astype(np.float64)
-    except:
+    except ValueError:
         errors.append(
-            "Error: some fields in the reflectance data can't be interpreted as numbers. "
-            + "It's possible that you haven't placed the reflectance data after all of the "
-            "metadata, or that there are some non-numeric characters in the reflectance data."
+            "Error: some fields in the reflectance data can't be interpreted "
+            "as numbers. "
+            + "It's possible that you haven't placed the reflectance data "
+              "after all of the "
+              "metadata, or that there are some non-numeric characters in the "
+              "reflectance data. "
         )
 
-    ## check for and handle multicolumn reflectance data
+    # check for and handle multicolumn reflectance data
 
     sample_split = False
     if refl_array.shape[0] > 2:
@@ -251,12 +262,14 @@ def ingest_sample_csv(csv_file):
 
     if sample_split:
         sample_out = [
-            Sample(**dict(**field_dict, **{"reflectance": sample})) for sample in split_refl
+            Sample(**dict(**field_dict, **{"reflectance": sample})) for sample
+            in split_refl
         ]
     else:
-        sample_out = Sample(**dict(**field_dict, **{"reflectance": refl_array}))
+        sample_out = Sample(
+            **dict(**field_dict, **{"reflectance": refl_array}))
 
-    if errors != []:
+    if errors:
         return {
             "sample": None,
             "filename": filename,
@@ -278,12 +291,12 @@ def handle_csv_upload(csv_file):
 
     sample = csv_in["sample"]
     save_errors = []
-    
+
     try:
         if type(sample) == list:
             for active_sample in sample:
                 active_sample.clean()
-                active_sample.save(uploaded=True) 
+                active_sample.save(uploaded=True)
         else:
             sample.clean()
             sample.save(uploaded=True)
@@ -292,27 +305,27 @@ def handle_csv_upload(csv_file):
     if save_errors:
         return [{"filename": csv_file.name, "errors": save_errors}]
 
-    
     # flatten multisample
     if type(sample) == list:
         flat_samples = []
         for active_sample in sample:
             flat_samples.append({
-                'sample':active_sample,
-                'filename':csv_file.name,
+                'sample': active_sample,
+                'filename': csv_file.name,
                 'errors': None
             })
         return flat_samples
 
     return [{"sample": sample, "filename": csv_file.name, "errors": None}]
 
-def check_zip_structure(zipped_file,upload_errors):
 
+def check_zip_structure(zipped_file, upload_errors):
     uploaded_files = zipped_file.namelist()
 
     csv_files = [file for file in uploaded_files if file[-3:] == "csv"]
     jpg_files = [file for file in uploaded_files if file[-3:] == "jpg"]
-    other_files = [file for file in uploaded_files if file[-3:] not in ["csv", "jpg"]]
+    other_files = [file for file in uploaded_files if
+                   file[-3:] not in ["csv", "jpg"]]
 
     # check for inappropriate filetypes
 
@@ -354,18 +367,20 @@ def check_zip_structure(zipped_file,upload_errors):
             )
         else:
             matching_csv_file = [
-                csv_file for csv_file in csv_files if csv_file[:-4] == jpg_file[:-4]
+                csv_file for csv_file in csv_files if
+                csv_file[:-4] == jpg_file[:-4]
             ][0]
             try:
                 matching_image = PIL.Image.open(zipped_file.open(jpg_file))
                 image_associations[matching_csv_file] = matching_image
-            except Exception as ex:
+            except (FileNotFoundError, PIL.UnidentifiedImageError):
                 upload_errors.append(
                     jpg_file
                     + " does not appear to be a valid image file."
                     + " Please verify it and reload."
                 )
-    return {"upload_errors":upload_errors,"jpg_files":jpg_files,"csv_files":csv_files,"image_associations":image_associations}
+    return {"upload_errors": upload_errors, "jpg_files": jpg_files,
+            "csv_files": csv_files, "image_associations": image_associations}
 
 
 def handle_zipped_upload(zipped_file):
@@ -376,51 +391,58 @@ def handle_zipped_upload(zipped_file):
         zipped_file = zipfile.ZipFile(zipped_file)
     except Exception as ex:
         upload_errors.append(
-            "The input can't be parsed as a zip file." + " Please verify it and reload."
+            "The input can't be parsed as a zip file." +
+            " Please verify it and reload."
         )
         upload_errors.append(ex)
         return [0, upload_errors]
-    
-    check = check_zip_structure(zipped_file,upload_errors)
+
+    check = check_zip_structure(zipped_file, upload_errors)
     upload_errors = check["upload_errors"]
     csv_files = check["csv_files"]
-    jpg_files = check["jpg_files"]
+    # jpg_files = check["jpg_files"]
     image_associations = check["image_associations"]
     if upload_errors:
         return [0, upload_errors]
 
-    # if all the files are ok as files, go ahead and check them against the model
+    # if all the files are ok as files, go ahead and check them against the
+    # model
 
     # process the CSV and see if there are problems there
 
-    samples = []
     samples = [ingest_sample_csv(zipped_file.open(file)) for file in csv_files]
 
     # log samples that were successful and erroneous at this stage
 
-    erroneous_samples = [sample for sample in samples if sample["errors"] is not None]
-    successful_samples = [sample for sample in samples if sample["errors"] is None]
+    erroneous_samples = [sample for sample in samples if
+                         sample["errors"] is not None]
+    successful_samples = [sample for sample in samples if
+                          sample["errors"] is None]
 
     # flatten sample list in case of multicolumn uploads
 
-    single_samples = [samp for samp in successful_samples if type(samp["sample"]) != list]
-    multi_samples = [samplist for samplist in successful_samples if type(samplist["sample"]) == list]
+    single_samples = [samp for samp in successful_samples if
+                      type(samp["sample"]) != list]
+    multi_samples = [samplist for samplist in successful_samples if
+                     type(samplist["sample"]) == list]
     flat_samples = []
     for multi_sample in multi_samples:
         for sample in multi_sample["sample"]:
             flat_samples.append({
-                'sample':sample,
-                'filename':multi_sample['filename'],
-                'warnings':multi_sample['warnings'],
-                'errors':multi_sample['errors']
+                'sample': sample,
+                'filename': multi_sample['filename'],
+                'warnings': multi_sample['warnings'],
+                'errors': multi_sample['errors']
             })
     successful_samples = single_samples + flat_samples
 
     for sample in successful_samples:
         if sample["sample"].filename in image_associations.keys():
-            sample["sample"].image = image_associations[sample["sample"].filename]
+            sample["sample"].image = image_associations[
+                sample["sample"].filename]
 
-    # check against the model's main clean and save methods; also, you know, save
+    # check against the model's main clean and save methods; also, you know,
+    # save
 
     for sample in successful_samples:
         try:
@@ -429,7 +451,8 @@ def handle_zipped_upload(zipped_file):
         except Exception as ex:
             sample["errors"] = str(ex)
 
-    # divide samples that had errors at either stage from those that saved successfully
+    # divide samples that had errors at either stage from those that saved
+    # successfully
 
     erroneous_samples += [
         sample for sample in successful_samples if sample["errors"] is not None
