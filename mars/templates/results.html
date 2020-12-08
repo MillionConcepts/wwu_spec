@@ -200,13 +200,13 @@
 
             {% if page_results.has_next %}
               <li class="waves-effect">
-                <a onclick="selectPage({{page_results.next_page_number}});" name="action" value="results"/>
+                <a onclick="selectPage({{page_results.next_page_number}});" name="action" value="results">
                 <i class="material-icons">chevron_right</i>
                 </a>
               </li>
             {% else %}
               <li class="disabled">
-                <a name="action" value="results"/>
+                <a name="action" value="results">
                 <i class="material-icons">chevron_right</i>
                 </a>
               </li>
@@ -233,8 +233,9 @@
   <script>
     // Select all toggle
     function toggle(source){
-      checkboxes = document.getElementsByName("selection");
-      for(var i=0, n=checkboxes.length; i<n; i++){
+        let checkboxes = document.getElementsByName("selection");
+        let i = 0, n = checkboxes.length;
+        for(; i<n; i++){
         checkboxes[i].checked = source.checked;
       }
     }
@@ -251,21 +252,21 @@
 
     // Sort results by fields. Allows user to sort the table by clicking on table header
     function sortByField(field) {
-      var form = document.forms['resultsForm'];
-      var sortParams = document.getElementsByName("sort_params");
+        const form = document.forms['resultsForm'];
+        const sortParams = document.getElementsByName("sort_params");
 
-      var input = document.createElement('input');
-     
-       input.type = 'hidden';
+        const input = document.createElement('input');
+
+        input.type = 'hidden';
       input.name = 'sort_params';
       input.value = field;
 
-      for (i = 0; i < sortParams.length; i++) {
-        if (sortParams[i].value == field) {
+      for (let i = 0; i < sortParams.length; i++) {
+        if (sortParams[i].value === field) {
           input.value = "-"+field;
           removeElement(sortParams[i]);
         }
-        else if (sortParams[i].value == "-" + field) {
+        else if (sortParams[i].value === "-" + field) {
           removeElement(sortParams[i]);
         }
       }
