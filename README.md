@@ -3,6 +3,11 @@ WWU Vis-NIR spectrographic database
 
 ## patch notes
 
+### v 0.21 (12/8/2020)
+* added custom libraries to sample search and the admin interface 
+* fixed a bug related to propagation of model choice fields into search results 
+* various small bugfixes and assorted cleanup changes
+
 ### v 0.2 (2/7/2020)
 * Changes from items discussed in 2/3 meeting
 * Added handling for uploaded files with multiple reflectance columns
