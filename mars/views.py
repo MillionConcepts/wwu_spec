@@ -1,34 +1,33 @@
-import io
-import zipfile
-import json
 import csv
 import datetime as dt
-from operator import or_
-from functools import reduce
+import io
+import json
+import zipfile
 from ast import literal_eval
+from functools import reduce
+from operator import or_
 
+import PIL
 from PIL import Image
-
-from django.shortcuts import render, redirect, reverse
-
-from django.views import generic
-from django.forms.formsets import formset_factory
 from django.core.paginator import Paginator
+from django.conf import settings
+from django.forms.formsets import formset_factory
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
 
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.template import RequestContext
-
-from mars.forms import *
-from mars.models import *
-from mars.utils import *
+from mars.forms import SearchForm, make_choice_list, uploadForm, \
+    AdminUploadImageForm
+from mars.models import Database, Sample, SampleType, FilterSet, Library
+from mars.utils import make_autocomplete_list, search_all_samples, \
+    handle_csv_upload, handle_zipped_upload
 
 
 def search(request):
     search_formset = formset_factory(SearchForm)
-
     choice_fields = {
         "database_choices": [Database, "name"],
         "sampletype_choices": [SampleType, "name"],
+        "library_choices": [Library, "name"]
     }
     autocomplete_fields = {
         "sample_names": (Sample, "sample_name"),
@@ -38,32 +37,34 @@ def search(request):
 
     # comprehensions from utils.py
 
-    choice_data = make_choice_list(choice_fields)
+    # choice_data = make_choice_list(choice_fields)
     autocomplete_data = make_autocomplete_list(autocomplete_fields)
 
-    formset_field_params = dict(**choice_data, **autocomplete_data)
+    # formset_field_params = dict(**choice_data, **autocomplete_data)
+    formset_field_params = autocomplete_data
 
     page_params = {"search_formset": search_formset}
 
-    return render(request, "search.html", dict(**page_params, **formset_field_params))
+    return render(
+        request, "search.html",
+        dict(**page_params, **formset_field_params)
+    )
 
 
 def results(request):
-    
-    print(request.GET)
 
     search_results_id_list = []
     search_results = Sample.objects.none()
-    selected_spectra = Sample.objects.none()
-    SearchFormSet = formset_factory(SearchForm)
+    # selected_spectra = Sample.objects.none() # TODO: missing functionality?
+    search_form_set = formset_factory(SearchForm)
 
     # deliver an empty page for malformed requests.
     # also deliver clean data for each form while we're at it.
 
     try:
-        search_formset = SearchFormSet(request.GET)
+        search_formset = search_form_set(request.GET)
         for search_form in search_formset:
-            search_form.is_valid()
+            search_form.is_valid()  # todo: assert?
     except:
         return render(
             request,
@@ -78,10 +79,10 @@ def results(request):
             },
         )
 
-    sortParams = request.GET.getlist("sort_params", ["sample_id"])
+    sort_params = request.GET.getlist("sort_params", ["sample_id"])
 
-    # double underscore in these field names is an ugly but compact way to access the
-    # ForeignKey object fields
+    # double underscore in these field names is an ugly but compact way to 
+    # access the ForeignKey object fields 
 
     searchable_fields = [
         "sample_name",
@@ -89,16 +90,17 @@ def results(request):
         "material_class",
         "origin__name",
         "sample_type__name",
+        "library__name"
     ]
 
     numeric_constraints = ["min_included_range", "max_included_range"]
 
     for search_form in search_formset:
 
-        form_results = Sample.objects.all().order_by(*sortParams)
+        form_results = Sample.objects.all().order_by(*sort_params)
 
         for field in searchable_fields:
-            entry = search_form.cleaned_data.get(field,None)
+            entry = search_form.cleaned_data.get(field, None)
             if entry:
                 if entry != "Any":
                     # allow exact phrase searches
@@ -108,14 +110,14 @@ def results(request):
                     # otherwise treat multiple words as an 'or' search
                     else:
                         query = field + "__icontains"
-                        filters = [form_results.filter(**{query: word}) for word in entry.split(' ')]
-                        form_results = reduce(or_,filters)
+                        filters = [form_results.filter(**{query: word}) for
+                                   word in entry.split(' ')]
+                        form_results = reduce(or_, filters)
 
-
-            # the utility of spectrum limit constraints as part of UX is unclear to me
-            # _must_ have a band makes sense to me
-            # _cannot_ have a band does not
-            # so leaving this in but it's presently vestigial
+            # the utility of spectrum limit constraints as part of UX is
+            # unclear to me _must_ have a band makes sense to me _cannot_
+            # have a band does not so leaving this in but it's presently
+            # vestigial
 
         for field in numeric_constraints:
             entry = search_form.cleaned_data.get(field)
@@ -147,7 +149,8 @@ def results(request):
     page_selected = int(request.GET.get("page_selected", 1))
     page_results = paginator.page(page_selected)
     page_choices = range(
-        max(1, page_selected - 3), min(page_selected + 4, paginator.num_pages + 1)
+        max(1, page_selected - 3),
+        min(page_selected + 4, paginator.num_pages + 1)
     )
 
     page_ids = []
@@ -164,22 +167,20 @@ def results(request):
             "page_choices": page_choices,
             "page_results": page_results,
             "search_results": search_results_id_list,
-            "sort_params": sortParams,
+            "sort_params": sort_params,
         },
     )
 
 
 def graph(request):
-
     if request.method == "GET":
         if "graphForm" in request.GET:
-
             selections = request.GET.getlist("selection")
-            prevSelectedList = request.GET.getlist("prev_selected")
-            selections = list(set(selections + prevSelectedList))
+            prev_selected_list = request.GET.getlist("prev_selected")
+            selections = list(set(selections + prev_selected_list))
 
-            SearchFormSet = formset_factory(SearchForm)
-            search_formset = SearchFormSet(request.GET)
+            search_form_set = formset_factory(SearchForm)
+            search_formset = search_form_set(request.GET)
 
             samples = Sample.objects.filter(id__in=selections)
 
@@ -187,8 +188,10 @@ def graph(request):
 
             json_string = json.dumps(dumplist)
 
-            filtersets = [filterset.name for filterset in FilterSet.objects.all()]
-            filtersets+=[filterset.name+"_no_illumination" for filterset in FilterSet.objects.all()]
+            filtersets = [filterset.name for filterset in
+                          FilterSet.objects.all()]
+            filtersets += [filterset.name + "_no_illumination" for filterset in
+                           FilterSet.objects.all()]
             return render(
                 request,
                 "graph.html",
@@ -204,14 +207,14 @@ def graph(request):
 
 def meta(request):
     if request.method == "GET":
-        if "meta" in request.GET:
+        if "meta" in request.GET:  # TODO: else what? maybe just return 5**?
             selections = request.GET.getlist("selection")
-            prevSelectedList = request.GET.getlist("prev_selected")
+            prev_selected_list = request.GET.getlist("prev_selected")
 
-            SearchFormSet = formset_factory(SearchForm)
-            search_formset = SearchFormSet(request.GET)
+            search_form_set = formset_factory(SearchForm)
+            search_formset = search_form_set(request.GET)
 
-            selections = list(set(selections + prevSelectedList))
+            selections = list(set(selections + prev_selected_list))
             samples = Sample.objects.filter(id__in=selections)
         dictionaries = [obj.as_dict() for obj in samples]
         return render(
@@ -229,12 +232,13 @@ def export(request):
     selections = request.GET.getlist("selection")
 
     # TODO: is this actually desired?
-    # prevSelectedList = request.POST.getlist("prev_selected")
+    # prev_selected_list = request.POST.getlist("prev_selected")
 
     selections = list(selections)
     samples = Sample.objects.filter(id__in=selections)
     zip_buffer = io.BytesIO()
-    field_list = [[field.verbose_name, field.name] for field in Sample._meta.fields]
+    field_list = [[field.verbose_name, field.name] for field in
+                  Sample._meta.fields]
     field_list.sort()
 
     with zipfile.ZipFile(zip_buffer, "w") as output:
@@ -246,7 +250,9 @@ def export(request):
             text_buffer = io.StringIO()
             writer = csv.writer(text_buffer)
             for field in field_list:
-                if field[1] not in ["image", "id", "reflectance","filename","import_notes","simulated_spectra","flagged"]:
+                if field[1] not in ["image", "id", "reflectance", "filename",
+                                    "import_notes", "simulated_spectra",
+                                    "flagged"]:
                     writer.writerow([field[0], getattr(sample, field[1])])
             writer.writerow(["Wavelength"])
             for row in literal_eval(sample.reflectance):
@@ -271,14 +277,16 @@ def export(request):
 
     date = dt.datetime.today().strftime("%y-%m-%d")
     response = HttpResponse(zip_buffer, content_type="application/zip")
-    response["Content-Disposition"] = "attachment; filename=spectra-%s.zip;" % date
+    response[
+        "Content-Disposition"] = "attachment; filename=spectra-%s.zip;" % date
 
     return response
 
 
 def upload(request):
     if request.method == "POST":
-        form = uploadForm(request.POST, request.FILES)
+        form = \
+            uploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES["file"]
 
@@ -293,7 +301,8 @@ def upload(request):
             return render(
                 request,
                 "upload.html",
-                {"form": form, "headline": headline, "upload_errors": upload_errors},
+                {"form": form, "headline": headline,
+                 "upload_errors": upload_errors},
             )
 
         successful = []
@@ -339,15 +348,15 @@ def upload(request):
                         for file_result in upload_results[2]
                     ]
 
-        # and here's the logic for displaying the results of a
-        # single CSV file upload
-        # it might be better to concatenate both of these into a single, distinct function
-        # now that we're handling multisamples
+        # and here's the logic for displaying the results of a single CSV
+        # file upload it might be better to concatenate both of these into a
+        # single, distinct function now that we're handling multisamples
 
         else:
             if upload_results[0]["errors"] is not None:
                 headline = (
-                    upload_results[0]["filename"] + " did not upload successfully."
+                        upload_results[0][
+                            "filename"] + " did not upload successfully."
                 )
                 unsuccessful = [
                     {
@@ -356,7 +365,8 @@ def upload(request):
                     }
                 ]
             else:
-                headline = upload_results[0]["filename"] + "uploaded successfully."
+                headline = upload_results[0][
+                               "filename"] + "uploaded successfully."
                 successful = [
                     {
                         "filename": upload_result["filename"],
@@ -394,7 +404,7 @@ def admin_upload_image(request, ids):
         if form.is_valid():
             try:
                 image = PIL.Image.open(request.FILES["file"])
-            except:
+            except (FileNotFoundError, PIL.UnidentifiedImageError):
                 return HttpResponse("The image file couldn't be parsed.")
             samples = Sample.objects.filter(id__in=ids)
             for sample in samples:
@@ -418,44 +428,9 @@ def about(request):
     return render(request, "about.html", {"databases": databases})
 
 
-# debug:
-
-
-def test(request):
-    return render(request, "test.html")
-
-
-def search_strip(request):
-    search_formset = formset_factory(SearchForm)
-
-    choice_fields = {
-        "database_choices": [Database, "name"],
-        "sampletype_choices": [SampleType, "name"],
-    }
-    autocomplete_fields = {
-        "sample_names": (Sample, "sample_name"),
-        "material_classes": (Sample, "material_class"),
-        "sample_ids": (Sample, "sample_id"),
-    }
-
-    # comprehensions from utils.py
-
-    choice_data = make_choice_list(choice_fields)
-    autocomplete_data = make_autocomplete_list(autocomplete_fields)
-
-    formset_field_params = dict(**choice_data, **autocomplete_data)
-
-    page_params = {"search_formset": search_formset}
-
-    return render(
-        request, "search_strip.html", dict(**page_params, **formset_field_params)
-    )
-
-
 def flag_sample(request):
-
-    id = request.POST.get("flagID", None)
-    sample = Sample.objects.get(id__icontains=id)
+    sample_id = request.POST.get("flagID", None)
+    sample = Sample.objects.get(id__icontains=sample_id)
     sample.flagged = "flagged"
     sample.save()
     return JsonResponse({"flagged": True})

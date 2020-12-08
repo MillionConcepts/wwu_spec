@@ -1,29 +1,16 @@
-
 <style>
-	.svg-content-responsive {
-		display:inline-block;
-		position:absolute;
-		top:10px;
-		left:50px;
-		bottom:10px;
-		right:10px;
-	}
+    text {
+        font: 10px "Fira Mono";
+    }
 
-	text {
-		font: 10px "Fira Mono";
-	}
-
-  .axis path,
-  .axis line {
-    fill:none;
-    stroke: #BBBBBB;
-    shape-rendering:crispEdges;
-}
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #BBBBBB;
+        shape-rendering: crispEdges;
+    }
 
 
-
-
- 
 </style>
 
 {% extends "layouts/base.html" %}
@@ -31,1712 +18,1761 @@
 
 {% block content %}
 
-<body onresize="redraw();">
-{% csrf_token %} 
+    <body onresize="redraw();">
+    {% csrf_token %}
 
 
+    <div id="modal1" class="modal" style="z-index: 200; position: relative">
+        <div class="modal-content">
+            <div class="container">
+                <h4>Flag Sample</h4>
+                <p id='flagDescription'></p>
+            </div>
+            <div class="container" style='margin-top: 50px'>
+                <a href="#!"
+                   class="modal-action modal-close waves-effect waves-light red btn-large">Cancel</a>
+                <a
+                        id='flagSampleButton'
+                        onclick="flagSample(this)"
+                        class="modal-action modal-close waves-effect waves-light btn-large"
+                        href="#!"
+                        style="margin-left: 50px"
+                        value="sample_id_example"
+                >
+                    Confirm
+                </a>
+                <form>
+                    {{ search_formset.management_form }}
+
+                    {% for id in selected_ids %}
+                        <input type="hidden" name="selection"
+                               value="{{ id }}"/>
+                    {% endfor %}
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    {% if graphResults %}
+        <div style="margin-left: 40px; margin-right: 40px">
+            <div class="card " style="background:#e3e7e9">
+                <div class="container">
 
 
-<div id="modal1" class="modal" style="z-index: 200; position: relative">
-  <div class="modal-content">
-		<div class="container">
-			<h4>Flag Sample</h4>
-			<p id='flagDescription'></p>
-		</div>
-		<div class="container" style='margin-top: 50px'>
-        <a href="#!" class="modal-action modal-close waves-effect waves-light red btn-large">Cancel</a>
-        <a
-          id='flagSampleButton'
-          onclick="flagSample(this)"
-          class="modal-action modal-close waves-effect waves-light btn-large"
-          href="#!"
-          style="margin-left: 50px"
-          value="sample_id_example"
-        >
-          Confirm
-        </a>
-          {{search_formset.management_form}}
-
-          {% for id in selected_ids %}
-              <input type="hidden" name="selection" value="{{id}}"/>
-          {% endfor %}
-     
-			</form>
-		</div>
-
-  </div>
-</div>
-
-	{% if graphResults %}
-	<div style="margin-left: 40px; margin-right: 40px">
-		<div class="card " style="background:#e3e7e9">
-			<div class="container">
-     
-
-  	<div class="row" style="margin-bottom: 0px; margin-left:0px; margin-right: 0px;">
-		<div class="col s11">
-			<div class="chart-container" id="graphJtron" style="left: 4%;position:relative;"></div>
-		</div>
-		<div class="col s1" style="left:3%;position:relative;">
-			<div class="slider" id="y-slider" style="padding-left: 0px; margin-left: 10px; margin-top: 20px">
-				</div>
-		</div>
-	</div>
-		<div class="slider" id="x-slider" style="margin: 0px 0px 30px 10%; width: 75%;">
-		</div>
-	<div class = "row">
-		<div class="col" id="window" style="font-size: 16pt; font-weight: bold; width:12%; margin-left: 3%; margin-top: 2px; border-right: thick solid #1c2023;">Graph<br>Window</div>
-			<div class="col" style="font-size: 12pt;font-weight: bold; width: 11%; margin-top: 3px;">Nanometers</div>
-				<div class="col" style="width:13%; text-align:center; margin-top: 3px;"><input id="max-x-input"  step="20" type="number" /><input id="min-x-input"  step="20" type="number" style="margin-bottom: 10px"/></div>
-			<div class="col" style="font-size: 12pt;font-weight: bold; width: 12%; 30; margin-top: 3px;">Reflectance</div>
-			<div class="col" style="width:13%; text-align:center; padding:0; margin-top:3px; "><input id="max-y-input"  step=".02" type="number" /><input id="min-y-input"  step = ".02" type="number" style="margin-bottom: 10px"/></div>
-			<div class="col s1" style="width: 12%">	
-				<div class="button"; style="height:55px">
-					<a class="btn redButton graphButton" style="height:63px; line-height:30px;"
-						onclick="resetZoom()">Reset<br>Window</a>
-				</div>
-			</div>
-		<div class="col s1" style="width:20%">
-			<div class="button" style="height:35px">
-				<a class="btn graphButton" id="shrink-button"
-				onclick="shrinkGraph()">Shrink Graph</a>
-			</div>
-			<div class="button" style="height:35px;">
-				<a class="btn graphButton" id="control-button" onclick="toggleControls()">More Controls</a>
-			</div>
-	</div>
-</div>
-</div>
+                    <div class="row"
+                         style="margin-bottom: 0; margin-left:0; margin-right: 0;">
+                        <div class="col s11">
+                            <div class="chart-container" id="graphJtron"
+                                 style="left: 4%;position:relative;"></div>
+                        </div>
+                        <div class="col s1" style="left:3%;position:relative;">
+                            <div class="slider" id="y-slider"
+                                 style="padding-left: 0; margin-left: 10px; margin-top: 20px">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slider" id="x-slider"
+                         style="margin: 0 0 30px 10%; width: 75%;">
+                    </div>
+                    <div class="row">
+                        <div class="col" id="window"
+                             style="font-size: 16pt; font-weight: bold; width:12%; margin-left: 3%; margin-top: 2px; border-right: thick solid #1c2023;">
+                            Graph<br>Window
+                        </div>
+                        <div class="col"
+                             style="font-size: 12pt;font-weight: bold; width: 11%; margin-top: 3px;">
+                            Nanometers
+                        </div>
+                        <div class="col"
+                             style="width:13%; text-align:center; margin-top: 3px;">
+                            <input id="max-x-input" step="20"
+                                   type="number"/><input id="min-x-input"
+                                                         step="20"
+                                                         type="number"
+                                                         style="margin-bottom: 10px"/>
+                        </div>
+                        <div class="col"
+                             style="font-size: 12pt;font-weight: bold; width: 12%; margin-top: 3px;">
+                            Reflectance
+                        </div>
+                        <div class="col"
+                             style="width:13%; text-align:center; padding:0; margin-top:3px; ">
+                            <input id="max-y-input" step=".02"
+                                   type="number"/><input id="min-y-input"
+                                                         step=".02"
+                                                         type="number"
+                                                         style="margin-bottom: 10px"/>
+                        </div>
+                        <div class="col s1" style="width: 12%">
+                            <div class="button" style="height:55px">
+                                <a class="btn redButton graphButton"
+                                   style="height:63px; line-height:30px;"
+                                   onclick="resetZoom()">Reset<br>Window</a>
+                            </div>
+                        </div>
+                        <div class="col s1" style="width:20%">
+                            <div class="button" style="height:35px">
+                                <a class="btn graphButton" id="shrink-button"
+                                   onclick="shrinkGraph()">Shrink Graph</a>
+                            </div>
+                            <div class="button" style="height:35px;">
+                                <a class="btn graphButton" id="control-button"
+                                   onclick="toggleControls()">More Controls</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
 
-	
-	<div id="control-panel" style="border-top: thin solid gray; display:none">
-		<div class="row" style="margin-top: 15px">
-		  <div class="col" id="window" style=" font-size: 12pt; font-weight: bold; width:35%; margin-left: 3%; margin-top: 2px; text-align:center">Line Controls
-		  	<div class="row" style="font-weight: 100; margin-top:15px;text-align:left">
-			<div class="switch" style="margin-top: 8px; margin-bottom:17px">
-				<label>
-					<input id="line-switch" checked type="checkbox">
-					<span class="lever" ></span>
-					Vertical Line Follows Mouse
-				</label>
-			</div>
-			<div class="switch" style="margin-bottom:17px">
-				<label>
-					<input id="drop-switch" type="checkbox">
-					<span class="lever"></span>
-					Clicking Affixes Vertical Lines
-				</label>
-			</div>
+                <div id="control-panel"
+                     style="border-top: thin solid gray; display:none">
+                    <div class="row" style="margin-top: 15px">
+                        <div class="col" id="window"
+                             style=" font-size: 12pt; font-weight: bold; width:35%; margin-left: 3%; margin-top: 2px; text-align:center">
+                            Line Controls
+                            <div class="row"
+                                 style="font-weight: 100; margin-top:15px;text-align:left">
+                                <div class="switch"
+                                     style="margin-top: 8px; margin-bottom:17px">
+                                    <label>
+                                        <input id="line-switch" checked
+                                               type="checkbox">
+                                        <span class="lever"></span>
+                                        Vertical Line Follows Mouse
+                                    </label>
+                                </div>
+                                <div class="switch" style="margin-bottom:17px">
+                                    <label>
+                                        <input id="drop-switch"
+                                               type="checkbox">
+                                        <span class="lever"></span>
+                                        Clicking Affixes Vertical Lines
+                                    </label>
+                                </div>
 
 
+                                <div class="button" style="height:50px">
+                                    <a class="btn redButton graphButton"
+                                       style="height:30px;line-height:30px; width:320px"
+                                       onclick="eraseVerts()">Erase All
+                                        Vertical Lines</a>
+                                </div>
+                            </div>
+                            <form>
+                                <p style="text-align:center">Simulation Options
+                                <p>
+                                    <select id="filter-picker"
+                                            style="display:block; font-weight:normal;font-size:10pt">
+                                        {% for filterset in filtersets %}
+                                            <option value= {{ filterset }}>{{ filterset }}</option>
+                                        {% endfor %}
+                                    </select>
+                            </form>
 
-			<div class="button"; style="height:50px">
-					<a class="btn redButton graphButton" style="height:30px;line-height:30px; width:320px"
-						onclick="eraseVerts()">Erase All Vertical Lines</a>
-				</div>
-			</div>
-			<form>
-				<p style="text-align:center">Simulation Options<p>
-		   		<select id = "filter-picker" style="display:block; font-weight:normal;font-size:10pt">
-		   			{% for filterset in filtersets %}
-		       		<option value = {{filterset}}>{{filterset}}</option>
-		   			{% endfor %}
-		    	</select>
-		</form>
-
-	</div>
-		<div class="col" id="window" style=" font-size: 12pt; font-weight: bold; width:28%; margin-left: 1%; margin-top: 2px; text-align:center">Click to Calculate
-			<div class="row" style="font-weight: 100; margin-top:15px; text-align:left">
-				<div class="col" style="width:35%">
-				  <input name="calc-mode" type="radio" id="no-calc" checked="checked" onclick="hideCalcFocus()">
-			      <label for="no-calc" style="margin-bottom:10px">Nothing     </label>
-			      <input name="calc-mode" type="radio" id="slope-calc" onclick="updateCalc()"/>
-			      <label for="slope-calc">Slope</label>
-			  	</div>
-			  	<div class="col" style="width:50%">
-			      <input name="calc-mode" type="radio" id="band-min-calc"  onclick="updateCalc()"/>
-			      <label for="band-min-calc" style="margin-bottom:10px">Band Depth (minima)</label>
-			      <input name="calc-mode" type="radio" id="band-custom-calc" onclick="updateCalc()" />
-			      <label for="band-custom-calc" style="margin-bottom:10px">Band Depth (selected)</label>
-			      <input name="calc-mode" type="radio" id="ratio-calc" onclick="updateCalc()" />
-			      <label for="ratio-calc">Ratio</label>
-			  	</div>
-			</div>
-		</div>
-		<div class="col" id="window" style=" font-size: 12pt; font-weight: bold; width:27%; margin-left: 3%; margin-top: 2px; text-align:center">Display Options
-			<div class="row" style="font-weight: 100; margin-top:15px; text-align:left">
-			<div class="switch" style="margin-bottom:17px">
-				<label>
-					<input id="point-switch" checked type="checkbox" onclick="togglePoints(this)">
-					<span class="lever"></span>
-					Show Points
-				</label>
-			</div>
-			<div class="switch" style="margin-bottom:17px">
-				<label>
-					<input id="normal-switch" type="checkbox" onclick="normalizeSpectra()">
-					<span class="lever"></span>
-					Normalize Peaks
-				</label>
-			</div>
-			<div class="switch" style="margin-bottom:17px">
-				<label>
-					<input id="wavenormal-switch" type="checkbox" onclick="waveNormalizeSpectra()">
-					<span class="lever"></span>
-					Normalize Wavelength
-				</label>
-			</div>
-			<div class="brightswitch switch" id="arm-div" style="display:none">
-				<label>
-					<input id="arm-wavenormal-switch" type="checkbox">
-					<span class="lever"></span>
-					Arm Selection
-				</label>
-			</div>
-		</div>
-
-
-		</div>
-	</div>
-</div>
-
-			<table class="graph evenHeader results" style = "width:85%; margin:auto">
-				<thead>
-					<tr style="height:40px">
-						<th style="flex-grow:0.2"><label>Line</label></th>
-						<th style="flex-grow:0.2"><label>Color</label></th>
-						<th><label>Roverize</label></th>
-						<th><label>ID</label></th>
-						<th><label>Name</label></th>
-						<th><label>Origin</label></th>
-          				<th><label>Flag</label></th>
-          				<th><label>Offset</label></th>
-          			</tr>
-          		</thead>
-          		<tbody>
-				{% for result in graphResults %}
-				<tr>
-					<td style="flex-grow:0.2">
-						<div style="position: relative">
-							<input type="checkbox" checked="checked" name="selection"
-								id="option{{ result.id }}" value={{result.id}}
-								onclick="toggleLine(this,{{forloop.counter0}});"/>
-							<label for="option{{result.id }}"></label>
-						</div>
-					</td>
-					<td>
-          				<div id="rect-{{result.id}}" style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2"/></td></div>
-					<td>
-						<div style="position: relative">
-							<input type="checkbox" id = "roverize{{result.id}}" onclick="roverize(this,{{forloop.counter0}});"/>
-							<label for="roverize{{result.id}}"></label>
-						</div>
-					</td>
-
-					<td><label class="truncate" for="option{{ result.id }}"> {{ result.sample_id }}</label></td>
-					<td><label class="truncate" for="option{{ result.id }}"> {{ result.sample_name | title }} </label></td>
-					<td><label class="truncate" for="option{{ result.id }}"> {{ result.origin }} </label></td>
-					<td>
-		                <a class="btn redButton graphButton" style="height:25px; line-height:25px" href="#modal1" onclick="openFlagModal('{{ result.id }}')">flag
-		                </a>
-              		</td>
-              		<td>
-              			<input id="offset-dialog{{result.id}}"  step = ".02" type="number">
-              		</td>
-          			
-						
-							
-				</tr>
-				{% endfor %}
-          	</table>
-          	<form id="resultsForm" method="GET" name="resultsform">
-			        <div class="section center-align">
-			          <button type="submit" name="resultsform" formaction="/mars/results/" class="btn btn-success">Results</button>
-			          <button type="submit" name="export" formaction="/mars/export/" class="btn btn-success">Export</button>
-			          <button type="submit" name="meta" formaction="/mars/meta/" class="btn btn-success">View Metadata</button><br>
-			        </div>
-			        {% for id in selected_ids %}
-              <input type="hidden" name="selection" value="{{id}}"/>
-	          {% endfor %}
+                        </div>
+                        <div class="col" id="window"
+                             style=" font-size: 12pt; font-weight: bold; width:28%; margin-left: 1%; margin-top: 2px; text-align:center">
+                            Click to Calculate
+                            <div class="row"
+                                 style="font-weight: 100; margin-top:15px; text-align:left">
+                                <div class="col" style="width:35%">
+                                    <input name="calc-mode" type="radio"
+                                           id="no-calc" checked="checked"
+                                           onclick="hideCalcFocus()">
+                                    <label for="no-calc"
+                                           style="margin-bottom:10px">Nothing </label>
+                                    <input name="calc-mode" type="radio"
+                                           id="slope-calc"
+                                           onclick="updateCalc()"/>
+                                    <label for="slope-calc">Slope</label>
+                                </div>
+                                <div class="col" style="width:50%">
+                                    <input name="calc-mode" type="radio"
+                                           id="band-min-calc"
+                                           onclick="updateCalc()"/>
+                                    <label for="band-min-calc"
+                                           style="margin-bottom:10px">Band
+                                        Depth (minima)</label>
+                                    <input name="calc-mode" type="radio"
+                                           id="band-custom-calc"
+                                           onclick="updateCalc()"/>
+                                    <label for="band-custom-calc"
+                                           style="margin-bottom:10px">Band
+                                        Depth (selected)</label>
+                                    <input name="calc-mode" type="radio"
+                                           id="ratio-calc"
+                                           onclick="updateCalc()"/>
+                                    <label for="ratio-calc">Ratio</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col" id="window"
+                             style=" font-size: 12pt; font-weight: bold; width:27%; margin-left: 3%; margin-top: 2px; text-align:center">
+                            Display Options
+                            <div class="row"
+                                 style="font-weight: 100; margin-top:15px; text-align:left">
+                                <div class="switch" style="margin-bottom:17px">
+                                    <label>
+                                        <input id="point-switch" checked
+                                               type="checkbox"
+                                               onclick="togglePoints(this)">
+                                        <span class="lever"></span>
+                                        Show Points
+                                    </label>
+                                </div>
+                                <div class="switch" style="margin-bottom:17px">
+                                    <label>
+                                        <input id="normal-switch"
+                                               type="checkbox"
+                                               onclick="normalizeSpectra()">
+                                        <span class="lever"></span>
+                                        Normalize Peaks
+                                    </label>
+                                </div>
+                                <div class="switch" style="margin-bottom:17px">
+                                    <label>
+                                        <input id="wavenormal-switch"
+                                               type="checkbox"
+                                               onclick="waveNormalizeSpectra()">
+                                        <span class="lever"></span>
+                                        Normalize Wavelength
+                                    </label>
+                                </div>
+                                <div class="brightswitch switch" id="arm-div"
+                                     style="display:none">
+                                    <label>
+                                        <input id="arm-wavenormal-switch"
+                                               type="checkbox">
+                                        <span class="lever"></span>
+                                        Arm Selection
+                                    </label>
+                                </div>
+                            </div>
 
 
-	          {{search_formset.management_form}}
-	          <div style="display:None">
-            {% for search_form in search_formset.forms %}
-	          	{{search_form.id}}
-                {{search_form.sample_id}}
-                {{search_form.sample_name}}
-                {{search_form.material_class}}
-                {{search_form.min_included_range}}
-                {{search_form.max_included_range}}
-                {{search_form.sample_type__name}}
-                {{search_form.origin__name}}
-            {% endfor %}
-          </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="graph evenHeader results"
+                       style="width:85%; margin:auto">
+                    <thead>
+                    <tr style="height:40px">
+                        <th style="flex-grow:0.2"><label>Line</label></th>
+                        <th style="flex-grow:0.2"><label>Color</label></th>
+                        <th><label>Roverize</label></th>
+                        <th><label>ID</label></th>
+                        <th><label>Name</label></th>
+                        <th><label>Origin</label></th>
+                        <th><label>Flag</label></th>
+                        <th><label>Offset</label></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for result in graphResults %}
+                        <tr>
+                            <td style="flex-grow:0.2">
+                                <div style="position: relative">
+                                    <input type="checkbox" checked="checked"
+                                           name="selection"
+                                           id="option{{ result.id }}"
+                                           value={{ result.id }}
+                                                   onclick="toggleLine(this,{{ forloop.counter0 }});"/>
+                                    <label for="option{{ result.id }}"></label>
+                                </div>
+                            </td>
+                            <td>
+                                <div id="rect-{{ result.id }}"
+                                     style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2"></div>
+                            </td>
+                            <td>
+                                <div style="position: relative">
+                                    <input type="checkbox"
+                                           id="roverize{{ result.id }}"
+                                           onclick="roverize(this,{{ forloop.counter0 }});"/>
+                                    <label for="roverize{{ result.id }}"></label>
+                                </div>
+                            </td>
+
+                            <td><label class="truncate"
+                                       for="option{{ result.id }}"> {{ result.sample_id }}</label>
+                            </td>
+                            <td><label class="truncate"
+                                       for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
+                            </td>
+                            <td><label class="truncate"
+                                       for="option{{ result.id }}"> {{ result.origin }} </label>
+                            </td>
+                            <td>
+                                <a class="btn redButton graphButton"
+                                   style="height:25px; line-height:25px"
+                                   href="#modal1"
+                                   onclick="openFlagModal('{{ result.id }}')">flag
+                                </a>
+                            </td>
+                            <td>
+                                <input id="offset-dialog{{ result.id }}"
+                                       step=".02" type="number">
+                            </td>
 
 
+                        </tr>
+                    {% endfor %}
+                </table>
+                <form id="resultsForm" method="GET" name="resultsform">
+                    <div class="section center-align">
+                        <button type="submit" name="resultsform"
+                                formaction="/mars/results/"
+                                class="btn btn-success">Results
+                        </button>
+                        <button type="submit" name="export"
+                                formaction="/mars/export/"
+                                class="btn btn-success">Export
+                        </button>
+                        <button type="submit" name="meta"
+                                formaction="/mars/meta/"
+                                class="btn btn-success">View Metadata
+                        </button>
+                        <br>
+                    </div>
+                    {% for id in selected_ids %}
+                        <input type="hidden" name="selection"
+                               value="{{ id }}"/>
+                    {% endfor %}
 
-			    </form>
+
+                    {{ search_formset.management_form }}
+                    <div style="display:None">
+                        {% for search_form in search_formset.forms %}
+                            {{ search_form.id }}
+                            {{ search_form.sample_id }}
+                            {{ search_form.sample_name }}
+                            {{ search_form.material_class }}
+                            {{ search_form.min_included_range }}
+                            {{ search_form.max_included_range }}
+                            {{ search_form.sample_type__name }}
+                            {{ search_form.origin__name }}
+                        {% endfor %}
+                    </div>
+
+
+                </form>
+            </div>
         </div>
 
-	<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
-	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="{% static 'js/tinycolor.js' %}">
- 
-    </script>
-	<script src="{% static 'js/nouislider.min.js' %}"></script>
+        <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <script src="{% static 'js/tinycolor.js' %}">
 
-	<script>
-		$('.modal').modal({
-			dismissible: true, // Modal can be dismissed by clicking outside of the modal
-			opacity: .8, // Opacity of modal background
-			inDuration: 300, // Transition in duration
-			outDuration: 200, // Transition out duration
-			startingTop: '4%', // Starting top style attribute
-			endingTop: '10%', // Ending top style attribute
-		})
+        </script>
+        <script src="{% static 'js/nouislider.min.js' %}"></script>
 
-		$("#flagID").change(function () {
-        	console.log( $(this).val() );
-      	});
+        <script>
+            $('.modal').modal({
+                dismissible: true, // Modal can be dismissed by clicking outside of the modal
+                opacity: .8, // Opacity of modal background
+                inDuration: 300, // Transition in duration
+                outDuration: 200, // Transition out duration
+                startingTop: '4%', // Starting top style attribute
+                endingTop: '10%', // Ending top style attribute
+            })
 
-		function openFlagModal(dataID) {
-	        console.log('flagging Sample', dataID);
-	        $('#flagSampleButton').attr('value', dataID);
-	        $('#flagDescription').text(
-	          `You are about to flag ${dataID}
+            $("#flagID").change(function () {
+                console.log($(this).val());
+            });
+
+            function openFlagModal(dataID) {
+                console.log('flagging Sample', dataID);
+                $('#flagSampleButton').attr('value', dataID);
+                $('#flagDescription').text(
+                    `You are about to flag ${dataID}
 	           for review due to it being of poor quality, rendering
 	           incorrectly, etc.`
-	        )
-	        $('.modal').modal('open')
-
-	       	
-
-      	}
-
-      	function flagSample(data) {
-	        const sample_id = console.log(data.getAttribute('value'));
-	        $.ajax({
-	          url: '/mars/flagSample/',
-	          data: {
-	            'flagID': data.getAttribute('value'),
-	            'csrfmiddlewaretoken': document.getElementsByName('csrfmiddlewaretoken')[0].value,
-	          },
-	          dataType: 'json',
-	          type: "POST",
-	          success: function (data) {
-	            console.log(data);
-	          }
-        	});
-	    }
+                )
+                $('.modal').modal('open')
 
 
-	    var toggleControls = function(){ 
-	   		var foldout=document.getElementById("control-panel")
-	   			if (foldout.style.display === "block") {
-			      foldout.style.display = "none";
-			      document.getElementById("control-button").innerHTML="More Controls"
-			    } else {
-			      foldout.style.display = "block";
-			      document.getElementById("control-button").innerHTML="Fewer Controls";
-				}
-			}
-
-	</script>
-
-<script>
-
-var graph = JSON.parse('{{graphJSON|safe | escapejs}}');
-
-
-// lines themselves, i.e., scaled reflectance data
-
-var lines = {};
-
-
-// indicators as to line activity & status
-
-var activeLines = {}
-var normWavelength = 1
-
-// line colors
-
-var linePalette = ['#007ac8', '#006b3f', '#bad80a', '#002f5e', '#4A821E', '#63c2ff', '#d6e86c']
-
-
-var lineColors = {}
-
-
-//Toggle the line based on the checkbox
-var toggleLine = function(boxID, index) {
-    var thisActive = boxID.checked ? true : false;
-    activeLines[boxID.id.slice(6)] = thisActive
-    deWaveNormalize()
-    deNormalize()
-    generateLine(graph[index])
-}
-
-var roverize = function(boxID, index) {
-    var roverized = boxID.checked ? true : false
-    activeLines[boxID.id.slice(8)+'_r'] = roverized;
-    deWaveNormalize()
-    deNormalize()
-    generateLine(graph[index])
-}
-
-var filterPicker = document.getElementById('filter-picker')
-
-filterPicker.addEventListener('change',function(){
-	graph.forEach(function(sample) {
-		generateLine(sample)
-	})
-})
-
-// Toggle whether or not to show datapoint marks
-var togglePoints = function(checkbox) {
-    if (checkbox.checked) {
-        $(".tic").show();
-    } else {
-        $(".tic").hide();
-    }
-}
-
-// expand zoom window to at least the range/domain of the graph
-
-var minX = Number.MAX_VALUE;
-var minY = Number.MAX_VALUE;
-var maxX = Number.MIN_VALUE;
-var maxY = Number.MIN_VALUE;
-var graphMaxX, graphMaxY, graphMinX, graphMinY
-
-// utility function for splitting key/value pairs into two 1-D arrays
-// used
-// when shuffling json and SVG around
-// into arrays that are easier for other functions to work with
-
-var lineToArrays = function(line) {
-    var waveArray = []
-    var reflArray = []
-    line.map(point => {
-        waveArray.push(point.key)
-        reflArray.push(point.value)
-    })
-    return [waveArray.map(Number), reflArray]
-}
-
-
-// related utility function that returns one 2-D array instead
-
-var lineToStackedArray = function(line) {
-    var lineArray = []
-    line.map(point => {
-        lineArray.push(point.key, point.value)
-    })
-    return lineArray
-}
-
-var getIndex = function(array, target, constraints = null) {
-    if (constraints != null) {
-        array = array.slice(constraints[0], constraints[1])
-    }
-    i = 0
-    while (i < array.length) {
-        if (array[i] == target) {
-            return i
-        }
-        i++
-    }
-    return null
-}
-
-// checks graph bounds on page load or changes in reflectance data
-// (i.e. roverization or y-offset)
-// and sets widget limits accordingly 
-// maybe should be several separate functions
-
-var updateGraphBounds = function(samples, useLines) {
-
-    var graphXValues = []
-    var graphYValues = []
-    // are we setting graph bounds based on currently-rendered lines?
-
-    if (useLines === true) {
-		if (Object.values(activeLines).includes(true) == false){
-			return
-		}
-        Object.keys(samples).forEach(function(line) {
-        	if (activeLines[line] === true){
-	            graphXValues.push(lineToArrays(samples[line])[0])
-	            graphYValues.push(lineToArrays(samples[line])[1])
-	        }
-        })
-
-        // or are we setting graph bounds simply based on the received data (as on page load)?
-
-    } else {
-        samples.forEach(function(sample) {
-            if (activeLines[sample.id+'_r']) {
-                graphXValues.push(Object.keys(sample.rover_simulated))
-                graphYValues.push(Object.values(sample.rover_simulated))
-            } else {
-                graphXValues.push(Object.keys(sample.reflectance))
-                graphYValues.push(Object.values(sample.reflectance))
             }
-        })
-    }
 
-    
-
-    graphXValues =
-        graphXValues
-        .map(Number)
-        .concat.apply([], graphXValues)
-    graphYValues =
-        graphYValues
-        .map(Number)
-        .concat.apply([], graphYValues)
-
-    minX = Math.min.apply(null, graphXValues)
-    maxX = Math.max.apply(null, graphXValues)
-    minY = Math.min.apply(null, graphYValues)
-    maxY = Math.max.apply(null, graphYValues)
-    xOff = (maxX - minX) * .05
-    yOff = (maxY - minY) * .05
-    if (xScale) {
-        xScale.domain([maxX + xOff, Math.max(0, minX - xOff)])
-        yScale.domain([maxY + yOff, Math.max(0, minY - yOff)])
-        mouseZoom.x(xScale)
-        mouseZoom.y(yScale)
-    }
-
-    if (typeof(xSlider) != 'undefined') {
-        xSlider.noUiSlider.destroy()
-        ySlider.noUiSlider.destroy()
-        makeSliders()
-    }
-
-}
-
-// set bounds ASAP on page load
-
-updateGraphBounds(graph)
-
-// size, margin, various ratios for page elements
-
-var containerWidth = document.getElementById("graphJtron").offsetWidth;
-
-const margin = {
-    top: 20,
-    right: 50,
-    bottom: 50,
-    left: 50,
-}
-
-const graphAspect = 0.5
-const maxHeight = 475
-
-var vh = Math.max(document.documentElement.clientHeight, window.innerHeight)
-var vw = Math.max(document.documentElement.clientWidth, window.innerWidth)
-
-var width = Math.floor(containerWidth) - margin.right
-var height = (
-    Math.min(
-        maxHeight, vw * graphAspect
-    ) -
-    margin.top - margin.bottom
-)
-
-yLabelOffset = -42
-xLabelOffset = 35
-
-calcTextX = 0.04
-calcTextY = 0.92
-
-// x and y scales used to convert position of svg elements
-// into position relative to graph data
-// very important
-
-var xScale = d3.scale.linear().
-range([0, width]).
-domain([minX - xOff, maxX + xOff])
-
-var yScale = d3.scale.linear().
-range([0, height]).
-domain([maxY + yOff, minY - yOff])
-
-// the axis svg objects
-
-var xAxis = d3.svg.axis().
-orient("bottom").
-scale(xScale).
-tickFormat(d3.format("d"));
-
-var yAxis = d3.svg.axis()
-    .scale(yScale)
-    .orient("left");
-
-var scaleWidgets = []
-
-// widgets
-
-var xSlider = document.getElementById('x-slider');
-var ySlider = document.getElementById('y-slider');
-var minXInput = document.getElementById('min-x-input');
-var maxXInput = document.getElementById('max-x-input');
-var minYInput = document.getElementById('min-y-input');
-var maxYInput = document.getElementById('max-y-input');
-
-d3.select("#x-slider").style("width", width);
-d3.select("#y-slider").style("height", height);
-
-var makeSliders = function() {
-    noUiSlider.create(xSlider, {
-        start: [minX - xOff, maxX + xOff],
-        behaviour: 'tap-drag',
-        connect: true,
-        range: {
-            'min': minX - xOff,
-            'max': maxX + xOff
-        },
-        tooltips: [false, false],
-    });
-    noUiSlider.create(ySlider, {
-        start: [maxY + yOff, minY - yOff],
-        behaviour: 'tap-drag',
-        orientation: 'vertical',
-        connect: true,
-        direction: 'rtl',
-        range: {
-            'min': [minY - yOff] * 10,
-            'max': [maxY + yOff] * 10
-        },
-        tooltips: [false, false],
-    });
-    xSlider.noUiSlider.on('slide', function() {
-        updateWindow(
-            parseFloat(this.get()[0]),
-            parseFloat(this.get()[1]),
-            yScale.domain()[1],
-            yScale.domain()[0],
-            xSlider)
-    });
-
-
-    // we do the silly *10 scaling thing here because 
-    // this older version of noUiSlider taps out at two digits after the decimal
-    // but we would like to have more granular resolution
-    // and this hacky gesture gives us an additional digit of mantissa
-
-    ySlider.noUiSlider.on('slide', function() {
-        updateWindow(
-            xScale.domain()[0],
-            xScale.domain()[1],
-            parseFloat(this.get()[0]) / 10,
-            parseFloat(this.get()[1]) / 10,
-            ySlider)
-    });
-}
-makeSliders()
-
-// the ability to pan off the graph is not desirable.
-// however, this version of d3 did not yet implement zoom.translateExtent.
-// if version of d3 is updated here, this should be added.
-
-var mouseZoom = d3.behavior.zoom()
-    .y(yScale)
-    .x(xScale)
-    .scaleExtent([0, Infinity])
-    .on("zoom", function() {
-        updateWindow(
-            xScale.domain()[0],
-            xScale.domain()[1],
-            yScale.domain()[1],
-            yScale.domain()[0],
-            mouseZoom
-        );
-    });
-
-
-// background svg container
-
-
-var svg = d3.select(".chart-container").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .on("mouseleave", function() {
-        focus.style("display", "none");
-        activeLine.style("display", "none")
-    })
-
-// chart area drawn in container
-
-
-var chart = svg.append("g").
-call(mouseZoom).
-attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-
-// mask that keeps points from appearing outside the chart
-
-var clip = chart.append("defs").append("svg:clipPath").
-attr("id", "clip").
-append("svg:rect").
-attr("id", "clip-rect").
-attr("x", "0").
-attr("y", "0").
-attr("width", width).
-attr("height", height);
-
-// elements within container
-
-var chartBody = chart.append("g")
-    .attr("clip-path", "url(#clip)")
-
-var rect = chartBody.append('svg:rect')
-    .attr("id", "rectangle")
-    .attr("pointer-events", "all")
-    .attr('width', width)
-    .attr('height', height)
-    .attr('fill', 'white')
-
-
-// vertical locator lines
-
-var vertPalette = ['#007ac8', '#006b3f', '#bad80a', '#002f5e', '#4A821E', '#63c2ff', '#d6e86c']
-var vertPaletteStart = Math.round((Math.random() * vertPalette.length - 1))
-var vertCount = 0
-
-// the line that follows the mouse
-
-var drawVert = function(xPosition) {
-    vertCount++
-    var activeColor = vertPalette[(vertCount + vertPaletteStart) % vertPalette.length]
-    chart.append("line")
-        .attr("x1", 0)
-        .attr("y1", 0)
-        .attr("x2", 0)
-        .attr("y2", height)
-        .attr("id", 'verticalLine' + vertCount)
-        .attr('class', 'verticalLine')
-        .attr('x-position', xPosition)
-        .attr('transform', "translate(" + xScale(xPosition) + ",0)")
-        .style("stroke-width", 2)
-        .style("stroke", activeColor)
-        .style("fill", "none")
-        .style("display", null);
-}
-
-drawVert(xScale.invert(0))
-var activeLine = d3.select('line#verticalLine1')
-
-// the lines you can affix to static points
-
-var drawLocator = function(coord) {
-    chart.append("text")
-        .attr("color", '#1c2023')
-        .attr("transform", "translate(" + xScale(coord[0]) + "," + yScale(coord[1]) + ")")
-        .attr("dy", "2em")
-        .attr("class", "locator")
-        .attr("id", 'locator' + vertCount)
-        .attr("x-position", coord[0])
-        .attr("y-position", coord[1])
-        .style("font-family", "Fira Mono")
-        .style("font-size", "12px")
-        .text(coord[0] + ', ' + coord[1])
-}
-
-
-var eraseVerts = function() {
-    d3.selectAll('.locator').remove()
-    d3.selectAll('.verticalLine').remove()
-    vertCount = 0
-    drawVert(xScale.invert(0))
-    activeLine = d3.select('line#verticalLine1')
-}
-
-// add mouse events for moving focus and attaching slope points
-// we're attaching them in this ugly way because it seems to 
-// prevent them from interfering with one another
-
-var hideCalcFocus = function() {
-     [calcFocus.first, calcFocus.second,calcFocus.third].forEach(
-        function(dot) {
-            dot.style("opacity",0)
-            dot.active = false
-        })
-    calcText.style("opacity", 0)
-}
-
-var doCalculations = function(first, second, third, firstLine, secondLine, thirdLine) {
-    var text
-    if (document.getElementById('slope-calc').checked) {
-        text = "slope = " + calcSlope(first, second)
-    } else if (document.getElementById('band-min-calc').checked) {
-        var calc = simpleBandDepthMin(first, second, lines[firstLine])
-        text = "band depth = " + calc[0]
-        var minCoord = calc[1]        
-        calcFocus.third.attr("transform", "translate(" + xScale(minCoord[0]) + "," + yScale(minCoord[1]) + ")")
-        calcFocus.third.style("opacity",1)
-        calcFocus.third.coord = [minCoord[0],minCoord[1]]
-    } else if (document.getElementById('band-custom-calc').checked) {
-    	if (calcFocus.third.active) {
-    	text = "band depth = " + simpleBandDepthCustom(first,second,third)
-    	}
-    } else if (document.getElementById('ratio-calc').checked) {
-        text = "ratio = " + calcRatio(first, second)
-    }
-
-    calcText.text(text)
-}
-
-var updateCalc = function() {
-	calcFocus.third.active = false
-    if (calcFocus.first.active && calcFocus.second.active) {
-        doCalculations(calcFocus.first.coord, calcFocus.second.coord, calcFocus.third.coord,calcFocus.first.line, calcFocus.second.line,calcFocus.third.line)
-    }
-}
-
-
-// step through the states of the calc focus movement 
-
-var activateFocus = function(focus, coord,line) {
-	focus.active = true
-    focus.style("opacity", 1)
-    focus.attr("transform", "translate(" + xScale(coord[0]) + "," + yScale(coord[1]) + ")");
-    focus.coord = coord
-    focus.line = line
-}
-
-var moveCalcFocus = function(coord, line) {
-    if (calcFocus.first.active & calcFocus.second.active) {
-    	if (document.getElementById('band-custom-calc').checked) {
-    		if (line != calcFocus.first.line){
-        		return;
-        	} else if (calcFocus.third.active) {
-        		hideCalcFocus()
-        	} else {
-        		activateFocus(calcFocus.third,coord,line)
-        		doCalculations(
-	        		calcFocus.first.coord, 
-	            	calcFocus.second.coord, 
-	            	calcFocus.third.coord,
-					calcFocus.first.line, 
-	            	calcFocus.second.line,
-	            	calcFocus.third.line
-            	);
+            function flagSample(data) {
+                const sample_id = console.log(data.getAttribute('value'));
+                $.ajax({
+                    url: '/mars/flagSample/',
+                    data: {
+                        'flagID': data.getAttribute('value'),
+                        'csrfmiddlewaretoken': document.getElementsByName('csrfmiddlewaretoken')[0].value,
+                    },
+                    dataType: 'json',
+                    type: "POST",
+                    success: function (data) {
+                        console.log(data);
+                    }
+                });
             }
-    	} else {
-    		hideCalcFocus()
-    	}
-    } else if (document.getElementById('no-calc').checked) {
-        hideCalcFocus()
-    } else if (calcFocus.first.active) {
-        if ((coord[0] == calcFocus.first.coord[0]) & (coord[1] == calcFocus.first.coord[1])) {
-            calcFocus.first.active = false
-            calcFocus.first.style("opacity", 0)
-        } else if (line != calcFocus.first.line){
-        	return;
-        } else {
-            activateFocus(calcFocus.second,coord,line)
-            doCalculations(
-            	calcFocus.first.coord, 
-            	calcFocus.second.coord, 
-            	calcFocus.third.coord,
-				calcFocus.first.line, 
-            	calcFocus.second.line,
-            	calcFocus.third.line
-            	)
-            calcText.style("opacity", 1)
-        }
-    }
-    
-    else {
-        activateFocus(calcFocus.first,coord,line)
-    }
-}
-
-// add mouse behaviors for moving locator line, dropping lines, and 
-// working with the calcFocus
-
-d3.select("g")
-    .on("mouseup", function() {
-        var mouseX = xScale.invert(d3.mouse(this)[0]);
-        var mouseY = yScale.invert(d3.mouse(this)[1]);
-        var closest = findClosestLinePoint(lines, mouseX, mouseY);
-        var line = closest[1]
-        var coord = closest[0];
-        if (document.getElementById("arm-wavenormal-switch").checked) {
-            normWavelength = coord[0];
-            graph.forEach(function(sample) {
-        		generateLine(sample)
-    		})
-        }
-        moveCalcFocus(coord, line);
-        if (document.getElementById("drop-switch").checked) {
-            drawVert(coord[0]);
-            drawLocator(coord);
-        }
-
-    })
-    .on("mousemove", function() {
-        var mouseX = xScale.invert(d3.mouse(this)[0]);
-        var mouseY = yScale.invert(d3.mouse(this)[1]);
-        var closest = findClosestLinePoint(lines, mouseX, mouseY);
-        var line = closest[1]
-        var coord = closest[0]
-        focus.attr("transform", "translate(" + xScale(coord[0]) +
-            "," + yScale(coord[1]) + ")");
-
-        focus.select("text")
-            .text(Math.round(coord[0]) + ", " + parseFloat(coord[1]).toFixed(3));
-        activeLine.attr("x1", xScale(coord[0]))
-            .attr("x2", xScale(coord[0]));
-
-        focus.style("display", null);
-        if (document.getElementById('line-switch').checked) {
-            activeLine.style("display", null);
-        }
-    })
-
-
-// X Axis
-var xSVG = chart.append("svg:g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
-
-// Y Axis
-var ySVG = chart.append("svg:g")
-    .attr("class", "y axis")
-    .call(yAxis);
-
-// X Axis label
-var xlabel = chart.append("text")
-    .attr("class", "x label")
-    .style("text-anchor", "end")
-    .attr("x", width / 2 + margin.left)
-    .attr("y", height + 35)
-    .text("Wavelength (nm)");
-
-// Y Axis label
-var ylabel = chart.append("text")
-    .attr("class", "y label")
-    .style("text-anchor", "end")
-    .attr("x", -height / 2 - margin.top + margin.bottom)
-    .attr("y", -40)
-    .attr("transform", "rotate(-90)")
-    .text("Reflectance");
-
-
-
-
-// scaling function for reflectance values
-
-var scaleLine = d3.svg.line()
-    .x(function(d) {
-        return xScale(d.key);
-    })
-    .y(function(d) {
-        return yScale(d.value);
-    })
-    .interpolate("linear");
-
-// Function for drawing tick marks
-function tickMark(d) {
-    var size = 3;
-    var pathArray = []
-    for (var i = 0; i < d.length; i++) {
-        var x = xScale(d[i].key);
-        var y = yScale(d[i].value);
-        pathArray.push(["M", [x - size, y],
-            "L", [x + size, y],
-            "M", [x, y - size],
-            "L", [x, y + size]
-        ].join(" "));
-    }
-    return pathArray.join(" ");
-}
-
-//Define the function that sorts the data
-var keySort = function(sortfunc, field) {
-    return function(a, b) {
-        return sortfunc(parseFloat(a[field]), parseFloat(b[field]));
-    }
-}
-
-var rectBounds = [
-    d3.select("#rectangle").node().width.animVal.value,
-    d3.select("#rectangle").node().height.animVal.value
-]
-
-var calcText = ySVG.append("text")
-    .attr("transform",
-        "translate(" +
-        rectBounds[0] * 0.04 +
-        "," +
-        rectBounds[1] * 0.92 +
-        ")"
-    )
-    .style("font-size", "22px")
-    .style("font-family", "Fira Mono")
-
-var calcFocus = {
-    first: chart.append("g")
-        .attr("class", "focus")
-        .style("opacity", 1),
-
-    second: chart.append("g")
-        .attr("class", "focus")
-        .style("opacity", 1),
-
-    third: chart.append("g")
-        .attr("class", "focus")
-        .style("opacity", 3)
-}
-
-var makecalcFocus = function() {
-
-    [calcFocus.first, calcFocus.second].forEach(
-
-        function(dot) {
-            dot.append("circle")
-                .attr("r", 7)
-                .attr("fill", "#ffffff")
-                .attr("stroke-width", 3)
-                .attr("stroke", "#1c2023");
-
-            dot.coord = [-1000, -1000]
-            dot.active = false
-        })
-    calcFocus.third
-    .append("circle")
-    .attr("r",7)
-    .attr("fill","#cccccc")
-    .attr("stroke-width",3)
-    .attr("stroke","#1c2023")
-    calcFocus.third.coord = [-1000,-1000]
-    calcFocus.third.active = false
-}
-
-makecalcFocus()
-
-
-var focus = chart.append("g")
-    .attr("class", "focus")
-    .style("display", "null");
-
-
-focus.append("circle")
-    .attr("r", 5)
-    .attr("fill", "none")
-    .attr("stroke-width", 1.5)
-    .attr("stroke", "#667986");
-
-focus.append("text")
-    .attr("opacity", 1)
-    .attr("color", '#1c2023')
-    .attr("dx", 8)
-    .attr("dy", "2em")
-    .style("font-family", "Fira Mono")
-    .style("font-size", "12px");
-
-
-var calcRatio = function(first, second) {
-    if (first[1] < second[1]) {
-        return first[1] / second[1]
-    } else {
-        return second[1] / first[1]
-    }
-}
-
-// this potentially gives unwanted results if there are multiple minima (with the same value) in the selected range. not sure about the desired behavior in those cases.
-
-var simpleBandDepthMin = function(first, second, line) {
-    var lineArray = lineToArrays(line)
-    var yLine = lineArray[1]
-    var xLine = lineArray[0]
-    var indexOne = first[2]
-    var indexTwo = second[2]
-
-    console.log(indexOne,indexTwo)
-
-    // find minimum reflectance in the selected region
-
-    if (indexOne > indexTwo) {
-        indices = [indexTwo, indexOne]
-    } else {
-        indices = [indexOne, indexTwo]
-    }
-
-    // literally just draw a triangle
-    // we do not compound interpolation issues
-    // because projection of continuum
-    // onto reflectance curve occurs exactly at a sample
-    
-    var localMinReflectance = Math.min.apply(null, yLine.slice(indices[0]+1, indices[1]))
-    var minIndex = getIndex(yLine, localMinReflectance, indices)
-
-    minIndex = minIndex + indices[0]
-
-    var x1 = first[0]
-    var x2 = second[0]
-    var x3 = xLine[minIndex]
-    var y1 = first[1]
-    var y2 = second[1]
-
-    var continuumSlope = (y2 - y1) / (x2 - x1)
-
-
-
-    var flatLength = (x3 - x1)
-
-        console.log(continuumSlope,flatLength)
-
-
-    var continuumReflectance = y1 +
-        continuumSlope * flatLength
-
-
-    // the second element of the returned array
-    // is simply coordinates for placing calcFocus.third
-
-    return [(1 - (localMinReflectance / continuumReflectance)).toFixed(3),[lineArray[0][minIndex],lineArray[1][minIndex]]]
-}
-
-var simpleBandDepthCustom = function(first,second,third){
-	var x1 = first[0]
-	var x2 = second[0]
-	var x3 = third[0]
-	var y1 = first[1]
-	var y2 = second[1]
-	var y3 = third[1]
-
-	// literally just draw a triangle
-    var continuumSlope = (y2 - y1) / (x2 - x1)
-    var flatLength = (x3 - x1)
-    var continuumReflectance = y1 + continuumSlope * flatLength
-    return (1 - y3 / continuumReflectance).toFixed(3)
-}
-
-
-var calcSlope = function(first, second) {
-    var x1 = first[0]
-    var x2 = second[0]
-    var y1 = first[1]
-    var y2 = second[1]
-    var slope = (y2 - y1) / (x2 - x1)
-    return slope.toExponential(3)
-}
-
-// function that's called to initially graph a spectrum.
-// later we just scale it.
-
-
-var eraseLine = function(id) {
-    d3.select("path#line_path" + id)
-        .remove()
-    d3.select("path#tick_path" + id)
-        .remove()
-}
-
-
-
-var drawLine = function(line, id, is_rover=false,complement_rover=false) {
-    chartBody.append('svg:path')
-        .attr('d', scaleLine(line))
-        .attr('stroke', lineColors[id])
-        .attr('stroke-width', 2)
-        .attr('id', 'line_path' + id)
-        .style("fill", "none")
-        .attr('fill', 'none')
-    //Append tic marks to graph
-    chartBody.append('svg:path')
-        .attr('d', tickMark(line))
-        .attr('stroke', lineColors[id])
-        .attr('stroke-width', 1)
-        .attr('class', 'tic')
-        .attr('id', 'tick_path' + id)
-        .style("fill", "none")
-        .style("display", "none")
-        .attr('fill', 'none')
-        .style("opacity",0.85)
-
-
-
-    if (is_rover){
-    	
-    	d3.select('path#tick_path'+id)
-    	.attr('stroke-width',10)
-
-    	d3.select('path#line_path'+id)
-    	.attr('stroke-width',6)
-    	.style("stroke-dasharray", ("3, 3"))
-    }
-
-    if (complement_rover){
-    	d3.select('path#line_path'+id)
-    	.style("opacity", 0.8)
-    	
-    	d3.select('path#tick_path'+id)
-    	.style('opacity',0.6)
-
-    }
-
-}
-
-var normalized = false
-var waveNormalized = false
-var normWavelength = null
-
-var deWaveNormalize = function(){
-	waveNormalized = false
-	document.getElementById('wavenormal-switch').checked = false
-	document.getElementById("arm-div").style.display = "none"
-	document.getElementById("arm-wavenormal-switch").checked = false
-}
-
-var deNormalize = function(){
-	normalized = false
-    document.getElementById('normal-switch').checked = false
-}
-
-var normalizeSpectra = function() {
-    if (normalized) {
-        normalized = false
-    } else {
-        deWaveNormalize()
-        normalized = true
-    }
-    graph.forEach(function(sample) {
-        generateLine(sample)
-    })
-}
-
-var waveNormalizeSpectra = function() {
-    var swap = false
-    if (waveNormalized) {
-        deWaveNormalize()
-    } else {
-        deNormalize()
-        waveNormalized = true
-        swap = true
-        document.getElementById("arm-div").style.display = "block"
-    }
-    if (normWavelength | swap){
-        graph.forEach(function(sample) {
-        generateLine(sample)
-		})
-    }
-}
-
-var normLineToWavelength = function(reflectanceKV){
-	var checkArray = lineToArrays(reflectanceKV)
-
-	// check to see if the exact frequency bin is in the array
-	var bin = getIndex(checkArray, normWavelength)
-
-	// don't try any funny business with scaling nonexistent wavelengths
-	var outOfBounds = (Math.max.apply(null,checkArray[0]) < normWavelength)
-		| (Math.min.apply(null,checkArray[0]) > normWavelength)
-
-	var normReflectance = 1
-
-	if (bin){
-		normReflectance = checkArray[1][bin]
-	} else if (outOfBounds){
-		normReflectance = 1
-	} else {
-	    var rightHand = null
-	    var leftHand = null
-	    var i = 0
-	    while (rightHand-normWavelength <= 0){
-	    	leftHand = rightHand
-	    	rightHand =  checkArray[0][i]
-	    	i++
-	    }
-	    // leftHand is always one index back from rightHand.
-	    // so just a simple linear interpolation.
-	    var rightWeight = Math.abs(rightHand-normWavelength)/Math.abs(rightHand-leftHand)
-	    var leftWeight = 1 - rightWeight 
-	    normReflectance = checkArray[1][i]*rightWeight + checkArray[1][i-1]*leftWeight
-	}
-
-	return 1/normReflectance
-}
-
-var generateLine = function(sample, offset) {
-    var roverized = activeLines[sample.id+'_r']
-    var active = activeLines[sample.id]
-    var filterSet = filterPicker.value
-
-    // we might be better off breaking this into several functions
-    // in particular, it's wasteful to redraw everything
-    // when we just change filters
-    // etc.
-
-    if (lines[sample.id]) {
-    	// erase in preparation for redraw
-        eraseLine(sample.id)
-        hideCalcFocus()
-    } else {
-
-    	// basically: pick colors on page load
-        var colorSpin = Math.round((Math.random() * (linePalette.length - 1)))
-        var activeColor = linePalette[colorSpin]
-        linePalette.splice(colorSpin, 1)
-        if (activeColor == 'undefined') {
-        	activeColor = "#000000"
-        }
-        lineColors[sample.id] = activeColor
-
-        //make the rover color complementary
-        var roverColor = tinycolor(activeColor)
-        if (roverColor.isDark()){
-        	roverColor.lighten(25)
-        }
-        roverColor.spin(180)
-        
-        lineColors[sample.id+'_r'] = roverColor.toHexString()
-        document.getElementById('rect-' + sample.id).style.backgroundColor = activeColor
-    }
-
-    if (lines[sample.id+'_r']) {
-    	eraseLine(sample.id+'_r')
-    	hideCalcFocus()
-    }
-
-    var roverKV = d3.entries(sample[filterSet]);
-    var reflectanceKV = d3.entries(sample.reflectance);
-
-    if (normalized) {
-        var peak = Math.max.apply(null, lineToArrays(reflectanceKV)[1])
-        var scale = 1 / peak
-        Object.keys(reflectanceKV).forEach(function(i) {
-            reflectanceKV[i].value = reflectanceKV[i].value * scale
-        })
-        Object.keys(roverKV).forEach(function(i) {
-            roverKV[i].value = roverKV[i].value * scale
-        })
-    }
-
-    if (waveNormalized & (normWavelength!=null)) {
-
-	    var scale = normLineToWavelength(reflectanceKV)
-
-		Object.keys(reflectanceKV).forEach(function(i) {
-            reflectanceKV[i].value = reflectanceKV[i].value * scale
-        })
-        Object.keys(roverKV).forEach(function(i) {
-            roverKV[i].value = roverKV[i].value * scale
-        })
-    }
-
-    if (typeof(offset) != 'undefined') {
-        if (offset != 0) {
-            Object.keys(reflectanceKV).forEach(function(i) {
-                reflectanceKV[i].value = reflectanceKV[i].value + offset
+
+
+            const toggleControls = function () {
+                const foldout = document.getElementById("control-panel");
+                if (foldout.style.display === "block") {
+                    foldout.style.display = "none";
+                    document.getElementById("control-button").innerHTML = "More Controls"
+                } else {
+                    foldout.style.display = "block";
+                    document.getElementById("control-button").innerHTML = "Fewer Controls";
+                }
+            };
+
+        </script>
+
+        <script>
+
+            const graph = JSON.parse('{{graphJSON|safe | escapejs}}');
+
+
+            // lines themselves, i.e., scaled reflectance data
+
+            let lines = {};
+
+
+            // indicators as to line activity & status
+
+            let activeLines = {};
+            let normWavelength = 1;
+
+            // line colors
+
+            let linePalette = ['#007ac8', '#006b3f', '#bad80a', '#002f5e', '#4A821E', '#63c2ff', '#d6e86c'];
+
+
+            let lineColors = {};
+
+
+            // function that's called to initially graph a spectrum.
+            // later we just scale it.
+            const eraseLine = function (id) {
+                d3.select("path#line_path" + id)
+                    .remove()
+                d3.select("path#tick_path" + id)
+                    .remove()
+            };
+            const drawLine = function (line, id, is_rover = false, complement_rover = false) {
+                chartBody.append('svg:path')
+                    .attr('d', scaleLine(line))
+                    .attr('stroke', lineColors[id])
+                    .attr('stroke-width', 2)
+                    .attr('id', 'line_path' + id)
+                    .style("fill", "none")
+                    .attr('fill', 'none')
+                //Append tic marks to graph
+                chartBody.append('svg:path')
+                    .attr('d', tickMark(line))
+                    .attr('stroke', lineColors[id])
+                    .attr('stroke-width', 1)
+                    .attr('class', 'tic')
+                    .attr('id', 'tick_path' + id)
+                    .style("fill", "none")
+                    .style("display", "none")
+                    .attr('fill', 'none')
+                    .style("opacity", 0.85)
+
+
+                if (is_rover) {
+
+                    d3.select('path#tick_path' + id)
+                        .attr('stroke-width', 10)
+
+                    d3.select('path#line_path' + id)
+                        .attr('stroke-width', 6)
+                        .style("stroke-dasharray", ("3, 3"))
+                }
+
+                if (complement_rover) {
+                    d3.select('path#line_path' + id)
+                        .style("opacity", 0.8)
+
+                    d3.select('path#tick_path' + id)
+                        .style('opacity', 0.6)
+
+                }
+
+            };
+            let normalized;
+            let waveNormalized;
+            const generateLine = function (sample, offset) {
+                let scale;
+                const roverized = activeLines[sample.id + '_r'];
+                const active = activeLines[sample.id];
+                const filterSet = filterPicker.value;
+
+                // we might be better off breaking this into several functions
+                // in particular, it's wasteful to redraw everything
+                // when we just change filters
+                // etc.
+
+                if (lines[sample.id]) {
+                    // erase in preparation for redraw
+                    eraseLine(sample.id)
+                    hideCalcFocus()
+                } else {
+
+                    // basically: pick colors on page load
+                    const colorSpin = Math.round((Math.random() * (linePalette.length - 1)));
+                    let activeColor = linePalette[colorSpin];
+                    linePalette.splice(colorSpin, 1)
+                    if (activeColor === 'undefined') {
+                        activeColor = "#000000"
+                    }
+                    lineColors[sample.id] = activeColor
+
+                    //make the rover color complementary
+                    const roverColor = tinycolor(activeColor);
+                    if (roverColor.isDark()) {
+                        roverColor.lighten(25)
+                    }
+                    roverColor.spin(180)
+
+                    lineColors[sample.id + '_r'] = roverColor.toHexString()
+                    document.getElementById('rect-' + sample.id).style.backgroundColor = activeColor
+                }
+
+                if (lines[sample.id + '_r']) {
+                    eraseLine(sample.id + '_r')
+                    hideCalcFocus()
+                }
+
+                const roverKV = d3.entries(sample[filterSet]);
+                const reflectanceKV = d3.entries(sample.reflectance);
+
+                if (normalized) {
+                    const peak = Math.max.apply(null, lineToArrays(reflectanceKV)[1]);
+                    scale = 1 / peak;
+                    Object.keys(reflectanceKV).forEach(function (i) {
+                        reflectanceKV[i].value = reflectanceKV[i].value * scale
+                    })
+                    Object.keys(roverKV).forEach(function (i) {
+                        roverKV[i].value = roverKV[i].value * scale
+                    })
+                }
+
+                if (waveNormalized & (normWavelength != null)) {
+
+                    scale = normLineToWavelength(reflectanceKV);
+
+                    Object.keys(reflectanceKV).forEach(function (i) {
+                        reflectanceKV[i].value = reflectanceKV[i].value * scale
+                    })
+                    Object.keys(roverKV).forEach(function (i) {
+                        roverKV[i].value = roverKV[i].value * scale
+                    })
+                }
+
+                if (typeof (offset) != 'undefined') {
+                    if (offset !== 0) {
+                        Object.keys(reflectanceKV).forEach(function (i) {
+                            reflectanceKV[i].value = reflectanceKV[i].value + offset
+                        })
+                        Object.keys(roverKV).forEach(function (i) {
+                            roverKV[i].value = roverKV[i].value + offset
+                        })
+                    }
+                }
+
+                lines[sample.id] = reflectanceKV;
+                lines[sample.id + '_r'] = roverKV
+
+                if (active & roverized) {
+                    drawLine(reflectanceKV, sample.id, false, true)
+                    drawLine(roverKV, sample.id + '_r', true)
+                } else if (roverized) {
+                    drawLine(roverKV, sample.id + '_r')
+                } else if (active) {
+                    drawLine(reflectanceKV, sample.id)
+                }
+
+                updateGraphBounds(lines, true)
+                togglePoints(document.getElementById("point-switch"))
+                updateWindow(minX - xOff, maxX + xOff, minY - yOff, maxY + yOff)
+            };
+            const deWaveNormalize = function () {
+                waveNormalized = false
+                document.getElementById('wavenormal-switch').checked = false
+                document.getElementById("arm-div").style.display = "none"
+                document.getElementById("arm-wavenormal-switch").checked = false
+            };
+            const deNormalize = function () {
+                normalized = false
+                document.getElementById('normal-switch').checked = false
+            };
+            //Toggle the line based on the checkbox
+            const toggleLine = function (boxID, index) {
+                activeLines[boxID.id.slice(6)] = !!boxID.checked
+                deWaveNormalize()
+                deNormalize()
+                generateLine(graph[index])
+            };
+
+            const roverize = function (boxID, index) {
+                activeLines[boxID.id.slice(8) + '_r'] = !!boxID.checked;
+                deWaveNormalize()
+                deNormalize()
+                generateLine(graph[index])
+            };
+
+            const filterPicker = document.getElementById('filter-picker');
+
+            filterPicker.addEventListener('change', function () {
+                graph.forEach(function (sample) {
+                    generateLine(sample)
+                })
             })
-            Object.keys(roverKV).forEach(function(i) {
-                roverKV[i].value = roverKV[i].value + offset
+
+            // Toggle whether or not to show datapoint marks
+            const togglePoints = function (checkbox) {
+                if (checkbox.checked) {
+                    $(".tic").show();
+                } else {
+                    $(".tic").hide();
+                }
+            };
+
+            // expand zoom window to at least the range/domain of the graph
+
+            let minX = -80000;
+            let minY = -10;
+            let maxX = 80000;
+            let maxY = 10;
+            let xOff = (maxX - minX) * .05
+            let yOff = (maxY - minY) * .05
+            let graphMaxX, graphMaxY, graphMinX, graphMinY;
+
+            // utility function for splitting key/value pairs into two 1-D arrays
+            // used
+            // when shuffling json and SVG around
+            // into arrays that are easier for other functions to work with
+
+            const lineToArrays = function (line) {
+                let waveArray = [];
+                let reflArray = [];
+                line.map(point => {
+                    waveArray.push(point.key)
+                    reflArray.push(point.value)
+                })
+                return [waveArray.map(Number), reflArray]
+            };
+
+
+            // related utility function that returns one 2-D array instead
+            // TODO: is this cruft?
+            let lineToStackedArray = function (line) {
+                let lineArray = [];
+                line.map(point => {
+                    lineArray.push(point.key, point.value)
+                })
+                return lineArray
+            }, i
+
+            const getIndex = function (array, target, constraints = null) {
+                if (constraints != null) {
+                    array = array.slice(constraints[0], constraints[1])
+                }
+                i = 0
+                while (i < array.length) {
+                    if (array[i] === target) {
+                        return i
+                    }
+                    i++
+                }
+                return null
+            };
+
+
+            // size, margin, various ratios for page elements
+
+            let containerWidth = document.getElementById("graphJtron").offsetWidth;
+
+            const margin = {
+                top: 20,
+                right: 50,
+                bottom: 50,
+                left: 50,
+            }
+
+            const graphAspect = 0.5
+            const maxHeight = 475
+
+            let vh = Math.max(document.documentElement.clientHeight, window.innerHeight);
+            let vw = Math.max(document.documentElement.clientWidth, window.innerWidth);
+
+            let width = Math.floor(containerWidth) - margin.right;
+            let height = (
+                Math.min(
+                    maxHeight, vw * graphAspect
+                ) -
+                margin.top - margin.bottom
+            );
+
+            yLabelOffset = -42
+            xLabelOffset = 35
+
+            calcTextX = 0.04
+            calcTextY = 0.92
+
+            // x and y scales used to convert position of svg elements
+            // into position relative to graph data
+            // very important
+            let xScale = d3.scale.linear().range([0, width]).domain([minX - xOff, maxX + xOff]);
+            let yScale = d3.scale.linear().range([0, height]).domain([maxY + yOff, minY - yOff]);
+
+            // checks graph bounds on page load or changes in reflectance data
+            // (i.e. roverization or y-offset)
+            // and sets widget limits accordingly
+
+            // the ability to pan off the graph is not desirable.
+            // however, this version of d3 did not yet implement zoom.translateExtent.
+            // if version of d3 is updated here, this should be added.
+            const mouseZoom = d3.behavior.zoom()
+                .y(yScale)
+                .x(xScale)
+                .scaleExtent([0, Infinity])
+                .on("zoom", function () {
+                    updateWindow(
+                        xScale.domain()[0],
+                        xScale.domain()[1],
+                        yScale.domain()[1],
+                        yScale.domain()[0],
+                        mouseZoom
+                    );
+                });
+
+            // widgets
+            const xSlider = document.getElementById('x-slider');
+            const ySlider = document.getElementById('y-slider');
+
+            // the axis svg objects
+            const xAxis = d3.svg.axis().orient("bottom").scale(xScale).tickFormat(d3.format("d"));
+            const yAxis = d3.svg.axis()
+                .scale(yScale)
+                .orient("left");
+            let scaleWidgets = [];
+            const minXInput = document.getElementById('min-x-input');
+            const maxXInput = document.getElementById('max-x-input');
+            const minYInput = document.getElementById('min-y-input');
+            const maxYInput = document.getElementById('max-y-input');
+
+            d3.select("#x-slider").style("width", width);
+            d3.select("#y-slider").style("height", height);
+
+            const makeSliders = function () {
+                noUiSlider.create(xSlider, {
+                    start: [minX - xOff, maxX + xOff],
+                    behaviour: 'tap-drag',
+                    connect: true,
+                    range: {
+                        'min': minX - xOff,
+                        'max': maxX + xOff
+                    },
+                    tooltips: [false, false],
+                });
+                noUiSlider.create(ySlider, {
+                    start: [maxY + yOff, minY - yOff],
+                    behaviour: 'tap-drag',
+                    orientation: 'vertical',
+                    connect: true,
+                    direction: 'rtl',
+                    range: {
+                        'min': [minY - yOff] * 10,
+                        'max': [maxY + yOff] * 10
+                    },
+                    tooltips: [false, false],
+                });
+                xSlider.noUiSlider.on('slide', function () {
+                    updateWindow(
+                        parseFloat(this.get()[0]),
+                        parseFloat(this.get()[1]),
+                        yScale.domain()[1],
+                        yScale.domain()[0],
+                        xSlider)
+                });
+
+
+                // we do the silly *10 scaling thing here because
+                // this older version of noUiSlider taps out at two digits after the decimal
+                // but we would like to have more granular resolution
+                // and this hacky gesture gives us an additional digit of mantissa
+
+                ySlider.noUiSlider.on('slide', function () {
+                    updateWindow(
+                        xScale.domain()[0],
+                        xScale.domain()[1],
+                        parseFloat(this.get()[0]) / 10,
+                        parseFloat(this.get()[1]) / 10,
+                        ySlider)
+                });
+            };
+
+
+
+            // maybe should be several separate functions
+
+            const updateGraphBounds = function (samples, useLines) {
+                let graphXValues = [];
+                let graphYValues = [];
+                // are we setting graph bounds based on currently-rendered lines?
+
+                if (useLines === true) {
+                    if (Object.values(activeLines).includes(true) === false) {
+                        return
+                    }
+                    Object.keys(samples).forEach(function (line) {
+                        if (activeLines[line] === true) {
+                            graphXValues.push(lineToArrays(samples[line])[0])
+                            graphYValues.push(lineToArrays(samples[line])[1])
+                        }
+                    })
+
+                    // or are we setting graph bounds simply based on the received data (as on page load)?
+
+                } else {
+                    samples.forEach(function (sample) {
+                        // TODO: What is this?
+                        if (activeLines[sample.id + '_r']) {
+                            graphXValues.push(Object.keys(sample.rover_simulated))
+                            graphYValues.push(Object.values(sample.rover_simulated))
+                        } else {
+                            graphXValues.push(Object.keys(sample.reflectance))
+                            graphYValues.push(Object.values(sample.reflectance))
+                        }
+                    })
+                }
+
+
+                graphXValues =
+                    graphXValues
+                        .map(Number)
+                        .concat.apply([], graphXValues)
+                graphYValues =
+                    graphYValues
+                        .map(Number)
+                        .concat.apply([], graphYValues)
+
+                minX = Math.min.apply(null, graphXValues)
+                maxX = Math.max.apply(null, graphXValues)
+                minY = Math.min.apply(null, graphYValues)
+                maxY = Math.max.apply(null, graphYValues)
+                xOff = (maxX - minX) * .05
+                yOff = (maxY - minY) * .05
+                if (xScale) {
+                    xScale.domain([maxX + xOff, Math.max(0, minX - xOff)])
+                    yScale.domain([maxY + yOff, Math.max(0, minY - yOff)])
+                    mouseZoom.x(xScale)
+                    mouseZoom.y(yScale)
+                }
+
+                if (typeof (xSlider) != 'undefined') {
+                    xSlider.noUiSlider.destroy()
+                    ySlider.noUiSlider.destroy()
+                    makeSliders()
+                }
+
+            };
+
+            // set bounds & make sliders ASAP on page load
+            makeSliders()
+            updateGraphBounds(graph)
+
+
+
+            // background svg container
+
+            const svg = d3.select(".chart-container").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .on("mouseleave", function () {
+                    focus.style("display", "none");
+                    activeLine.style("display", "none")
+                });
+
+            // chart area drawn in container
+
+
+            const chart = svg.append("g").call(mouseZoom).attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // mask that keeps points from appearing outside the chart
+
+            const clip = chart.append("defs").append("svg:clipPath").attr("id", "clip").append("svg:rect").attr("id", "clip-rect").attr("x", "0").attr("y", "0").attr("width", width).attr("height", height);
+
+            // elements within container
+
+            const chartBody = chart.append("g")
+                .attr("clip-path", "url(#clip)");
+
+            const rect = chartBody.append('svg:rect')
+                .attr("id", "rectangle")
+                .attr("pointer-events", "all")
+                .attr('width', width)
+                .attr('height', height)
+                .attr('fill', 'white');
+
+            // X Axis
+            const xSVG = chart.append("svg:g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+            // Y Axis
+            const ySVG = chart.append("svg:g")
+                .attr("class", "y axis")
+                .call(yAxis);
+
+
+            // X Axis label
+            const xlabel = chart.append("text")
+                .attr("class", "x label")
+                .style("text-anchor", "end")
+                .attr("x", width / 2 + margin.left)
+                .attr("y", height + 35)
+                .text("Wavelength (nm)");
+
+            // Y Axis label
+            const ylabel = chart.append("text")
+                .attr("class", "y label")
+                .style("text-anchor", "end")
+                .attr("x", -height / 2 - margin.top + margin.bottom)
+                .attr("y", -40)
+                .attr("transform", "rotate(-90)")
+                .text("Reflectance");
+
+            let rectBounds = [
+                d3.select("#rectangle").node().width.animVal.value,
+                d3.select("#rectangle").node().height.animVal.value
+            ];
+
+            let activeLine;
+            const focus = chart.append("g")
+                .attr("class", "focus")
+                .style("display", "null");
+
+            const calcText = ySVG.append("text")
+                .attr("transform",
+                    "translate(" +
+                    rectBounds[0] * 0.04 +
+                    "," +
+                    rectBounds[1] * 0.92 +
+                    ")"
+                )
+                .style("font-size", "22px")
+                .style("font-family", "Fira Mono");
+            const calcFocus = {
+                first: chart.append("g")
+                    .attr("class", "focus")
+                    .style("opacity", 1),
+
+                second: chart.append("g")
+                    .attr("class", "focus")
+                    .style("opacity", 1),
+
+                third: chart.append("g")
+                    .attr("class", "focus")
+                    .style("opacity", 3)
+            };
+
+            // vertical locator lines
+
+            const vertPalette = ['#007ac8', '#006b3f', '#bad80a', '#002f5e', '#4A821E', '#63c2ff', '#d6e86c'];
+            const vertPaletteStart = Math.round((Math.random() * vertPalette.length - 1));
+            let vertCount = 0;
+
+            // the line that follows the mouse
+
+            const drawVert = function (xPosition) {
+                vertCount++
+                let activeColor = vertPalette[(vertCount + vertPaletteStart) % vertPalette.length];
+                chart.append("line")
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", 0)
+                    .attr("y2", height)
+                    .attr("id", 'verticalLine' + vertCount)
+                    .attr('class', 'verticalLine')
+                    .attr('x-position', xPosition)
+                    .attr('transform', "translate(" + xScale(xPosition) + ",0)")
+                    .style("stroke-width", 2)
+                    .style("stroke", activeColor)
+                    .style("fill", "none")
+                    .style("display", null);
+            };
+
+            drawVert(xScale.invert(0))
+            activeLine = d3.select('line#verticalLine1');
+
+            // the lines you can affix to static points
+
+            const drawLocator = function (coord) {
+                chart.append("text")
+                    .attr("color", '#1c2023')
+                    .attr("transform", "translate(" + xScale(coord[0]) + "," + yScale(coord[1]) + ")")
+                    .attr("dy", "2em")
+                    .attr("class", "locator")
+                    .attr("id", 'locator' + vertCount)
+                    .attr("x-position", coord[0])
+                    .attr("y-position", coord[1])
+                    .style("font-family", "Fira Mono")
+                    .style("font-size", "12px")
+                    .text(coord[0] + ', ' + coord[1])
+            };
+
+
+            const eraseVerts = function () {
+                d3.selectAll('.locator').remove()
+                d3.selectAll('.verticalLine').remove()
+                vertCount = 0
+                drawVert(xScale.invert(0))
+                activeLine = d3.select('line#verticalLine1')
+            };
+
+            // add mouse events for moving focus and attaching slope points
+            // we're attaching them in this ugly way because it seems to
+            // prevent them from interfering with one another
+
+            const hideCalcFocus = function () {
+                [calcFocus.first, calcFocus.second, calcFocus.third].forEach(
+                    function (dot) {
+                        dot.style("opacity", 0)
+                        dot.active = false
+                    })
+                calcText.style("opacity", 0)
+            };
+
+            const calcSlope = ([x1, y1], second) => {
+                const x2 = second[0];
+                const y2 = second[1];
+                const slope = (y2 - y1) / (x2 - x1);
+                return slope.toExponential(3)
+            };
+            const simpleBandDepthCustom = function (first, second, third) {
+                const x1 = first[0];
+                const x2 = second[0];
+                const x3 = third[0];
+                const y1 = first[1];
+                const y2 = second[1];
+                const y3 = third[1];
+
+                // literally just draw a triangle
+                const continuumSlope = (y2 - y1) / (x2 - x1);
+                const flatLength = (x3 - x1);
+                const continuumReflectance = y1 + continuumSlope * flatLength;
+                return (1 - y3 / continuumReflectance).toFixed(3)
+            };
+            const calcRatio = function (first, second) {
+                if (first[1] < second[1]) {
+                    return first[1] / second[1]
+                } else {
+                    return second[1] / first[1]
+                }
+            };
+
+            // this potentially gives unwanted results if there are multiple minima (with the same value) in the selected range. not sure about the desired behavior in those cases.
+            const simpleBandDepthMin = function (first, second, line) {
+                let [xLine, yLine] = lineToArrays(line);
+                const indexOne = first[2];
+                const indexTwo = second[2];
+
+                console.log(indexOne, indexTwo)
+
+                // find minimum reflectance in the selected region
+
+                let indices;
+                if (indexOne > indexTwo) {
+                    indices = [indexTwo, indexOne]
+                } else {
+                    indices = [indexOne, indexTwo]
+                }
+
+                // literally just draw a triangle
+                // we do not compound interpolation issues
+                // because projection of continuum
+                // onto reflectance curve occurs exactly at a sample
+
+                const localMinReflectance = Math.min.apply(null, yLine.slice(indices[0] + 1, indices[1]));
+                let minIndex = getIndex(yLine, localMinReflectance, indices);
+
+                minIndex = minIndex + indices[0]
+
+                const x1 = first[0];
+                const x2 = second[0];
+                const x3 = xLine[minIndex];
+                const y1 = first[1];
+                const y2 = second[1];
+
+                const continuumSlope = (y2 - y1) / (x2 - x1);
+
+
+                const flatLength = (x3 - x1);
+
+                console.log(continuumSlope, flatLength)
+
+
+                const continuumReflectance = y1 +
+                    continuumSlope * flatLength;
+
+
+                // the second element of the returned array
+                // is simply coordinates for placing calcFocus.third
+
+                return [(1 - (localMinReflectance / continuumReflectance)).toFixed(3), [xLine[minIndex], yLine[minIndex]]]
+            };
+            const doCalculations = function (first, second, third, firstLine, secondLine, thirdLine) {
+                let text;
+                if (document.getElementById('slope-calc').checked) {
+                    text = "slope = " + calcSlope(first, second)
+                } else if (document.getElementById('band-min-calc').checked) {
+                    let calc = simpleBandDepthMin(first, second, lines[firstLine]);
+                    text = "band depth = " + calc[0]
+                    let minCoord = calc[1];
+                    calcFocus.third.attr("transform", "translate(" + xScale(minCoord[0]) + "," + yScale(minCoord[1]) + ")")
+                    calcFocus.third.style("opacity", 1)
+                    calcFocus.third.coord = [minCoord[0], minCoord[1]]
+                } else if (document.getElementById('band-custom-calc').checked) {
+                    if (calcFocus.third.active) {
+                        text = "band depth = " + simpleBandDepthCustom(first, second, third)
+                    }
+                } else if (document.getElementById('ratio-calc').checked) {
+                    text = "ratio = " + calcRatio(first, second)
+                }
+
+                calcText.text(text)
+            };
+
+            const updateCalc = function () {
+                calcFocus.third.active = false
+                if (calcFocus.first.active && calcFocus.second.active) {
+                    doCalculations(calcFocus.first.coord, calcFocus.second.coord, calcFocus.third.coord, calcFocus.first.line, calcFocus.second.line, calcFocus.third.line)
+                }
+            };
+
+
+            // step through the states of the calc focus movement
+
+            const activateFocus = function (focus, coord, line) {
+                focus.active = true
+                focus.style("opacity", 1)
+                focus.attr("transform", "translate(" + xScale(coord[0]) + "," + yScale(coord[1]) + ")");
+                focus.coord = coord
+                focus.line = line
+            };
+
+            const moveCalcFocus = function (coord, line) {
+                if (calcFocus.first.active & calcFocus.second.active) {
+                    if (document.getElementById('band-custom-calc').checked) {
+                        if (line !== calcFocus.first.line) {
+                        } else if (calcFocus.third.active) {
+                            hideCalcFocus()
+                        } else {
+                            activateFocus(calcFocus.third, coord, line)
+                            doCalculations(
+                                calcFocus.first.coord,
+                                calcFocus.second.coord,
+                                calcFocus.third.coord,
+                                calcFocus.first.line,
+                                calcFocus.second.line,
+                                calcFocus.third.line
+                            );
+                        }
+                    } else {
+                        hideCalcFocus()
+                    }
+                } else if (document.getElementById('no-calc').checked) {
+                    hideCalcFocus()
+                } else if (calcFocus.first.active) {
+                    if ((coord[0] === calcFocus.first.coord[0]) & (coord[1] === calcFocus.first.coord[1])) {
+                        calcFocus.first.active = false
+                        calcFocus.first.style("opacity", 0)
+                    } else if (line !== calcFocus.first.line) {
+                    } else {
+                        activateFocus(calcFocus.second, coord, line)
+                        doCalculations(
+                            calcFocus.first.coord,
+                            calcFocus.second.coord,
+                            calcFocus.third.coord,
+                            calcFocus.first.line,
+                            calcFocus.second.line,
+                            calcFocus.third.line
+                        )
+                        calcText.style("opacity", 1)
+                    }
+                } else {
+                    activateFocus(calcFocus.first, coord, line)
+                }
+            };
+
+
+            //TODO: maybe yuck? rewrite?
+            const findClosestPoint = function (line, mouseX) {
+                let min = 0;
+                let max = line.length;
+                let mid = Math.floor((max + min) / 2);
+                let nearestX = line[mid].key;
+                let nearestY = line[mid].value;
+                let dx = Math.abs(mouseX - nearestX);
+                let diff = dx;
+                let index = mid;
+                const i = 0;
+                do {
+                    if (line[mid].key > mouseX) {
+                        max = mid;
+                    } else {
+                        min = mid;
+                    }
+
+                    mid = Math.floor((max + min) / 2);
+                    diff = (Math.abs(line[mid].key - mouseX));
+                    if (diff <= dx) {
+                        dx = diff;
+                        nearestX = line[mid].key;
+                        nearestY = line[mid].value;
+                        index = mid
+                    }
+                } while (diff !== 0 && (max - min) > 1)
+                return [parseFloat(nearestX), nearestY, index];
+            };
+
+            //Given a line, find the closet x point to your mouse
+            //and return the x,y coordinate
+            const distance = function (x1, y1, x2, y2) {
+                return Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
+            };
+            // add mouse behaviors for moving locator line, dropping lines, and
+            let findClosestLinePoint = function (lineDict, mouseX, mouseY) {
+                let closestDistance = Number.MAX_VALUE;
+                let thisLine = null;
+                let closestPoint = null;
+                Object.keys(lineDict).forEach(function (line, index) {
+                    if (activeLines[line] === true) {
+                        const point = findClosestPoint(lineDict[line], mouseX);
+                        const visibleDistance = distance(xScale(mouseX), yScale(mouseY), xScale(point[0]), yScale(point[1]));
+                        if (visibleDistance < closestDistance) {
+                            closestPoint = point;
+                            closestDistance = visibleDistance;
+                            thisLine = line
+                        }
+                    }
+                })
+                return [closestPoint, thisLine];
+            };
+            // working with the calcFocus
+
+            d3.select("g")
+                .on("mouseup", function () {
+                    let mouseX = xScale.invert(d3.mouse(this)[0]);
+                    let mouseY = yScale.invert(d3.mouse(this)[1]);
+                    let closest = findClosestLinePoint(lines, mouseX, mouseY);
+                    let line = closest[1];
+                    let coord = closest[0];
+                    if (document.getElementById("arm-wavenormal-switch").checked) {
+                        normWavelength = coord[0];
+                        graph.forEach(function (sample) {
+                            generateLine(sample)
+                        })
+                    }
+                    moveCalcFocus(coord, line);
+                    if (document.getElementById("drop-switch").checked) {
+                        drawVert(coord[0]);
+                        drawLocator(coord);
+                    }
+
+                })
+                .on("mousemove", function () {
+                    let mouseX = xScale.invert(d3.mouse(this)[0]);
+                    let mouseY = yScale.invert(d3.mouse(this)[1]);
+                    let closest = findClosestLinePoint(lines, mouseX, mouseY);
+                    let coord = closest[0];
+                    focus.attr("transform", "translate(" + xScale(coord[0]) +
+                        "," + yScale(coord[1]) + ")");
+
+                    focus.select("text")
+                        .text(Math.round(coord[0]) + ", " + parseFloat(coord[1]).toFixed(3));
+                    activeLine.attr("x1", xScale(coord[0]))
+                        .attr("x2", xScale(coord[0]));
+
+                    focus.style("display", null);
+                    if (document.getElementById('line-switch').checked) {
+                        activeLine.style("display", null);
+                    }
+                })
+
+
+
+
+
+            // scaling function for reflectance values
+
+            const scaleLine = d3.svg.line()
+                .x(function (d) {
+                    return xScale(d.key);
+                })
+                .y(function (d) {
+                    return yScale(d.value);
+                })
+                .interpolate("linear");
+
+            // Function for drawing tick marks
+            function tickMark(d) {
+                const size = 3;
+                const pathArray = [];
+                for (let i = 0; i < d.length; i++) {
+                    const x = xScale(d[i].key);
+                    const y = yScale(d[i].value);
+                    pathArray.push(["M", [x - size, y],
+                        "L", [x + size, y],
+                        "M", [x, y - size],
+                        "L", [x, y + size]
+                    ].join(" "));
+                }
+                return pathArray.join(" ");
+            }
+
+            //Define the function that sorts the data
+            const keySort = function (sortfunc, field) {
+                return function (a, b) {
+                    return sortfunc(parseFloat(a[field]), parseFloat(b[field]));
+                }
+            };
+
+
+
+
+            const makecalcFocus = function () {
+
+                [calcFocus.first, calcFocus.second].forEach(
+                    function (dot) {
+                        dot.append("circle")
+                            .attr("r", 7)
+                            .attr("fill", "#ffffff")
+                            .attr("stroke-width", 3)
+                            .attr("stroke", "#1c2023");
+
+                        dot.coord = [-1000, -1000]
+                        dot.active = false
+                    })
+                calcFocus.third
+                    .append("circle")
+                    .attr("r", 7)
+                    .attr("fill", "#cccccc")
+                    .attr("stroke-width", 3)
+                    .attr("stroke", "#1c2023")
+                calcFocus.third.coord = [-1000, -1000]
+                calcFocus.third.active = false
+            };
+
+            makecalcFocus()
+
+
+            focus.append("circle")
+                .attr("r", 5)
+                .attr("fill", "none")
+                .attr("stroke-width", 1.5)
+                .attr("stroke", "#667986");
+
+            focus.append("text")
+                .attr("opacity", 1)
+                .attr("color", '#1c2023')
+                .attr("dx", 8)
+                .attr("dy", "2em")
+                .style("font-family", "Fira Mono")
+                .style("font-size", "12px");
+
+
+            normalized = false;
+            waveNormalized = false;
+            normWavelength = null;
+
+
+            const normalizeSpectra = function () {
+                if (normalized) {
+                    normalized = false
+                } else {
+                    deWaveNormalize()
+                    normalized = true
+                }
+                graph.forEach(function (sample) {
+                    generateLine(sample)
+                })
+            };
+
+            const waveNormalizeSpectra = function () {
+                let swap = false;
+                if (waveNormalized) {
+                    deWaveNormalize()
+                } else {
+                    deNormalize()
+                    waveNormalized = true
+                    swap = true
+                    document.getElementById("arm-div").style.display = "block"
+                }
+                if (normWavelength | swap) {
+                    graph.forEach(function (sample) {
+                        generateLine(sample)
+                    })
+                }
+            };
+
+            const normLineToWavelength = function (reflectanceKV) {
+                const checkArray = lineToArrays(reflectanceKV);
+
+                // check to see if the exact frequency bin is in the array
+                const bin = getIndex(checkArray, normWavelength);
+
+                // don't try any funny business with scaling nonexistent wavelengths
+                const outOfBounds = (Math.max.apply(null, checkArray[0]) < normWavelength)
+                    | (Math.min.apply(null, checkArray[0]) > normWavelength);
+
+                let normReflectance = 1;
+
+                if (bin) {
+                    normReflectance = checkArray[1][bin]
+                } else if (outOfBounds) {
+                    normReflectance = 1
+                } else {
+                    let rightHand = null;
+                    let leftHand = null;
+                    let i = 0;
+                    while (rightHand - normWavelength <= 0) {
+                        leftHand = rightHand
+                        rightHand = checkArray[0][i]
+                        i++
+                    }
+                    // leftHand is always one index back from rightHand.
+                    // so just a simple linear interpolation.
+                    const rightWeight = Math.abs(rightHand - normWavelength) / Math.abs(rightHand - leftHand);
+                    const leftWeight = 1 - rightWeight;
+                    normReflectance = checkArray[1][i] * rightWeight + checkArray[1][i - 1] * leftWeight
+                }
+
+                return 1 / normReflectance
+            };
+
+
+            function updateWindow(updateMinX, updateMaxX, updateMinY, updateMaxY, caller) {
+
+                // make sure all the UI widgets show the correct value
+                // but don't fight with the widget that's setting the value!
+                // except: allow the widgets to fight
+                // if the user is making the constraints screwy
+                // very finicky UX issue. also, the mouse panner in this version of d3 leaves a lot to be desired. the behavior remains a little gross.
+
+
+                if (updateMaxY > maxY + 5 * yOff) {
+                    if (updateMaxY >= yScale.domain()[0]) {
+                        updateMaxY = maxY + yOff
+                        updateMinY = Math.min(Math.max(minY, maxY / 6), updateMinY + updateMinY * 0.05)
+                        caller = null
+                    }
+                }
+
+                if (updateMinY < minY - 5 * yOff) {
+                    if (updateMinY <= yScale.domain()[1]) {
+                        updateMinY = minY - yOff
+                        updateMaxY = Math.max(Math.min(maxY, minY * 2), updateMaxY - updateMinY * 0.05)
+                        caller = null
+                    }
+                }
+
+                if (updateMaxX > maxX + 5 * xOff) {
+                    if (updateMaxX >= xScale.domain()[1]) {
+                        updateMaxX = maxX + xOff
+                        updateMinX = Math.min(Math.max(minX, maxX / 6), updateMinX + updateMinX * 0.05)
+                        caller = null
+                    }
+                }
+
+                if (updateMinX < minX - 5 * xOff) {
+                    if (updateMinX <= xScale.domain()[0]) {
+                        updateMinX = minX - xOff
+                        updateMaxX = Math.max(Math.min(maxX, minX * 2), updateMaxX - updateMaxX * 0.05)
+                        caller = null
+                    }
+                }
+
+                if (caller != null) {
+                    if (updateMinX > (updateMaxX - updateMaxX * 0.2)) {
+                        updateMinX = xScale.domain()[0]
+                        caller = null
+                    }
+                    if (updateMaxX < (updateMinX + xOff)) {
+                        updateMaxX = xScale.domain()[1]
+                        caller = null
+                    }
+
+                    if (updateMinY > (updateMaxY - updateMaxY * 0.05)) {
+                        updateMinY = Math.min(updateMinY, (updateMaxY - updateMaxY * 0.05))
+                        caller = null
+                    } else if (updateMaxY < (updateMinY + updateMinY * 0.05)) {
+                        updateMaxY = Math.max(updateMaxY, (updateMinY + updateMinY * 0.05))
+                        caller = null
+                    }
+                }
+
+                xScale.domain([updateMinX, updateMaxX]);
+                yScale.domain([updateMaxY, updateMinY]);
+
+                updateMinY = Math.max(0, updateMinY)
+                updateMinX = Math.max(0, updateMinX)
+
+                scaleWidgets = [minXInput, maxXInput, minYInput, maxYInput, ySlider, xSlider, mouseZoom]
+                scaleWidgets.forEach(function (item) {
+                    if (item !== caller) {
+                        if (mouseZoom === item) {
+                            mouseZoom.x(xScale);
+                            mouseZoom.y(yScale);
+                        }
+                        if (item === minXInput) {
+                            minXInput.value = updateMinX.toFixed(0);
+                        }
+                        if (item === maxXInput) {
+                            maxXInput.value = updateMaxX.toFixed(0)
+                        }
+                        if (item === minYInput) {
+                            minYInput.value = updateMinY.toFixed(2)
+                        }
+                        if (item === maxYInput) {
+                            maxYInput.value = updateMaxY.toFixed(2)
+                        }
+                        if (item === ySlider) {
+                            ySlider.noUiSlider.set([updateMinY * 10, updateMaxY * 10])
+                        }
+                        if (item === xSlider) {
+                            xSlider.noUiSlider.set([updateMinX, updateMaxX])
+                        }
+                    }
+                })
+
+                zoomGraphElements();
+
+            }
+
+
+            //Given an array of lines, find the closest X, Y point on the graph
+
+            //TODO: maybe yuck? rewrite this
+
+            let locator, line;
+
+            function zoomGraphElements() {
+                focus.style("display", "none");
+                chart.select(".x.axis").call(xAxis);
+                chart.select(".y.axis").call(yAxis);
+                Object.keys(lines).forEach(function (id) {
+                    line = lines[id]
+                    d3.select("path#line_path" + id)
+                        .attr('d', scaleLine(line));
+                    d3.select("path#tick_path" + id)
+                        .attr('d', tickMark(line));
+                    d3.selectAll('.verticalLine')[0].forEach(function (item) {
+                        line = d3.select(item)
+                        if (line.attr("id") !== activeLine.attr("id")) {
+                            line.attr("transform", "translate(" + xScale(line.attr("x-position")) + ",0)")
+                        }
+                    })
+                    d3.selectAll('.locator')[0].forEach(function (item) {
+                        locator = d3.select(item)
+                        locator.attr("transform",
+                            "translate(" +
+                            xScale(locator.attr("x-position")) +
+                            "," +
+                            yScale(locator.attr("y-position")) +
+                            ")")
+                    })
+                    calcFocus.first.attr("transform", "translate(" + xScale(calcFocus.first.coord[0]) + "," +
+                        yScale(calcFocus.first.coord[1]) + ")");
+                    calcFocus.second.attr("transform", "translate(" + xScale(calcFocus.second.coord[0]) + "," +
+                        yScale(calcFocus.second.coord[1]) + ")");
+                    calcFocus.third.attr("transform", "translate(" + xScale(calcFocus.third.coord[0]) + "," +
+                        yScale(calcFocus.third.coord[1]) + ")");
+
+                });
+            }
+
+
+            // add zooming functionality for range / domain widgets
+
+            minXInput.addEventListener('change', function () {
+                updateWindow(
+                    parseFloat(this.value),
+                    xScale.domain()[1],
+                    yScale.domain()[1],
+                    yScale.domain()[0],
+                    minXInput
+                )
+            });
+
+            maxXInput.addEventListener('change', function () {
+                updateWindow(
+                    xScale.domain()[0],
+                    parseFloat(this.value),
+                    yScale.domain()[1],
+                    yScale.domain()[0],
+                    maxXInput
+                )
+            });
+
+            minYInput.addEventListener('change', function () {
+                updateWindow(
+                    xScale.domain()[0],
+                    xScale.domain()[1],
+                    parseFloat(this.value),
+                    yScale.domain()[0],
+                    minYInput
+                )
+            });
+
+            maxYInput.addEventListener('change', function () {
+                updateWindow(
+                    xScale.domain()[0],
+                    xScale.domain()[1],
+                    yScale.domain()[1],
+                    parseFloat(this.value),
+                    maxYInput)
+            });
+
+
+            const resetZoom = function () {
+                updateWindow(minX - xOff, maxX + xOff, minY - yOff, maxY + yOff)
+            };
+
+
+            const makeOffsetListeners = function () {
+                graph.forEach(function (sample) {
+                    const offsetDialog = document.getElementById('offset-dialog' + sample.id);
+                    offsetDialog.addEventListener('change', function () {
+                        generateLine(sample, parseFloat(offsetDialog.value))
+                    })
+                })
+            };
+
+            makeOffsetListeners()
+
+            //TODO: we can and should throw out a bunch of earlier
+            // definitions and just accomplish them here
+
+            let shrink = 1;
+
+            const shrinkGraph = function () {
+                if (shrink === 1) {
+                    shrink = 2
+                    document.getElementById("shrink-button").innerHTML = "Grow Graph"
+                } else {
+                    shrink = 1
+                    document.getElementById("shrink-button").innerHTML = "Shrink Graph"
+                }
+                redraw()
+            };
+
+            function redraw() {
+
+                vh = Math.max(document.documentElement.clientHeight, window.innerHeight)
+                vw = Math.max(document.documentElement.clientWidth, window.innerWidth)
+                containerWidth = document.getElementById("graphJtron").offsetWidth;
+                width = Math.floor(containerWidth) - margin.right;
+                height = (
+                    Math.min(
+                        maxHeight, vw * graphAspect
+                    ) -
+                    margin.top - margin.bottom
+                )
+                height = height / shrink
+                svg.attr("width", width + margin.left).attr("height", height + margin.top + margin.bottom)
+                chart.attr("width", width).attr("height", height).attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                rect.attr("width", width).attr("height", height);
+                clip.attr("width", width).attr("height", height);
+
+                xScale.range([0, width]);
+
+                yScale.range([0, height]);
+
+
+                d3.selectAll('.verticalLine')
+                    .attr("y1", 0)
+                    .attr("y2", height)
+
+                // X Axis label
+                xlabel.attr("class", "x label")
+                    .style("text-anchor", "end")
+                    .attr("x", width / 2 + margin.left)
+                    .attr("y", height + xLabelOffset)
+                    .text("Wavelength (nm)");
+
+                // Y Axis label
+                ylabel.attr("class", "y label")
+                    .style("text-anchor", "end")
+                    .attr("x", -height / 2 - margin.top + margin.bottom)
+                    .attr("y", yLabelOffset)
+                    .attr("transform", "rotate(-90)")
+                    .text("Reflectance");
+
+                d3.select("#x-slider").style("width", width);
+                d3.select("#y-slider").style("height", height);
+
+                // X Axis
+                xSVG.attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+
+                // Y Axis
+                ySVG.attr("class", "y axis")
+                    .call(yAxis);
+
+                // calculation text
+
+                rectBounds = [
+                    d3.select("#rectangle").node().width.animVal.value,
+                    d3.select("#rectangle").node().height.animVal.value
+                ]
+
+                calcText
+                    .attr("transform",
+                        "translate(" +
+                        rectBounds[0] * calcTextX +
+                        "," +
+                        rectBounds[1] * calcTextY +
+                        ")"
+                    )
+
+                updateWindow(xScale.domain()[0], xScale.domain()[1], yScale.domain()[1], yScale.domain()[0])
+            }
+
+            graph.forEach(function (sample) {
+                activeLines[sample.id] = true
+                generateLine(sample)
             })
-        }
-    }
 
-    lines[sample.id] = reflectanceKV;
-    lines[sample.id+'_r'] = roverKV
+            redraw()
+            resetZoom()
 
-    if (active & roverized){
-    	drawLine(reflectanceKV, sample.id,false,true)
-    	drawLine(roverKV,sample.id+'_r',true)
-    } else if(roverized){
-    	drawLine(roverKV,sample.id+'_r')
- 	} else if(active){
-    	drawLine(reflectanceKV, sample.id)
-    }
 
-    updateGraphBounds(lines, true)
-    togglePoints(document.getElementById("point-switch"))
-    updateWindow(minX - xOff, maxX + xOff, minY - yOff, maxY + yOff)
-}
+        </script>
 
-function updateWindow(updateMinX, updateMaxX, updateMinY, updateMaxY, caller) {
 
-    // make sure all the UI widgets show the correct value
-    // but don't fight with the widget that's setting the value!
-    // except: allow the widgets to fight 
-    // if the user is making the constraints screwy
-    // very finicky UX issue. also, the mouse panner in this version of d3 leaves a lot to be desired. the behavior remains a little gross.
 
+    {% else %}
+        <div id="meta" class="container section">
+            <div class="card-panel center-align"
+                 style="background:rgba(255,255,255,.8)">
+                <form id="resultsForm" method="GET" name="resultsform">
+                    <div class="section center-align">
+                        <button type="submit" name="resultsForm"
+                                formaction="/mars/results/"
+                                class="btn btn-success">Back to Results
+                        </button>
+                    </div>
 
-    if (updateMaxY > maxY + 5 * yOff) {
-        if (updateMaxY >= yScale.domain()[0]) {
-            updateMaxY = maxY + yOff
-            updateMinY = Math.min(Math.max(minY, maxY / 6), updateMinY + updateMinY * 0.05)
-            caller = null
-        }
-    }
+                </form>
+            </div>
+        </div>
 
-    if (updateMinY < minY - 5 * yOff) {
-        if (updateMinY <= yScale.domain()[1]) {
-            updateMinY = minY - yOff
-            updateMaxY = Math.max(Math.min(maxY, minY * 2), updateMaxY - updateMinY * 0.05)
-            caller = null
-        }
-    }
+    {% endif %}
 
-    if (updateMaxX > maxX + 5 * xOff) {
-        if (updateMaxX >= xScale.domain()[1]) {
-            updateMaxX = maxX + xOff
-            updateMinX = Math.min(Math.max(minX, maxX / 6), updateMinX + updateMinX * 0.05)
-            caller = null
-        }
-    }
-
-    if (updateMinX < minX - 5 * xOff) {
-        if (updateMinX <= xScale.domain()[0]) {
-            updateMinX = minX - xOff
-            updateMaxX = Math.max(Math.min(maxX, minX * 2), updateMaxX - updateMaxX * 0.05)
-            caller = null
-        }
-    }
-
-    if (caller != null) {
-        if (updateMinX > (updateMaxX - updateMaxX * 0.2)) {
-            updateMinX = xScale.domain()[0]
-            caller = null
-        }
-        if (updateMaxX < (updateMinX + xOff)) {
-            updateMaxX = xScale.domain()[1]
-            caller = null
-        }
-
-        if (updateMinY > (updateMaxY - updateMaxY * 0.05)) {
-            updateMinY = Math.min(updateMinY, (updateMaxY - updateMaxY * 0.05))
-            caller = null
-        } else if (updateMaxY < (updateMinY + updateMinY * 0.05)) {
-            updateMaxY = Math.max(updateMaxY, (updateMinY + updateMinY * 0.05))
-            caller = null
-        }
-    }
-
-    xScale.domain([updateMinX, updateMaxX]);
-    yScale.domain([updateMaxY, updateMinY]);
-
-    updateMinY = Math.max(0, updateMinY)
-    updateMinX = Math.max(0, updateMinX)
-
-    scaleWidgets = [minXInput, maxXInput, minYInput, maxYInput, ySlider, xSlider, mouseZoom]
-    scaleWidgets.forEach(function(item) {
-        if (item != caller) {
-            if (item == mouseZoom) {
-                mouseZoom.x(xScale);
-                mouseZoom.y(yScale);
-            }
-            if (item == minXInput) {
-                minXInput.value = updateMinX.toFixed(0);
-            }
-            if (item == maxXInput) {
-                maxXInput.value = updateMaxX.toFixed(0)
-            }
-            if (item == minYInput) {
-                minYInput.value = updateMinY.toFixed(2)
-            }
-            if (item == maxYInput) {
-                maxYInput.value = updateMaxY.toFixed(2)
-            }
-            if (item == ySlider) {
-                ySlider.noUiSlider.set([updateMinY * 10, updateMaxY * 10])
-            }
-            if (item == xSlider) {
-                xSlider.noUiSlider.set([updateMinX, updateMaxX])
-            }
-        }
-    })
-
-    zoomGraphElements();
-
-}
-
-//Given a line, find the closet x point to your mouse
-//and return the x,y coordinate
-
-//TODO: maybe yuck? rewrite?
-
-var findClosestPoint = function(line, mouseX) {
-    var min = 0
-    var max = line.length
-    var mid = Math.floor((max + min) / 2)
-    var nearestX = line[mid].key
-    var nearestY = line[mid].value
-    var dx = Math.abs(mouseX - nearestX)
-    var diff = dx;
-    var index = mid
-    var i = 0;
-    do {
-        if (line[mid].key > mouseX) {
-            max = mid;
-        } else {
-            min = mid;
-        }
-
-        mid = Math.floor((max + min) / 2);
-        diff = (Math.abs(line[mid].key - mouseX));
-        if (diff <= dx) {
-            dx = diff;
-            nearestX = line[mid].key;
-            nearestY = line[mid].value;
-            index = mid
-        }
-    } while (diff != 0 && (max - min) > 1)
-    return [parseFloat(nearestX), nearestY, index];
-}
-
-var distance = function(x1, y1, x2, y2) {
-    return Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
-}
-
-
-
-//Given an array of lines, find the closest X, Y point on the graph
-
-//TODO: maybe yuck? rewrite this
-
-var findClosestLinePoint = function(lineDict, mouseX, mouseY) {
-    var closestDistance = Number.MAX_VALUE;
-    var thisLine = null;
-    var closestPoint = null;
-    Object.keys(lineDict).forEach(function(line, index) {
-    		if (activeLines[line] === true){
-	            var point = findClosestPoint(lineDict[line], mouseX);
-	            var visibleDistance = distance(xScale(mouseX), yScale(mouseY), xScale(point[0]), yScale(point[1]));
-	            if (visibleDistance < closestDistance) {
-	                closestPoint = point;
-	                closestDistance = visibleDistance;
-	                thisLine = line
-	            }
-	        }
-    })
-    return [closestPoint, thisLine];
-};
-
-
-function zoomGraphElements() {
-    focus.style("display", "none");
-    chart.select(".x.axis").call(xAxis);
-    chart.select(".y.axis").call(yAxis);
-    Object.keys(lines).forEach(function(id) {
-        line = lines[id]
-        d3.select("path#line_path" + id)
-            .attr('d', scaleLine(line));
-        d3.select("path#tick_path" + id)
-            .attr('d', tickMark(line));
-        d3.selectAll('.verticalLine')[0].forEach(function(item) {
-            line = d3.select(item)
-            if (line.attr("id") != activeLine.attr("id")) {
-                line.attr("transform", "translate(" + xScale(line.attr("x-position")) + ",0)")
-            }
-        })
-        d3.selectAll('.locator')[0].forEach(function(item) {
-            locator = d3.select(item)
-            locator.attr("transform",
-                "translate(" +
-                xScale(locator.attr("x-position")) +
-                "," +
-                yScale(locator.attr("y-position")) +
-                ")")
-        })
-        calcFocus.first.attr("transform", "translate(" + xScale(calcFocus.first.coord[0]) + "," +
-            yScale(calcFocus.first.coord[1]) + ")");
-        calcFocus.second.attr("transform", "translate(" + xScale(calcFocus.second.coord[0]) + "," +
-            yScale(calcFocus.second.coord[1]) + ")");
-        calcFocus.third.attr("transform", "translate(" + xScale(calcFocus.third.coord[0]) + "," +
-            yScale(calcFocus.third.coord[1]) + ")");
-
-    });
-}
-
-
-// add zooming functionality for range / domain widgets
-
-minXInput.addEventListener('change', function() {
-    updateWindow(
-        parseFloat(this.value),
-        xScale.domain()[1],
-        yScale.domain()[1],
-        yScale.domain()[0],
-        minXInput
-    )
-});
-
-maxXInput.addEventListener('change', function() {
-    updateWindow(
-        xScale.domain()[0],
-        parseFloat(this.value),
-        yScale.domain()[1],
-        yScale.domain()[0],
-        maxXInput
-    )
-});
-
-minYInput.addEventListener('change', function() {
-    updateWindow(
-        xScale.domain()[0],
-        xScale.domain()[1],
-        parseFloat(this.value),
-        yScale.domain()[0],
-        minYInput
-    )
-});
-
-maxYInput.addEventListener('change', function() {
-    updateWindow(
-        xScale.domain()[0],
-        xScale.domain()[1],
-        yScale.domain()[1],
-        parseFloat(this.value),
-        maxYInput)
-});
-
-
-
-var resetZoom = function() {
-    updateWindow(minX - xOff, maxX + xOff, minY - yOff, maxY + yOff)
-}
-
-
-var makeOffsetListeners = function() {
-    graph.forEach(function(sample) {
-        var offsetDialog = document.getElementById('offset-dialog' + sample.id)
-        offsetDialog.addEventListener('change', function() {
-            generateLine(sample, parseFloat(offsetDialog.value))
-        })
-    })
-}
-
-makeOffsetListeners()
-
-//TODO: we can and should throw out a bunch of earlier
-// definitions and just accomplish them here
-
-var shrink = 1
-
-var shrinkGraph = function() {
-    if (shrink == 1) {
-        shrink = 2
-        document.getElementById("shrink-button").innerHTML = "Grow Graph"
-    } else {
-        shrink = 1
-        document.getElementById("shrink-button").innerHTML = "Shrink Graph"
-    }
-    redraw()
-}
-
-function redraw() {
-
-    vh = Math.max(document.documentElement.clientHeight, window.innerHeight)
-    vw = Math.max(document.documentElement.clientWidth, window.innerWidth)
-    containerWidth = document.getElementById("graphJtron").offsetWidth;
-    width = Math.floor(containerWidth) - margin.right;
-    height = (
-        Math.min(
-            maxHeight, vw * graphAspect
-        ) -
-        margin.top - margin.bottom
-    )
-    height = height / shrink
-    svg.attr("width", width + margin.left).
-    attr("height", height + margin.top + margin.bottom)
-    chart.attr("width", width).
-    attr("height", height).
-    attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    rect.attr("width", width).
-    attr("height", height);
-    clip.attr("width", width).
-    attr("height", height);
-
-    xScale.range([0, width]);
-
-    yScale.range([0, height]);
-
-
-    d3.selectAll('.verticalLine')
-        .attr("y1", 0)
-        .attr("y2", height)
-
-    // X Axis label
-    xlabel.attr("class", "x label")
-        .style("text-anchor", "end")
-        .attr("x", width / 2 + margin.left)
-        .attr("y", height + xLabelOffset)
-        .text("Wavelength (nm)");
-
-    // Y Axis label
-    ylabel.attr("class", "y label")
-        .style("text-anchor", "end")
-        .attr("x", -height / 2 - margin.top + margin.bottom)
-        .attr("y", yLabelOffset)
-        .attr("transform", "rotate(-90)")
-        .text("Reflectance");
-
-    d3.select("#x-slider").style("width", width);
-    d3.select("#y-slider").style("height", height);
-
-    // X Axis
-    xSVG.attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis);
-
-    // Y Axis
-    ySVG.attr("class", "y axis")
-        .call(yAxis);
-
-    // calculation text
-
-    rectBounds = [
-        d3.select("#rectangle").node().width.animVal.value,
-        d3.select("#rectangle").node().height.animVal.value
-    ]
-
-    calcText
-        .attr("transform",
-            "translate(" +
-            rectBounds[0] * calcTextX +
-            "," +
-            rectBounds[1] * calcTextY +
-            ")"
-        )
-
-    updateWindow(xScale.domain()[0], xScale.domain()[1], yScale.domain()[1], yScale.domain()[0])
-}
-
-graph.forEach(function(sample) {
-    activeLines[sample.id] = true
-    generateLine(sample)
-})
-
-redraw()
-resetZoom()
-
-
-</script>
-
-
-
-{% else%}
-	<div id="meta" class="container section">
-		<div class="card-panel center-align" style="background:rgba(255,255,255,.8)">
-			<form id="resultsForm" method="GET" name="resultsform">
-				<div class="section center-align">
-					<button type="submit" name="resultsForm" formaction="/mars/results/" class="btn btn-success">Back to Results</button>
-				</div>
-
-			</form>
-		</div>
-	</div>
-
-{% endif %}
-
-</body>
+    </body>
 
 {% endblock %}

@@ -2,16 +2,12 @@ import zipfile
 from functools import reduce
 
 import pandas as pd
+import PIL
+from PIL import Image
 import numpy as np
 
-from django.db import models
-from django import forms
-from django.forms.models import model_to_dict
-from django.conf import settings
-
-from mars.models import *
-
 # queryset constructors
+from mars.models import Sample, SampleType, Database
 
 
 def or_query(first_query, second_query):
@@ -37,14 +33,14 @@ def search_all_samples(entry):
 def make_choice_list(choice_fields):
     # data to feed to html selection fields
     choice_data = {}
-    for choice_category in choice_fields:
+    for choice_category in choice_fields.keys():
         model = choice_fields[choice_category][0]
         field = choice_fields[choice_category][1]
         choice_data[choice_category] = [
             (c, c) for c in model.objects.values_list(field, flat=True)
         ]
         choice_data[choice_category].insert(0, ("Any", "Any"))
-        return choice_data
+    return choice_data
 
 
 def make_autocomplete_list(autocomplete_fields):
@@ -295,8 +291,6 @@ def handle_csv_upload(csv_file):
         save_errors = str(ex)
     if save_errors:
         return [{"filename": csv_file.name, "errors": save_errors}]
-
-    print(type(sample))
 
     
     # flatten multisample
