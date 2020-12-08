@@ -1,0 +1,10 @@
+div.dropdown-menu {
+	width: 400px;
+	position: absolute;
+	display: inline-block;
+	padding: 16px;
+}
+
+div.form-group {
+	width: 300px;
+}
