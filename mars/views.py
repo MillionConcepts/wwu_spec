@@ -80,8 +80,12 @@ def results(request):
     numeric_constraints = ["min_included_range", "max_included_range"]
 
     for search_form in search_formset:
-
-        form_results = Sample.objects.all().order_by(*sort_params)
+        if request.user.is_superuser:
+            form_results = Sample.objects.all().order_by(*sort_params)
+        else:
+            form_results = Sample.objects.filter(
+                released=True
+            ).order_by(*sort_params)
 
         for field in searchable_fields:
             entry = search_form.cleaned_data.get(field, None)
