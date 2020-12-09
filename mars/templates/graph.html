@@ -322,6 +322,10 @@
                 </table>
                 <form id="resultsForm" method="GET" name="resultsform">
                     <div class="section center-align">
+                        <button type="submit" name="search"
+                                formaction="/"
+                                class="btn btn-success">Back to Search
+                        </button>
                         <button type="submit" name="resultsform"
                                 formaction="/mars/results/"
                                 class="btn btn-success">Results
@@ -362,7 +366,7 @@
         </div>
 
         <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
-        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
         <script src="{% static 'js/tinycolor.js' %}">
 
