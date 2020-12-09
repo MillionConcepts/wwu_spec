@@ -67,16 +67,6 @@
                         {% endif %}
                       </a></label>
                     </th>
-                    <th class="result_column" onclick="sortByField('material_class')">
-                      <label class="truncate"><a>
-                        Material Class
-                        {% if "material_class" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons align-vertical">arrow_drop_down</i>
-                        {% elif "-material_class" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons align-vertical">arrow_drop_down</i>
-                        {% endif %}
-                      </a></label>
-                    </th>
                     <th class="result_column" >
                       <label class="truncate"><a style="color:#1c2023">
                         Wavelengths
@@ -105,7 +95,6 @@
                     
                     <td class="result_column"><label class="truncate" for="option{{ result.id }}"> {{ result.origin }} </label></td>
                     <td class="result_column"><label class="truncate" for="option{{ result.id }}"> {{ result.sample_type }} </label></td>
-                    <td class="result_column"><label for="option{{ result.id }}"> {{ result.material_class }}</label></td>
                     <td class="result_column"><label for="option{{ result.id }}"> {{ result.min_reflectance }}-{{result.max_reflectance}} </label></td>
                   </tr>
                   {% endfor %}

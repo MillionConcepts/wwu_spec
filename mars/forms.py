@@ -22,7 +22,6 @@ class SearchForm(forms.Form):
             attrs={
                 'placeholder': 'e.g. Gypsum',
                 'id': 'sample_name',
-                'class': 'autocomplete'
             }
         )
     )

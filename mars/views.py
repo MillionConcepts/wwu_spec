@@ -9,45 +9,29 @@ from operator import or_
 
 import PIL
 from PIL import Image
-from django.core.paginator import Paginator
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from mars.forms import SearchForm, UploadForm, \
     AdminUploadImageForm
-from mars.models import Database, Sample, SampleType, FilterSet, Library
-from mars.utils import make_autocomplete_list, search_all_samples, \
+from mars.models import Database, Sample, FilterSet
+from mars.utils import search_all_samples, \
     handle_csv_upload, handle_zipped_upload
 
 
 def search(request):
-    search_formset = formset_factory(SearchForm)
-    choice_fields = {
-        "database_choices": [Database, "name"],
-        "sampletype_choices": [SampleType, "name"],
-        "library_choices": [Library, "name"]
-    }
-    autocomplete_fields = {
-        "sample_names": (Sample, "sample_name"),
-        "material_classes": (Sample, "material_class"),
-        "sample_ids": (Sample, "sample_id"),
-    }
-
-    # comprehensions from utils.py
-
-    # choice_data = make_choice_list(choice_fields)
-    autocomplete_data = make_autocomplete_list(autocomplete_fields)
-
-    # formset_field_params = dict(**choice_data, **autocomplete_data)
-    formset_field_params = autocomplete_data
-
-    page_params = {"search_formset": search_formset}
-
+    """
+    render the search page with an empty search form.
+    presently doesn't do any other manipulation (some former
+    features determined crufty and cut)
+    """
+    page_params = {"search_formset": formset_factory(SearchForm)}
     return render(
         request, "search.html",
-        dict(**page_params, **formset_field_params)
+        page_params
     )
 
 
