@@ -2,128 +2,69 @@
 {% load static %}
 {% block content %}
 
-      <div class="container section" id="content" style = "width: 70%; max-width:1000px">
-        <form method="GET" class="warm-content" action="/mars/results/" >
-          {{search_formset.management_form}}
-           <!--- Search Forms --->
-        <ul class="collapsible" data-collapsible="expandable" id="myList" >
-          {% for search_form in search_formset.forms %}
-            <li class="search-form">
-              <div class="collapsible-header active center warm-content">
+    <div class="container section" id="content"
+         style="width: 70%; max-width:1000px">
+        <form method="GET" class="warm-content" action="/mars/results/">
+            {{ search_formset.management_form }}
+            <!--- Search Forms --->
+            <ul class="collapsible" data-collapsible="expandable" id="myList">
+                {% for search_form in search_formset.forms %}
+                    <li class="search-form">
+                        <div class="collapsible-header active center warm-content">
                 <span class="head">
                   Western Washington University Vis-NIR Spectroscopy Database
                 </span>
-              </div>
-              <div class="collapsible-body">
-                  <div class="container">
-                    <div class="row" style="padding: 20px">
-                        <div class="col s6">{{search_form.sample_name.errors}}
-                                          {{search_form.sample_name.label_tag}}
-                                          {{search_form.sample_name}}</div>
-                        <div class="col s12 m6">{{search_form.library__name.errors}}
-                                          {{search_form.library__name.label_tag}}
-                                          {{search_form.library__name}}</div>
-                        <div class="col s12 m6">{{search_form.sample_type__name.errors}}
-                                          {{search_form.sample_type__name.label_tag}}
-                                          {{search_form.sample_type__name}}</div>
-                        <div class="col s6">  {{search_form.material_class.errors}}
-                                          {{search_form.material_class.label_tag}}
-                                          {{search_form.material_class}}</div>
-                        <div class="col s12 m6">{{search_form.origin__name.errors}}
-                                          {{search_form.origin__name.label_tag}}
-                                          {{search_form.origin__name}}</div>
-                        <div class="col s>6">{{search_form.any_field.errors}}
-                                          {{search_form.any_field.label_tag}}
-                                          {{search_form.any_field}}</div>
+                        </div>
+                        <div class="collapsible-body">
+                            <div class="container">
+                                <div class="row" style="padding: 20px">
+                                    <div class="col s6">{{ search_form.sample_name.errors }}
+                                        {{ search_form.sample_name.label_tag }}
+                                        {{ search_form.sample_name }}</div>
+                                    <div class="col s12 m6">{{ search_form.library__name.errors }}
+                                        {{ search_form.library__name.label_tag }}
+                                        {{ search_form.library__name }}</div>
+                                    <div class="col s12 m6">{{ search_form.sample_type__name.errors }}
+                                        {{ search_form.sample_type__name.label_tag }}
+                                        {{ search_form.sample_type__name }}</div>
+                                    <div class="col s6">  {{ search_form.material_class.errors }}
+                                        {{ search_form.material_class.label_tag }}
+                                        {{ search_form.material_class }}</div>
+                                    <div class="col s12 m6">{{ search_form.origin__name.errors }}
+                                        {{ search_form.origin__name.label_tag }}
+                                        {{ search_form.origin__name }}</div>
+                                    <div class="col s6">{{ search_form.any_field.errors }}
+                                        {{ search_form.any_field.label_tag }}
+                                        {{ search_form.any_field }}</div>
 
+                                    <!--- Submit and Add Search Buttons --->
+                    <li>
+                    <div class="collapsible-header warm-content">
+                        <div class="center-align" style="padding:20px">
+                            <button type="submit" name="action" value="search"
+                                    class="btn">
+                                Search
+                            </button>
+                        </div>
                     </div>
-                    <div id="advanced-options" style="border-top: thin solid gray; display:none">
-                      <div class="row" style="margin-top: 15px">
-                      
-                  </div>
-                </div>
-                  </div>
-              </div>
-              </li>
-              
-            <!--- Submit and Add Search Buttons --->
-              <li>
-                <div class="collapsible-header warm-content">
-                  <div class="center-align" style="padding:20px">
-                      <button type="submit" name="action" value="search" class="btn">
-                        Search
-                      </button>
-                  </div>
-                </div>
 
-              {% endfor %}
-          </ul>
+                {% endfor %}
+            </ul>
 
         </form>
-   
-
-      </div>
-
-       <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
-      <script src="{% static 'js/plugins.js' %}"></script>
-      <script src="{% static 'js/main.js' %}"></script>
-      <script src="{% static 'js/materialize.min.js' %}"></script>
-      <script src="{% static 'js/nouislider.min.js' %}"></script>
-
-      <script>
-        $(document).ready(function() {
-
-          $('select').material_select();
-          $(".button-collapse").sideNav();
-          $('input.autocomplete-sample_name').autocomplete({
-            data: {
-              {% for sample_name in sample_names %}
-                '{{sample_name}}': null,
-              {% endfor %}
-            },
-            limit:20,
-          });
-          //works but permanently
-          // and the autocomplete-contents
-          // don't have separate identifiers
-          // and seem to be generated automagically
-          // i think this might be a bug in this old materialize version and i'd have to
-          // completely update to make it work
-          
-          // $('.input').blur(function(){
-          //   console.log("what");
-          //   $('.autocomplete-content').hide();
-          //   });
-
-          $('#sample_name').autocomplete({
-            data: {
-              {% for sample_name in sample_names %}
-                '{{sample_name}}': null,
-              {% endfor %}
-            },
-            limit:20,
-          });
 
 
-          $('#sample_id').autocomplete({
-            data: {
-              {% for sample_id in sample_ids %}
-                '{{sample_id}}': null,
-              {% endfor %}
-            },
-            limit:20,
-          });
+    </div>
 
-          $('#material_class').autocomplete({
-            data: {
-              {% for material_class in material_classes %}
-                '{{material_class}}': null,
-              {% endfor %}
-            },
-            limit:20,
-          });
+    <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
+    <script src="{% static 'js/materialize.min.js' %}"></script>
+
+    <script>
+        $(document).ready(function () {
+            {#TODO: see if the need to handle this with jquery can be implemented directly in ChoiceFields#}
+            $('select').material_select();
         });
 
-        </script>
+    </script>
 
 {% endblock %}
