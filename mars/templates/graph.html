@@ -22,32 +22,6 @@
     {% csrf_token %}
 
 
-    <div id="modal1" class="modal" style="z-index: 200; position: relative">
-        <div class="modal-content">
-            <div class="container">
-                <h4>Flag Sample</h4>
-                <p id='flagDescription'></p>
-            </div>
-            <div class="container" style='margin-top: 50px'>
-                <a href="#!"
-                   class="modal-action modal-close waves-effect waves-light red btn-large">Cancel</a>
-                <a
-                        id='flagSampleButton'
-                        onclick="flagSample(this)"
-                        class="modal-action modal-close waves-effect waves-light btn-large"
-                        href="#!"
-                        style="margin-left: 50px"
-                        value="sample_id_example"
-                >
-                    Confirm
-                </a>
-                <form>
-                    {{ search_formset.management_form }}
-
-                    {% for id in selected_ids %}
-                        <input type="hidden" name="selection"
-                               value="{{ id }}"/>
-                    {% endfor %}
                 </form>
             </div>
 
@@ -265,7 +239,6 @@
                         <th><label>ID</label></th>
                         <th><label>Name</label></th>
                         <th><label>Origin</label></th>
-                        <th><label>Flag</label></th>
                         <th><label>Offset</label></th>
                     </tr>
                     </thead>
@@ -303,13 +276,6 @@
                             </td>
                             <td><label class="truncate"
                                        for="option{{ result.id }}"> {{ result.origin }} </label>
-                            </td>
-                            <td>
-                                <a class="btn redButton graphButton"
-                                   style="height:25px; line-height:25px"
-                                   href="#modal1"
-                                   onclick="openFlagModal('{{ result.id }}')">flag
-                                </a>
                             </td>
                             <td>
                                 <input id="offset-dialog{{ result.id }}"
@@ -372,48 +338,6 @@
         <script src="{% static 'js/nouislider.min.js' %}"></script>
 
         <script>
-            $('.modal').modal({
-                dismissible: true, // Modal can be dismissed by clicking outside of the modal
-                opacity: .8, // Opacity of modal background
-                inDuration: 300, // Transition in duration
-                outDuration: 200, // Transition out duration
-                startingTop: '4%', // Starting top style attribute
-                endingTop: '10%', // Ending top style attribute
-            })
-
-            $("#flagID").change(function () {
-                console.log($(this).val());
-            });
-
-            function openFlagModal(dataID) {
-                console.log('flagging Sample', dataID);
-                $('#flagSampleButton').attr('value', dataID);
-                $('#flagDescription').text(
-                    `You are about to flag ${dataID}
-	           for review due to it being of poor quality, rendering
-	           incorrectly, etc.`
-                )
-                $('.modal').modal('open')
-
-
-            }
-
-            function flagSample(data) {
-                const sample_id = console.log(data.getAttribute('value'));
-                $.ajax({
-                    url: '/mars/flagSample/',
-                    data: {
-                        'flagID': data.getAttribute('value'),
-                        'csrfmiddlewaretoken': document.getElementsByName('csrfmiddlewaretoken')[0].value,
-                    },
-                    dataType: 'json',
-                    type: "POST",
-                    success: function (data) {
-                        console.log(data);
-                    }
-                });
-            }
-
 
             const toggleControls = function () {
                 const foldout = document.getElementById("control-panel");
@@ -728,7 +652,7 @@
             let yScale = d3.scale.linear().range([0, height]).domain([maxY + yOff, minY - yOff]);
 
             // checks graph bounds on page load or changes in reflectance data
-            // (i.e. roverization or y-offset)
+            // (i.e. instrumentalization or y-offset)
             // and sets widget limits accordingly
 
             // the ability to pan off the graph is not desirable.
@@ -1430,7 +1354,7 @@
                 const outOfBounds = (Math.max.apply(null, checkArray[0]) < normWavelength)
                     | (Math.min.apply(null, checkArray[0]) > normWavelength);
 
-                let normReflectance = 1;
+                let normReflectance;
 
                 if (bin) {
                     normReflectance = checkArray[1][bin]
@@ -1741,7 +1665,9 @@
                         ")"
                     )
 
-                updateWindow(xScale.domain()[0], xScale.domain()[1], yScale.domain()[1], yScale.domain()[0])
+                updateWindow(
+                    xScale.domain()[0], xScale.domain()[1], yScale.domain()[1], yScale.domain()[0]
+                )
             }
 
             graph.forEach(function (sample) {
