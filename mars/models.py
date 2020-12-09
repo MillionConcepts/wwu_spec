@@ -138,6 +138,9 @@ class Sample(models.Model):
     )
     other = models.TextField("Other Information", blank=True)
     references = models.TextField("References", blank=True)
+    released = models.BooleanField(
+        "Released to Public", default=False, blank=False
+    )
 
     # stringified array
     reflectance = models.TextField("Reflectance", default="[0,0]")
