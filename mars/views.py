@@ -15,7 +15,7 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from mars.forms import SearchForm, uploadForm, \
+from mars.forms import SearchForm, UploadForm, \
     AdminUploadImageForm
 from mars.models import Database, Sample, SampleType, FilterSet, Library
 from mars.utils import make_autocomplete_list, search_all_samples, \
@@ -286,7 +286,7 @@ def export(request):
 def upload(request):
     if request.method == "POST":
         form = \
-            uploadForm(request.POST, request.FILES)
+            UploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES["file"]
 
@@ -388,7 +388,7 @@ def upload(request):
         )
 
     else:
-        form = uploadForm()
+        form = UploadForm()
         return render(request, "upload.html", {"form": form})
 
 
