@@ -16,29 +16,21 @@ class SearchForm(forms.Form):
         for field in choice_data:
             self.fields[field].choices = choice_data[field]
 
-    sample_name = forms.CharField(required=False,
-                                  widget=forms.TextInput(
-                                      attrs={'placeholder': 'e.g. Gypsum',
-                                             'id': 'sample_name',
-                                             'class': 'autocomplete'}))
-    material_class = forms.CharField(required=False,
-                                     widget=forms.TextInput(
-                                         attrs={'placeholder': 'e.g. Sulfate',
-                                                'id': 'material_class',
-                                                'class': 'autocomplete'}))
-    sample_id = forms.CharField(required=False,
-                                widget=forms.TextInput(
-                                    attrs={'placeholder': 'e.g. ASD_SUL_21',
-                                           'id': 'sample_id',
-                                           'class': 'autocomplete'}))
-    any_field = forms.CharField(required=False, widget=
-        forms.TextInput(attrs={'id': 'any_field'}))
-    min_included_range = forms.IntegerField(required=False,
-                                            widget=forms.NumberInput(),
-                                            label='Min X (nm)')
-    max_included_range = forms.IntegerField(required=False,
-                                            widget=forms.NumberInput(),
-                                            label='Max X (nm)')
+    sample_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'e.g. Gypsum',
+                'id': 'sample_name',
+                'class': 'autocomplete'
+            }
+        )
+    )
+    any_field = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'id': 'any_field'})
+    )
+
     id = forms.CharField(required=False)
 
     library__name = forms.ChoiceField(
@@ -58,7 +50,7 @@ class AdminUploadImageForm(forms.Form):
     )
 
 
-class uploadForm(forms.Form):
+class UploadForm(forms.Form):
     file = forms.FileField(
         label='Select a file.',
     )
