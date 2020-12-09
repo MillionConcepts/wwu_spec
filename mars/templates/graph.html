@@ -255,13 +255,13 @@
                     </div>
                 </div>
 
-                <table class="graph evenHeader results"
+                <table class="graph results"
                        style="width:85%; margin:auto">
                     <thead>
                     <tr style="height:40px">
                         <th style="flex-grow:0.2"><label>Line</label></th>
                         <th style="flex-grow:0.2"><label>Color</label></th>
-                        <th><label>Roverize</label></th>
+                        <th><label>Instrumentalize</label></th>
                         <th><label>ID</label></th>
                         <th><label>Name</label></th>
                         <th><label>Origin</label></th>
@@ -290,7 +290,7 @@
                                 <div style="position: relative">
                                     <input type="checkbox"
                                            id="roverize{{ result.id }}"
-                                           onclick="roverize(this,{{ forloop.counter0 }});"/>
+                                           onclick="instrumentalize(this,{{ forloop.counter0 }});"/>
                                     <label for="roverize{{ result.id }}"></label>
                                 </div>
                             </td>
@@ -365,12 +365,10 @@
             </div>
         </div>
 
-        <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
-        <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-        <script src="{% static 'js/tinycolor.js' %}">
-
-        </script>
+        <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
+        <script src="{% static 'js/materialize.min.js' %}"></script>
+        <script src="{% static 'js/d3.v3.min.js' %}"></script>
+        <script src="{% static 'js/tinycolor.js' %}"></script>
         <script src="{% static 'js/nouislider.min.js' %}"></script>
 
         <script>
@@ -617,7 +615,7 @@
                 generateLine(graph[index])
             };
 
-            const roverize = function (boxID, index) {
+            const instrumentalize = function (boxID, index) {
                 activeLines[boxID.id.slice(8) + '_r'] = !!boxID.checked;
                 deWaveNormalize()
                 deNormalize()
