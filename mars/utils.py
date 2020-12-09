@@ -32,7 +32,10 @@ def search_all_samples(entry):
 
 
 def make_choice_list(choice_fields):
-    # data to feed to html selection fields
+    """
+    format data to feed to html selection fields.
+    used by forms.SearchForm
+    """
     choice_data = {}
     for choice_category in choice_fields.keys():
         model = choice_fields[choice_category][0]
@@ -45,7 +48,10 @@ def make_choice_list(choice_fields):
 
 
 def make_autocomplete_list(autocomplete_fields):
-    # data to feed to jquery autocomplete
+    """
+    format data to feed to jquery autocomplete.
+    currently vestigial but may become useful again later.
+    """
     autocomplete_data = {}
     for autocomplete_category in autocomplete_fields:
         model = autocomplete_fields[autocomplete_category][0]
