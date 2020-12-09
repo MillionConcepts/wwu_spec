@@ -30,7 +30,9 @@ DEBUG = False
 # Don't run with this on either!
 # ALLOWED_HOSTS = ['*']
 # add public-facing ip of host to this
-ALLOWED_HOSTS = ["127.0.0.1"]
+ALLOWED_HOSTS = ['127.0.0.1']
+
+INTERNAL_IPS = ["127.0.0.1"]
 
 # Application definition
 # consider removing django-extensions for production
@@ -89,6 +91,40 @@ DATABASES = {
     }
 }
 
+
+LOGGING = {
+     'version': 1,
+     'disable_existing_loggers': False,
+     'formatters': {
+         'verbose': {
+             'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+             'datefmt' : "%d/%b/%Y %H:%M:%S"
+         },
+         'simple': {
+             'format': '%(levelname)s %(message)s'
+         },
+     },
+     'handlers': {
+         'file': {
+             'level': 'WARNING',
+             'class': 'logging.FileHandler',
+             'filename': 'wwu_spec.log',
+             'formatter': 'verbose'
+         },
+     },
+     'loggers': {
+         'django': {
+             'handlers':['file'],
+             'propagate': True,
+             'level':'WARNING',
+         },
+         'track': {
+             'handlers': ['file'],
+             'level': 'WARNING',
+         },
+     }
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
@@ -118,7 +154,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 
