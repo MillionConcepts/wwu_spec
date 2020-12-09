@@ -1,5 +1,4 @@
 from django.urls import include, path, re_path
-from django.views.generic import RedirectView
 
 from mars import views
 
@@ -11,7 +10,6 @@ urlpatterns = [
     re_path(r'^results/$', views.results, name='results'),
     re_path(r'^export/$', views.export, name='export'),
     re_path(r'^meta/$', views.meta, name='meta'),
-    re_path(r'^flagSample/$', views.flag_sample, name='flag_sample'),
     path('admin_upload_image/<str:ids>', views.admin_upload_image,
          name="admin_upload_image"),
     path('upload', views.upload, name="upload"),

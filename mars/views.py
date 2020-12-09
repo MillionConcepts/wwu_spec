@@ -410,11 +410,3 @@ def admin_upload_image(request, ids):
 def about(request):
     databases = Database.objects.all()
     return render(request, "about.html", {"databases": databases})
-
-
-def flag_sample(request):
-    sample_id = request.POST.get("flagID", None)
-    sample = Sample.objects.get(id__icontains=sample_id)
-    sample.flagged = "flagged"
-    sample.save()
-    return JsonResponse({"flagged": True})

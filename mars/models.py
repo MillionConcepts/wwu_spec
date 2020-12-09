@@ -121,7 +121,6 @@ class Sample(models.Model):
     date_added = models.DateTimeField("Date Added", auto_now=True)
     filename = models.CharField("Name of Uploaded File", blank=True,
                                 max_length=80)
-    flagged = models.CharField("Flag Status", blank=True, max_length=10)
     formula = models.CharField("Formula", blank=True, max_length=40)
     grain_size = models.CharField("Grain Size", blank=True, max_length=40)
     image = models.CharField("Path to Image", blank=True, max_length=100)
