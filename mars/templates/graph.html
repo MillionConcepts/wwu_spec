@@ -1,6 +1,6 @@
 <style>
     text {
-        font: 10px "Fira Mono";
+        font: 12px "Fira Mono";
     }
 
     .axis path,
@@ -38,7 +38,7 @@
                         </div>
                     </div>
                     <div class="slider" id="x-slider"
-                         style="margin: 0 0 30px 10%; width: 75%;">
+                         style="margin-left: 13%; margin-bottom: 2%; width: 75%;">
                     </div>
                     <div class="row" style="margin-bottom: 5px">
                         <div class="col" id="window"
@@ -92,7 +92,7 @@
                      style="border-top: thin solid gray; display:none">
                     <div class="row" style="margin-top: 15px; margin-bottom: 5px">
                         <div class="col" id="line-control-div"
-                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 5%; margin-top: 2px; text-align:center">
+                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 13%; margin-top: 2px; text-align:center">
                             Line Controls
                             <div class="row"
                                  style="font-weight: 100; margin-top:15px; margin-bottom:5px; text-align:left">
@@ -247,7 +247,7 @@
                 </div>
 
             <table class="graph results"
-                   style="width:85%; margin:auto">
+                   style="width:85%; margin-left:14%">
                 <thead>
                 <tr style="height:25px">
                     <th style="flex-grow:0.2; padding-top:5px"><label>Line</label></th>
@@ -379,7 +379,8 @@
 
             // line colors
 
-            let linePalette = ['#007ac8', '#006b3f', '#bad80a', '#002f5e', '#4A821E', '#63c2ff', '#d6e86c'];
+            let linePalette = ['#FF3500', '#FF8900', '#0cb0ff', '#00ff04',
+                '#FF00FF', '#1DCEA8', '#FFD600'];
 
 
             let lineColors = {};
@@ -651,9 +652,9 @@
 
             const margin = {
                 top: 20,
-                right: 50,
+                right: 120,
                 bottom: 50,
-                left: 50,
+                left: 120,
             }
 
             const graphAspect = 0.5
@@ -670,8 +671,8 @@
                 margin.top - margin.bottom
             );
 
-            yLabelOffset = -42
-            xLabelOffset = 35
+            yLabelOffset = -50
+            xLabelOffset = 40
 
             calcTextX = 0.04
             calcTextY = 0.92
@@ -887,17 +888,19 @@
                 .attr("class", "x label")
                 .style("text-anchor", "end")
                 .attr("x", width / 2 + margin.left)
-                .attr("y", height + 35)
-                .text("Wavelength (nm)");
+                .attr("y", height + 50)
+                .text("Wavelength (nm)")
+                .style("font-size", "12pt");
 
             // Y Axis label
             const ylabel = chart.append("text")
                 .attr("class", "y label")
                 .style("text-anchor", "end")
                 .attr("x", -height / 2 - margin.top + margin.bottom)
-                .attr("y", -40)
+                .attr("y", -50)
                 .attr("transform", "rotate(-90)")
-                .text("Reflectance");
+                .text("Reflectance")
+                .style("font-size", "12pt");
 
             let rectBounds = [
                 d3.select("#rectangle").node().width.animVal.value,
@@ -1652,7 +1655,7 @@
                 // X Axis label
                 xlabel.attr("class", "x label")
                     .style("text-anchor", "end")
-                    .attr("x", width / 2 + margin.left)
+                    .attr("x", width/2)
                     .attr("y", height + xLabelOffset)
                     .text("Wavelength (nm)");
 
