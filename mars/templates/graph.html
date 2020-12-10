@@ -83,7 +83,7 @@
                             </div>
                             <div class="button" style="height:35px;">
                                 <a class="btn graphButton" id="control-button"
-                                   onclick="toggleControls()">More Controls</a>
+                                   onclick="toggleControls()">Controls</a>
                             </div>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                      style="border-top: thin solid gray; display:none">
                     <div class="row" style="margin-top: 15px; margin-bottom: 5px">
                         <div class="col" id="line-control-div"
-                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 13%; margin-top: 2px; text-align:center">
+                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 2%; margin-top: 2px; text-align:center">
                             Line Controls
                             <div class="row"
                                  style="font-weight: 100; margin-top:15px; margin-bottom:5px; text-align:left">
@@ -118,9 +118,8 @@
 
                                 <div class="button" style="height:30px; margin-bottom:5px">
                                     <a class="btn redButton graphButton"
-                                       style="height:30px;line-height:30px; width:320px; margin-bottom:0"
-                                       onclick="eraseVerts()">Erase All
-                                        Vertical Lines
+                                       style="height:30px;line-height:30px; margin-bottom:0"
+                                       onclick="eraseVerts()">Erase All Vertical Lines
                                     </a>
                                 </div>
                             </div>
@@ -153,7 +152,6 @@
                                 <label>
                                     <input id="instrument-point-switch"
                                            type="checkbox"
-                                           checked="checked"
                                            onclick="toggleInstrumentPoints(this)">
                                     <span class="lever"></span>
                                     Instrumentalized Points
@@ -247,7 +245,7 @@
                 </div>
 
             <table class="graph results"
-                   style="width:85%; margin-left:14%">
+                   style="width:85%; margin-left:2%">
                 <thead>
                 <tr style="height:25px">
                     <th style="flex-grow:0.2; padding-top:5px"><label>Line</label></th>
@@ -354,10 +352,10 @@
                 const foldout = document.getElementById("control-panel");
                 if (foldout.style.display === "block") {
                     foldout.style.display = "none";
-                    document.getElementById("control-button").innerHTML = "More Controls"
+                    document.getElementById("control-button").innerHTML = "Controls"
                 } else {
                     foldout.style.display = "block";
-                    document.getElementById("control-button").innerHTML = "Fewer Controls";
+                    document.getElementById("control-button").innerHTML = "Controls";
                 }
             };
 
@@ -422,7 +420,6 @@
                     d3.select('path#tick_path' + id)
                         .attr('class', 'instrument-tick')
                         .attr('stroke-width', 8)
-                        .style('display', 'inline')
 
                     d3.select('path#line_path' + id)
                         .attr('class', 'instrument-line')
