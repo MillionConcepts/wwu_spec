@@ -273,12 +273,12 @@
                         </td>
                         <td>
                             <div id="rect-{{ result.id }}"
-                                 style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2"></div>
+                                 style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2">
+                            </div>
                         </td>
 
-
                         <td><label class="truncate"
-                                   for="option{{ result.id }}"> {{ result.sample_id }}</label>
+                                   for="option{{ result.id }}">{{ result.sample_id }}</label>
                         </td>
                         <td><label class="truncate"
                                    for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
@@ -287,8 +287,9 @@
                                    for="option{{ result.id }}"> {{ result.origin }} </label>
                         </td>
                         <td>
-                            <input id="offset-dialog{{ result.id }}"
-                                   step=".02" type="number">
+                            <label for="offset-dialog{{ result.id }}">
+                                <input id="offset-dialog{{ result.id }}" step=".02" type="number">
+                            </label>
                         </td>
 
 

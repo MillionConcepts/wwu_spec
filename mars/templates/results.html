@@ -18,8 +18,8 @@
                 Showing results {{page_results.start_index}}-{{page_results.end_index}} of {{page_results.paginator.count}}
               </label>
             </div>
-            <input id="selectAllBox" type="checkbox" name="selection" onClick="toggle(this)"/>
-            <label name="selectAllLabel" for="selectAllBox" > Select All</label>
+            <input id="selectAllBox" type="checkbox" name="selectall" onClick="toggle(this)"/>
+            <label id="selectAllLabel" for="selectAllBox" > Select All</label>
           </div>
           <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
               <table class="results">
@@ -213,10 +213,7 @@
     </div>
   {% endif %}
 
-  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
-  <script>window.jQuery || document.write('<script src="{% static 'js/vendor/jquery-1.12.0.min.js' %}"><\/script>')</script>
-  <script src="{% static 'js/plugins.js' %}"></script>
-  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
   <script src="{% static 'js/materialize.min.js' %}"></script>
 
   <script>

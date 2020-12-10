@@ -35,8 +35,8 @@
             </div>
 
             <div class="container section">
-              <input id="selectAllBox" type="checkbox" name="selection" onClick="toggle(this)"/>
-              <label name="selectAllLabel" for="selectAllBox" > Select All</label>
+              <input id="selectAllBox" type="checkbox" name="selectall" onClick="toggle(this)"/>
+              <label id="selectAllLabel" for="selectAllBox" > Select All</label>
             </div>
 
             <div class= "container section">
@@ -69,7 +69,7 @@
                       {% endwith %}
                       <div class="divider"></div>
                     {% else %}
-                      <p><b>Image:</b> None</td>
+                        <p><b>Image:</b> None</p></td>
                     {% endif %}
                   </tr>
                   </table>
@@ -86,16 +86,16 @@
   {% else %}
     <div id="meta" class="container section">
       <div class="card-panel center-align" style="background:rgba(255,255,255,.8)">
-        <p>Please select a sample to view the meta data.</p>
+        <p>Please select one or more samples to view the metadata.</p>
       </div>
     </div>
   {% endif %}
 
 
-  <script language="JavaScript">
+  <script>
     function toggle(source){
-      checkboxes = document.getElementsByName("selection");
-      for(var i=0, n=checkboxes.length; i<n; i++){
+        let checkboxes = document.getElementsByName("selection");
+      for(let i=0, n=checkboxes.length; i<n; i++){
         checkboxes[i].checked = source.checked;
       }
     }

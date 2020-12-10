@@ -6,7 +6,7 @@
             <div class="col s10 push-s1 warm-content" style="padding:20px">
                 <h5>About</h5>
                 <p>The Western Washington University Vis-NIR Spectroscopy
-                    Database (VNSD) is an online tool for searching, graphing,
+                    Database (VNIRSD) is an online tool for searching, graphing,
                     and downloading publicly-available laboratory spectra. We
                     have developed this tool to aid in our research group's
                     analyses of hyper- and multi-spectral imaging data of
@@ -24,28 +24,22 @@
                 </p>
                 <br>
             <h5>Attribution</h5>
-        <p>The VNSD was created by:</p>
+        <p>The VNIRSD was created by:</p>
             <ul>Michael St. Clair and Chase Million-- software development
                 and UX design</ul>
             <ul>Melissa Rice -- research and requirements design</ul>
-                <p>
-                    It is based on an older tool developed by Kyle Mellander
-                    and Chloe Dawson under Dr. Rice's supervision, in collaboration
-                    with Darian Dixon, Kathleen Hoza, Katherine Winchell, Mason Starr,
-                    Natalie Moore, and Jack Boyd.
-                </p>
-
-                <p>
-                    If you use this database in your research, we would
-                    appreciate it if you acknowledged your use of the Western
-                    Washington University Vis-NIR Spectroscopy Database
-                    and linked to this page.
-                </p>
-                <p>
-                    Individual spectra in the database are due to the data providers
-                    listed in the metadata of each spectrum and summarized below.
-                </p>
-                <br>
+            <p>The VNIRSD is based on an older tool developed by Kyle Mellander
+                with significant input from Darian Dixon and students in the WWU Mars Lab.
+            </p>
+            <p>If you use this database in your research, please cite the sources of spectra
+                used. We would also appreciate that you acknowledge your use of the Western Washington
+                University Vis-NIR Spectroscopy Database and link to this page [note to closed alpha
+                testers: don't link to this particular page, as it is unlikely to continue to exist!]
+            </p>
+            <p>Individual spectra in the database are sourced from the data providers listed in the
+                metadata of each spectrum and summarized below.
+            </p>
+            <br>
                 <h5>Data Sources</h5>
                 {% for database in databases %}
                     <p>{{ database.name }}
@@ -59,15 +53,5 @@
             </div>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
-    <script>window.jQuery || document.write('<script src="{% static 'js/vendor/jquery-1.12.0.min.js' %}"><\/script>')</script>
-    <script src="{% static 'js/plugins.js' %}"></script>
-    <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/materialize.min.js' %}"></script>
 
-    <script language="JavaScript">
-        $(document).ready(function () {
-            $('.collapsible').collapsible();
-        });
-    </script>
 {% endblock %}

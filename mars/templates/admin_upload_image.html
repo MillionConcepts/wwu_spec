@@ -21,7 +21,6 @@
         <form action="{% url 'admin_upload_image' ids=ids %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.file }}
-            </p>
             <p><input type="submit" value="Upload" /></p>
         </form>
 
