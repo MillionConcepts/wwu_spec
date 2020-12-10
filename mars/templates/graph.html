@@ -40,7 +40,7 @@
                     <div class="slider" id="x-slider"
                          style="margin: 0 0 30px 10%; width: 75%;">
                     </div>
-                    <div class="row">
+                    <div class="row" style="margin-bottom: 5px">
                         <div class="col" id="window"
                              style="font-size: 16pt; font-weight: bold; width:12%; margin-left: 3%; margin-top: 2px; border-right: thick solid #1c2023;">
                             Graph<br>Window
@@ -88,18 +88,16 @@
                         </div>
                     </div>
                 </div>
-
-
                 <div id="control-panel"
                      style="border-top: thin solid gray; display:none">
-                    <div class="row" style="margin-top: 15px">
+                    <div class="row" style="margin-top: 15px; margin-bottom: 5px">
                         <div class="col" id="line-control-div"
-                             style=" font-size: 12pt; font-weight: bold; width:35%; margin-left: 1%; margin-top: 2px; text-align:center">
+                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 5%; margin-top: 2px; text-align:center">
                             Line Controls
                             <div class="row"
-                                 style="font-weight: 100; margin-top:15px;text-align:left">
+                                 style="font-weight: 100; margin-top:15px; margin-bottom:5px; text-align:left">
                                 <div class="switch"
-                                     style="margin-top: 8px; margin-bottom:17px">
+                                     style="margin-top: 8px; margin-bottom:5px">
                                     <label>
                                         <input id="line-switch"
                                                checked="checked"
@@ -118,14 +116,15 @@
                                 </div>
 
 
-                                <div class="button" style="height:50px">
+                                <div class="button" style="height:30px; margin-bottom:5px">
                                     <a class="btn redButton graphButton"
-                                       style="height:30px;line-height:30px; width:320px"
+                                       style="height:30px;line-height:30px; width:320px; margin-bottom:0"
                                        onclick="eraseVerts()">Erase All
-                                        Vertical Lines</a>
+                                        Vertical Lines
+                                    </a>
                                 </div>
                             </div>
-                            <form>
+                            <form style="margin-bottom: 5px">
                                 <p style="text-align:center">Simulation Options
                                 <p>
                                     <select id="filter-picker"
@@ -137,10 +136,10 @@
                             </form>
                         </div>
                     <div class="col" id="line-toggle-div"
-                             style="font-size: 12pt; font-weight: bold; width:35%; margin-left: 1%; margin-top: 2px; text-align:center">
+                             style="font-size: 12pt; font-weight: bold; width:25%; margin-left: 3%; margin-top: 2px; text-align:center">
                         Visibility Controls
                         <div class="row"
-                                 style="font-weight: 100; margin-top:5px;text-align:left">
+                                 style="font-weight: 100; margin-top:5px; margin-bottom:0; text-align:left">
                             <div class="switch" style="margin-bottom:9px">
                                 <label>
                                     <input id="point-switch"
@@ -180,7 +179,7 @@
                             </div>
                         </div>
                         Normalization Controls
-                        <div class="row" style="font-weight: 100; margin-top:5px;text-align:left">
+                        <div class="row" style="font-weight: 100; margin-top:5px; margin-bottom: 5px; text-align:left">
                         <div class="switch" style="margin-bottom:9px">
                                 <label>
                                     <input id="normal-switch"
@@ -211,7 +210,7 @@
                         </div>
                     </div>
                         <div class="col" id="calc-control-div"
-                             style=" font-size: 12pt; font-weight: bold; width:22%; margin-left: 0%; margin-top: 2px; text-align:center">Click to Calculate
+                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 3%; margin-top: 2px; text-align:center">Click to Calculate
                             <div class="row" style="font-weight: 100; margin-top:5px; text-align:left">
                                 <div class="col" style="width:35%">
                                     <input name="calc-mode" type="radio"
@@ -250,13 +249,13 @@
             <table class="graph results"
                    style="width:85%; margin:auto">
                 <thead>
-                <tr style="height:40px">
-                    <th style="flex-grow:0.2"><label>Line</label></th>
-                    <th style="flex-grow:0.2"><label>Color</label></th>
-                    <th><label>ID</label></th>
-                    <th><label>Name</label></th>
-                    <th><label>Origin</label></th>
-                    <th><label>Offset</label></th>
+                <tr style="height:25px">
+                    <th style="flex-grow:0.2; padding-top:5px"><label>Line</label></th>
+                    <th style="flex-grow:0.2; padding-top:5px"><label>Color</label></th>
+                    <th style="padding-top:5px"><label>ID</label></th>
+                    <th style="padding-top:5px"><label>Name</label></th>
+                    <th style="padding-top:5px"><label>Origin</label></th>
+                    <th style="padding-top:5px"><label>Offset</label></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -295,6 +294,7 @@
 
                     </tr>
                 {% endfor %}
+                </tbody>
             </table>
             <form id="resultsForm" method="GET" name="resultsform">
                 <div class="section center-align">
