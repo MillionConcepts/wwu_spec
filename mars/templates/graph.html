@@ -978,7 +978,7 @@
                     .attr("y-position", coord[1])
                     .style("font-family", "Fira Mono")
                     .style("font-size", "12px")
-                    .text(coord[0] + ', ' + coord[1])
+                    .text(coord[0] + ', ' + coord[1].toFixed(3))
             };
 
 
@@ -1025,9 +1025,9 @@
             };
             const calcRatio = function (first, second) {
                 if (first[1] < second[1]) {
-                    return first[1] / second[1]
+                    return (first[1] / second[1]).toFixed(3)
                 } else {
-                    return second[1] / first[1]
+                    return (second[1] / first[1]).toFixed(3)
                 }
             };
 
@@ -1079,7 +1079,7 @@
                 // the second element of the returned array
                 // is simply coordinates for placing calcFocus.third
 
-                return [(1 - (localMinReflectance / continuumReflectance)).toFixed(3), [xLine[minIndex], yLine[minIndex]]]
+                return [(1 - (localMinReflectance / continuumReflectance)).toFixed(3) + " at " + x3 + " nm", [xLine[minIndex], yLine[minIndex]]]
             };
             const doCalculations = function (first, second, third, firstLine, secondLine, thirdLine) {
                 let text;
