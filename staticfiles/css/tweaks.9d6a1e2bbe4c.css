@@ -1,6 +1,5 @@
-ul.note-list {
+.note-list {
     list-style-type: circle;
-    line-height:1.1rem
 }
 
 label {

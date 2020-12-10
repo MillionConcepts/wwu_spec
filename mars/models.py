@@ -46,6 +46,9 @@ class FilterSet(models.Model):
     citation = models.TextField(blank=True)
     description = models.TextField(blank=True)
 
+    # display order in simulation dropdown
+    display_order = models.IntegerField(blank=True, default=10000)
+
     def __str__(self):
         return self.name
 

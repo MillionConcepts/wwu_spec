@@ -12,12 +12,13 @@ from PIL import Image
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.forms.formsets import formset_factory
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from mars.forms import SearchForm, UploadForm, AdminUploadImageForm
 from mars.models import Database, Sample, FilterSet
-from mars.utils import search_all_samples, handle_csv_upload, handle_zipped_upload
+from mars.utils import search_all_samples, handle_csv_upload, \
+    handle_zipped_upload
 
 
 def search(request):
@@ -176,10 +177,15 @@ def graph(request):
 
             json_string = json.dumps(dumplist)
 
-            filtersets = [filterset.name for filterset in FilterSet.objects.all()]
+            filtersets = [
+                filterset.name
+                for filterset
+                in FilterSet.objects.all().order_by("display_order")
+            ]
             filtersets += [
-                filterset.name + "_no_illumination"
-                for filterset in FilterSet.objects.all()
+                filterset.name + " (no illumination)"
+                for filterset
+                in FilterSet.objects.all().order_by("display_order")
             ]
             return render(
                 request,
@@ -412,4 +418,13 @@ def admin_upload_image(request, ids):
 
 def about(request):
     databases = Database.objects.all()
-    return render(request, "about.html", {"databases": databases})
+    filtersets = FilterSet.objects.all()
+    return render(
+        request,
+        "about.html",
+        {"databases": databases, "filtersets": filtersets}
+    )
+
+
+def status(request):
+    return render(request, "status.html")

@@ -3,52 +3,55 @@
 <!DOCTYPE html>
 <html class="no-js" lang="" style="background-size:cover">
 
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <title></title>
-        <meta name="description" content="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title></title>
+    <meta name="description" content="">
 
-        <link href="https://fonts.googleapis.com/css?family=Fira+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Fira+Mono&display=swap"
+          rel="stylesheet">
 
-        <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
-        <link rel="stylesheet" href="{% static 'css/main.css' %}">
-        <link rel="stylesheet" href="{% static 'css/materialize.css' %}">
-        <link rel="stylesheet" href="{% static 'css/nouislider.css' %}">
-        <link rel="stylesheet" href="{% static 'css/tweaks.css' %}">
-        
-        <style>
+    <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/materialize.css' %}">
+    <link rel="stylesheet" href="{% static 'css/nouislider.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tweaks.css' %}">
 
-        </style>
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <script src="{% static 'js/vendor/modernizr-2.8.3.min.js' %}"></script>
+    <style>
 
-    </head>
-    <body>
-      <!-- Navbar -->
-      <nav class="nav">
-        <div class="container">
-          <ul id="nav-mobile" class="left">
+    </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
+    <script src="{% static 'js/vendor/modernizr-2.8.3.min.js' %}"></script>
+
+</head>
+<body>
+<!-- Navbar -->
+<nav class="nav">
+    <div class="container">
+        <ul id="nav-mobile" class="left">
             <li class="left"><a href="/">Search</a></li>
+            <li class="left"><a href="/mars/status">Status</a></li>
             <li class="left"><a href="/mars/about">About</a></li>
-          </ul>
-          <ul id="nav-mobile" class="right hide-on-small-and-down">
-              {% if user.is_authenticated %}
+        </ul>
+        <ul id="nav-mobile" class="right hide-on-small-and-down">
+            {% if user.is_authenticated %}
                 <li><a href="/mars/upload">Upload</a></li>
                 <li><a href="/admin/login">Admin</a></li>
                 <!-- <li><a href="/logout">Log Out</a> -->
-              {% else %}
+            {% else %}
                 <li><a href="/admin/login">Admin</a></li>
-              {% endif %}
-          </ul>
-        </div>
-      </nav>
-
-    <div id="title">
-      {% block title %}{% endblock %}
+            {% endif %}
+        </ul>
     </div>
-      {% block content %}{% endblock %}
+</nav>
+
+<div id="title">
+    {% block title %}{% endblock %}
+</div>
+{% block content %}{% endblock %}
 
 
-  </body>
+</body>
 </html>
