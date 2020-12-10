@@ -68,7 +68,6 @@ def make_autocomplete_list(autocomplete_fields):
 
 # utilities for reading uploaded sample data
 
-
 def parse_sample_csv(meta_array, warnings, errors):
     # maps rows from csv file to the fields of a Sample object
     # and throws errors if the csv file is formatted improperly

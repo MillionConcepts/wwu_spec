@@ -15,11 +15,9 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from mars.forms import SearchForm, UploadForm, \
-    AdminUploadImageForm
+from mars.forms import SearchForm, UploadForm, AdminUploadImageForm
 from mars.models import Database, Sample, FilterSet
-from mars.utils import search_all_samples, \
-    handle_csv_upload, handle_zipped_upload
+from mars.utils import search_all_samples, handle_csv_upload, handle_zipped_upload
 
 
 def search(request):
@@ -29,10 +27,7 @@ def search(request):
     features determined crufty and cut)
     """
     page_params = {"search_formset": formset_factory(SearchForm)}
-    return render(
-        request, "search.html",
-        page_params
-    )
+    return render(request, "search.html", page_params)
 
 
 def results(request):
@@ -65,17 +60,16 @@ def results(request):
 
     sort_params = request.GET.getlist("sort_params", ["sample_id"])
 
-    # double underscore in these field names is an ugly but compact way to 
-    # access the ForeignKey object fields 
+    # double underscore in these field names is an ugly but compact way to
+    # access the ForeignKey object fields
 
     searchable_fields = [
         "sample_name",
         "sample_id",
         "material_class",
-        "origin__name",
-        "sample_type__name",
-        "library__name"
     ]
+
+    choice_fields = ["origin__name", "sample_type__name", "library__name"]
 
     numeric_constraints = ["min_included_range", "max_included_range"]
 
@@ -83,24 +77,31 @@ def results(request):
         if request.user.is_superuser:
             form_results = Sample.objects.all().order_by(*sort_params)
         else:
-            form_results = Sample.objects.filter(
-                released=True
-            ).order_by(*sort_params)
+            form_results = Sample.objects.filter(released=True).order_by(*sort_params)
 
-        for field in searchable_fields:
+        for field in searchable_fields + choice_fields:
             entry = search_form.cleaned_data.get(field, None)
-            if entry:
-                if entry != "Any":
-                    # allow exact phrase searches
-                    query = field + "__iexact"
-                    if form_results.filter(**{query: entry}):
-                        form_results = form_results.filter(**{query: entry})
-                    # otherwise treat multiple words as an 'or' search
-                    else:
-                        query = field + "__icontains"
-                        filters = [form_results.filter(**{query: word}) for
-                                   word in entry.split(' ')]
-                        form_results = reduce(or_, filters)
+            if not entry:
+                continue
+            # "Any" entries do not restrict the search
+            if entry == "Any":
+                continue
+            # require exact phrase searches for choice fields,
+            # don't waste time checking any other possibilities
+            query = field + "__iexact"
+            if field in choice_fields:
+                form_results = form_results.filter(**{query: entry})
+            # use an inflexible search for other fields
+            # if an exact phrase match exists in the database
+            elif Sample.objects.filter(**{query: entry}):
+                form_results = form_results.filter(**{query: entry})
+            # otherwise treat multiple words as an 'or' search
+            else:
+                query = field + "__icontains"
+                filters = [
+                    form_results.filter(**{query: word}) for word in entry.split(" ")
+                ]
+                form_results = reduce(or_, filters)
 
             # the utility of spectrum limit constraints as part of UX is
             # unclear to me _must_ have a band makes sense to me _cannot_
@@ -137,8 +138,7 @@ def results(request):
     page_selected = int(request.GET.get("page_selected", 1))
     page_results = paginator.page(page_selected)
     page_choices = range(
-        max(1, page_selected - 3),
-        min(page_selected + 4, paginator.num_pages + 1)
+        max(1, page_selected - 3), min(page_selected + 4, paginator.num_pages + 1)
     )
 
     page_ids = []
@@ -176,10 +176,11 @@ def graph(request):
 
             json_string = json.dumps(dumplist)
 
-            filtersets = [filterset.name for filterset in
-                          FilterSet.objects.all()]
-            filtersets += [filterset.name + "_no_illumination" for filterset in
-                           FilterSet.objects.all()]
+            filtersets = [filterset.name for filterset in FilterSet.objects.all()]
+            filtersets += [
+                filterset.name + "_no_illumination"
+                for filterset in FilterSet.objects.all()
+            ]
             return render(
                 request,
                 "graph.html",
@@ -188,7 +189,7 @@ def graph(request):
                     "graphResults": samples,
                     "graphJSON": json_string,
                     "search_formset": search_formset,
-                    "filtersets": filtersets
+                    "filtersets": filtersets,
                 },
             )
 
@@ -225,8 +226,7 @@ def export(request):
     selections = list(selections)
     samples = Sample.objects.filter(id__in=selections)
     zip_buffer = io.BytesIO()
-    field_list = [[field.verbose_name, field.name] for field in
-                  Sample._meta.fields]
+    field_list = [[field.verbose_name, field.name] for field in Sample._meta.fields]
     field_list.sort()
 
     with zipfile.ZipFile(zip_buffer, "w") as output:
@@ -238,9 +238,15 @@ def export(request):
             text_buffer = io.StringIO()
             writer = csv.writer(text_buffer)
             for field in field_list:
-                if field[1] not in ["image", "id", "reflectance", "filename",
-                                    "import_notes", "simulated_spectra",
-                                    "flagged"]:
+                if field[1] not in [
+                    "image",
+                    "id",
+                    "reflectance",
+                    "filename",
+                    "import_notes",
+                    "simulated_spectra",
+                    "flagged",
+                ]:
                     writer.writerow([field[0], getattr(sample, field[1])])
             writer.writerow(["Wavelength"])
             for row in literal_eval(sample.reflectance):
@@ -265,16 +271,14 @@ def export(request):
 
     date = dt.datetime.today().strftime("%y-%m-%d")
     response = HttpResponse(zip_buffer, content_type="application/zip")
-    response[
-        "Content-Disposition"] = "attachment; filename=spectra-%s.zip;" % date
+    response["Content-Disposition"] = "attachment; filename=spectra-%s.zip;" % date
 
     return response
 
 
 def upload(request):
     if request.method == "POST":
-        form = \
-            UploadForm(request.POST, request.FILES)
+        form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES["file"]
 
@@ -289,8 +293,7 @@ def upload(request):
             return render(
                 request,
                 "upload.html",
-                {"form": form, "headline": headline,
-                 "upload_errors": upload_errors},
+                {"form": form, "headline": headline, "upload_errors": upload_errors},
             )
 
         successful = []
@@ -343,8 +346,7 @@ def upload(request):
         else:
             if upload_results[0]["errors"] is not None:
                 headline = (
-                        upload_results[0][
-                            "filename"] + " did not upload successfully."
+                    upload_results[0]["filename"] + " did not upload successfully."
                 )
                 unsuccessful = [
                     {
@@ -353,8 +355,7 @@ def upload(request):
                     }
                 ]
             else:
-                headline = upload_results[0][
-                               "filename"] + "uploaded successfully."
+                headline = upload_results[0]["filename"] + "uploaded successfully."
                 successful = [
                     {
                         "filename": upload_result["filename"],
