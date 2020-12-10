@@ -99,7 +99,7 @@
                                 <div class="switch"
                                      style="margin-top: 8px; margin-bottom:5px">
                                     <label>
-                                        <input id="line-switch"
+                                        <input id="vertical-line-switch"
                                                checked="checked"
                                                type="checkbox">
                                         <span class="lever"></span>
@@ -410,7 +410,6 @@
                     .attr('class', 'data-tick')
                     .attr('id', 'tick_path' + id)
                     .style("fill", "none")
-                    .style("display", "none")
                     .attr('fill', 'none')
                     .style("opacity", 0.85)
 
@@ -425,7 +424,6 @@
                         .attr('class', 'instrument-line')
                         .attr('stroke-width', 2)
                         .style("stroke-dasharray", ("3, 3"))
-                        .style('display', 'none')
                 }
 
                 if (complement_rover) {
@@ -532,7 +530,7 @@
                 }
 
                 updateGraphBounds(lines, true)
-                togglePoints(document.getElementById("point-switch"))
+                updateDataVisibility()
                 updateWindow(minX - xOff, maxX + xOff, minY - yOff, maxY + yOff)
             };
             const deWaveNormalize = function () {
@@ -564,6 +562,9 @@
 
             // Toggle whether or not to show datapoint marks
             // and lines
+
+            // TODO: concatenate this list of functions more
+            // sanely
             const togglePoints = function (checkbox) {
                 if (checkbox.checked) {
                     $(".data-tick").show();
@@ -592,6 +593,13 @@
                     $(".instrument-line").hide();
                 }
             };
+
+            const updateDataVisibility = function() {
+                togglePoints(document.getElementById('point-switch'))
+                toggleInstrumentPoints(document.getElementById('instrument-point-switch'))
+                toggleLines(document.getElementById('line-switch'))
+                toggleInstrumentLines(document.getElementById('instrument-line-switch'))
+            }
 
             // expand zoom window to at least the range/domain of the graph
 
@@ -1253,7 +1261,7 @@
                         .attr("x2", xScale(coord[0]));
 
                     focus.style("display", null);
-                    if (document.getElementById('line-switch').checked) {
+                    if (document.getElementById('vertical-line-switch').checked) {
                         activeLine.style("display", null);
                     }
                 })

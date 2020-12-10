@@ -281,20 +281,18 @@ def upload(request):
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES["file"]
-
-        if uploaded_file.name[-3:] == "csv":
-            upload_results = handle_csv_upload(uploaded_file)
-        elif uploaded_file.name[-3:] == "zip":
-            upload_results = handle_zipped_upload(uploaded_file)
-        else:
-            headline = "File upload failed."
-            upload_errors = ["Please upload a csv or zip file."]
-
-            return render(
-                request,
-                "upload.html",
-                {"form": form, "headline": headline, "upload_errors": upload_errors},
-            )
+            if uploaded_file.name[-3:] == "csv":
+                upload_results = handle_csv_upload(uploaded_file)
+            elif uploaded_file.name[-3:] == "zip":
+                upload_results = handle_zipped_upload(uploaded_file)
+            else:
+                headline = "File upload failed."
+                upload_errors = ["Please upload a csv or zip file."]
+                return render(
+                    request,
+                    "upload.html",
+                    {"form": form, "headline": headline, "upload_errors": upload_errors},
+                )
 
         successful = []
         unsuccessful = []
