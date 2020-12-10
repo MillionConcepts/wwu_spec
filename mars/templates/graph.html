@@ -21,19 +21,10 @@
     <body onresize="redraw();">
     {% csrf_token %}
 
-
-                </form>
-            </div>
-
-        </div>
-    </div>
-
     {% if graphResults %}
         <div style="margin-left: 40px; margin-right: 40px">
             <div class="card " style="background:#e3e7e9">
                 <div class="container">
-
-
                     <div class="row"
                          style="margin-bottom: 0; margin-left:0; margin-right: 0;">
                         <div class="col s11">
@@ -102,15 +93,16 @@
                 <div id="control-panel"
                      style="border-top: thin solid gray; display:none">
                     <div class="row" style="margin-top: 15px">
-                        <div class="col" id="window"
-                             style=" font-size: 12pt; font-weight: bold; width:35%; margin-left: 3%; margin-top: 2px; text-align:center">
+                        <div class="col" id="line-control-div"
+                             style=" font-size: 12pt; font-weight: bold; width:35%; margin-left: 1%; margin-top: 2px; text-align:center">
                             Line Controls
                             <div class="row"
                                  style="font-weight: 100; margin-top:15px;text-align:left">
                                 <div class="switch"
                                      style="margin-top: 8px; margin-bottom:17px">
                                     <label>
-                                        <input id="line-switch" checked
+                                        <input id="line-switch"
+                                               checked="checked"
                                                type="checkbox">
                                         <span class="lever"></span>
                                         Vertical Line Follows Mouse
@@ -143,13 +135,84 @@
                                         {% endfor %}
                                     </select>
                             </form>
-
                         </div>
-                        <div class="col" id="window"
-                             style=" font-size: 12pt; font-weight: bold; width:28%; margin-left: 1%; margin-top: 2px; text-align:center">
-                            Click to Calculate
-                            <div class="row"
-                                 style="font-weight: 100; margin-top:15px; text-align:left">
+                    <div class="col" id="line-toggle-div"
+                             style="font-size: 12pt; font-weight: bold; width:35%; margin-left: 1%; margin-top: 2px; text-align:center">
+                        Visibility Controls
+                        <div class="row"
+                                 style="font-weight: 100; margin-top:5px;text-align:left">
+                            <div class="switch" style="margin-bottom:9px">
+                                <label>
+                                    <input id="point-switch"
+                                           type="checkbox"
+                                           onclick="togglePoints(this)">
+                                    <span class="lever"></span>
+                                    Lab Points
+                                </label>
+                            </div>
+                            <div class="switch" style="margin-bottom:9px">
+                                <label>
+                                    <input id="instrument-point-switch"
+                                           type="checkbox"
+                                           checked="checked"
+                                           onclick="toggleInstrumentPoints(this)">
+                                    <span class="lever"></span>
+                                    Instrumentalized Points
+                                </label>
+                            </div>
+                            <div class="switch" style="margin-bottom:9px">
+                                <label>
+                                    <input id="line-switch" checked="checked"
+                                           type="checkbox"
+                                           onclick="toggleLines(this)">
+                                    <span class="lever"></span>
+                                    Lab Lines
+                                </label>
+                            </div>
+                            <div class="switch" style="margin-bottom:9px">
+                                <label>
+                                    <input id="instrument-line-switch"
+                                           type="checkbox"
+                                           onclick="toggleInstrumentLines(this)">
+                                    <span class="lever"></span>
+                                    Instrumentalized Lines
+                                </label>
+                            </div>
+                        </div>
+                        Normalization Controls
+                        <div class="row" style="font-weight: 100; margin-top:5px;text-align:left">
+                        <div class="switch" style="margin-bottom:9px">
+                                <label>
+                                    <input id="normal-switch"
+                                           type="checkbox"
+                                           onclick="normalizeSpectra()">
+                                    <span class="lever"></span>
+                                    Normalize Peaks
+                                </label>
+                            </div>
+                            <div class="switch" style="margin-bottom:9px">
+                                <label>
+                                    <input id="wavenormal-switch"
+                                           type="checkbox"
+                                           onclick="waveNormalizeSpectra()">
+                                    <span class="lever"></span>
+                                    Normalize Wavelength
+                                </label>
+                            </div>
+                            <div class="brightswitch switch" id="arm-div"
+                                 style="display:none">
+                                <label>
+                                    <input id="arm-wavenormal-switch"
+                                           type="checkbox">
+                                    <span class="lever"></span>
+                                    Arm Selection
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="col" id="calc-control-div"
+                             style=" font-size: 12pt; font-weight: bold; width:22%; margin-left: 0%; margin-top: 2px; text-align:center">Click to Calculate
+                            <div class="row" style="font-weight: 100; margin-top:5px; text-align:left">
                                 <div class="col" style="width:35%">
                                     <input name="calc-mode" type="radio"
                                            id="no-calc" checked="checked"
@@ -181,154 +244,101 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col" id="window"
-                             style=" font-size: 12pt; font-weight: bold; width:27%; margin-left: 3%; margin-top: 2px; text-align:center">
-                            Display Options
-                            <div class="row"
-                                 style="font-weight: 100; margin-top:15px; text-align:left">
-                                <div class="switch" style="margin-bottom:17px">
-                                    <label>
-                                        <input id="point-switch"
-                                               type="checkbox"
-                                               onclick="togglePoints(this)">
-                                        <span class="lever"></span>
-                                        Show Points
-                                    </label>
-                                </div>
-                                <div class="switch" style="margin-bottom:17px">
-                                    <label>
-                                        <input id="normal-switch"
-                                               type="checkbox"
-                                               onclick="normalizeSpectra()">
-                                        <span class="lever"></span>
-                                        Normalize Peaks
-                                    </label>
-                                </div>
-                                <div class="switch" style="margin-bottom:17px">
-                                    <label>
-                                        <input id="wavenormal-switch"
-                                               type="checkbox"
-                                               onclick="waveNormalizeSpectra()">
-                                        <span class="lever"></span>
-                                        Normalize Wavelength
-                                    </label>
-                                </div>
-                                <div class="brightswitch switch" id="arm-div"
-                                     style="display:none">
-                                    <label>
-                                        <input id="arm-wavenormal-switch"
-                                               type="checkbox">
-                                        <span class="lever"></span>
-                                        Arm Selection
-                                    </label>
-                                </div>
-                            </div>
-
-
-                        </div>
                     </div>
                 </div>
 
-                <table class="graph results"
-                       style="width:85%; margin:auto">
-                    <thead>
-                    <tr style="height:40px">
-                        <th style="flex-grow:0.2"><label>Line</label></th>
-                        <th style="flex-grow:0.2"><label>Color</label></th>
-                        <th><label>Instrumentalize</label></th>
-                        <th><label>ID</label></th>
-                        <th><label>Name</label></th>
-                        <th><label>Origin</label></th>
-                        <th><label>Offset</label></th>
+            <table class="graph results"
+                   style="width:85%; margin:auto">
+                <thead>
+                <tr style="height:40px">
+                    <th style="flex-grow:0.2"><label>Line</label></th>
+                    <th style="flex-grow:0.2"><label>Color</label></th>
+                    <th><label>ID</label></th>
+                    <th><label>Name</label></th>
+                    <th><label>Origin</label></th>
+                    <th><label>Offset</label></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for result in graphResults %}
+                    <tr>
+                        <td style="flex-grow:0.2">
+                            <div style="position: relative">
+                                <input type="checkbox" checked="checked"
+                                       name="selection"
+                                       id="option{{ result.id }}"
+                                       value={{ result.id }}""
+                                       onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
+                                <label for="option{{ result.id }}"></label>
+                            </div>
+                        </td>
+                        <td>
+                            <div id="rect-{{ result.id }}"
+                                 style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2"></div>
+                        </td>
+
+
+                        <td><label class="truncate"
+                                   for="option{{ result.id }}"> {{ result.sample_id }}</label>
+                        </td>
+                        <td><label class="truncate"
+                                   for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
+                        </td>
+                        <td><label class="truncate"
+                                   for="option{{ result.id }}"> {{ result.origin }} </label>
+                        </td>
+                        <td>
+                            <input id="offset-dialog{{ result.id }}"
+                                   step=".02" type="number">
+                        </td>
+
+
                     </tr>
-                    </thead>
-                    <tbody>
-                    {% for result in graphResults %}
-                        <tr>
-                            <td style="flex-grow:0.2">
-                                <div style="position: relative">
-                                    <input type="checkbox" checked="checked"
-                                           name="selection"
-                                           id="option{{ result.id }}"
-                                           value={{ result.id }}
-                                                   onclick="toggleLine(this,{{ forloop.counter0 }});"/>
-                                    <label for="option{{ result.id }}"></label>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="rect-{{ result.id }}"
-                                     style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2"></div>
-                            </td>
-                            <td>
-                                <div style="position: relative">
-                                    <input type="checkbox"
-                                           id="roverize{{ result.id }}"
-                                           onclick="instrumentalize(this,{{ forloop.counter0 }});"/>
-                                    <label for="roverize{{ result.id }}"></label>
-                                </div>
-                            </td>
-
-                            <td><label class="truncate"
-                                       for="option{{ result.id }}"> {{ result.sample_id }}</label>
-                            </td>
-                            <td><label class="truncate"
-                                       for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
-                            </td>
-                            <td><label class="truncate"
-                                       for="option{{ result.id }}"> {{ result.origin }} </label>
-                            </td>
-                            <td>
-                                <input id="offset-dialog{{ result.id }}"
-                                       step=".02" type="number">
-                            </td>
+                {% endfor %}
+            </table>
+            <form id="resultsForm" method="GET" name="resultsform">
+                <div class="section center-align">
+                    <button type="submit" name="search"
+                            formaction="/"
+                            class="btn btn-success">Back to Search
+                    </button>
+                    <button type="submit" name="resultsform"
+                            formaction="/mars/results/"
+                            class="btn btn-success">Results
+                    </button>
+                    <button type="submit" name="export"
+                            formaction="/mars/export/"
+                            class="btn btn-success">Export
+                    </button>
+                    <button type="submit" name="meta"
+                            formaction="/mars/meta/"
+                            class="btn btn-success">View Metadata
+                    </button>
+                    <br>
+                </div>
+                {% for id in selected_ids %}
+                    <input type="hidden" name="selection"
+                           value="{{ id }}"/>
+                {% endfor %}
 
 
-                        </tr>
+                {{ search_formset.management_form }}
+                <div style="display:None">
+                    {% for search_form in search_formset.forms %}
+                        {{ search_form.id }}
+                        {{ search_form.sample_id }}
+                        {{ search_form.sample_name }}
+                        {{ search_form.material_class }}
+                        {{ search_form.min_included_range }}
+                        {{ search_form.max_included_range }}
+                        {{ search_form.sample_type__name }}
+                        {{ search_form.origin__name }}
                     {% endfor %}
-                </table>
-                <form id="resultsForm" method="GET" name="resultsform">
-                    <div class="section center-align">
-                        <button type="submit" name="search"
-                                formaction="/"
-                                class="btn btn-success">Back to Search
-                        </button>
-                        <button type="submit" name="resultsform"
-                                formaction="/mars/results/"
-                                class="btn btn-success">Results
-                        </button>
-                        <button type="submit" name="export"
-                                formaction="/mars/export/"
-                                class="btn btn-success">Export
-                        </button>
-                        <button type="submit" name="meta"
-                                formaction="/mars/meta/"
-                                class="btn btn-success">View Metadata
-                        </button>
-                        <br>
-                    </div>
-                    {% for id in selected_ids %}
-                        <input type="hidden" name="selection"
-                               value="{{ id }}"/>
-                    {% endfor %}
+                </div>
 
 
-                    {{ search_formset.management_form }}
-                    <div style="display:None">
-                        {% for search_form in search_formset.forms %}
-                            {{ search_form.id }}
-                            {{ search_form.sample_id }}
-                            {{ search_form.sample_name }}
-                            {{ search_form.material_class }}
-                            {{ search_form.min_included_range }}
-                            {{ search_form.max_included_range }}
-                            {{ search_form.sample_type__name }}
-                            {{ search_form.origin__name }}
-                        {% endfor %}
-                    </div>
-
-
-                </form>
-            </div>
+            </form>
+        </div>
         </div>
 
         <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
@@ -386,17 +396,18 @@
             const drawLine = function (line, id, is_rover = false, complement_rover = false) {
                 chartBody.append('svg:path')
                     .attr('d', scaleLine(line))
+                    .attr('class', 'data-line')
                     .attr('stroke', lineColors[id])
                     .attr('stroke-width', 2)
                     .attr('id', 'line_path' + id)
                     .style("fill", "none")
                     .attr('fill', 'none')
-                //Append tic marks to graph
+                //Append tick marks to graph
                 chartBody.append('svg:path')
-                    .attr('d', tickMark(line))
+                    .attr('d', scaleLine(line))
                     .attr('stroke', lineColors[id])
-                    .attr('stroke-width', 1)
-                    .attr('class', 'tic')
+                    .attr('stroke-width', 4)
+                    .attr('class', 'data-tick')
                     .attr('id', 'tick_path' + id)
                     .style("fill", "none")
                     .style("display", "none")
@@ -407,11 +418,15 @@
                 if (is_rover) {
 
                     d3.select('path#tick_path' + id)
-                        .attr('stroke-width', 10)
+                        .attr('class', 'instrument-tick')
+                        .attr('stroke-width', 8)
+                        .style('display', 'inline')
 
                     d3.select('path#line_path' + id)
-                        .attr('stroke-width', 6)
+                        .attr('class', 'instrument-line')
+                        .attr('stroke-width', 2)
                         .style("stroke-dasharray", ("3, 3"))
+                        .style('display', 'none')
                 }
 
                 if (complement_rover) {
@@ -482,7 +497,7 @@
                     })
                 }
 
-                if (waveNormalized & (normWavelength != null)) {
+                if (waveNormalized && (normWavelength != null)) {
 
                     scale = normLineToWavelength(reflectanceKV);
 
@@ -508,7 +523,7 @@
                 lines[sample.id] = reflectanceKV;
                 lines[sample.id + '_r'] = roverKV
 
-                if (active & roverized) {
+                if (active && roverized) {
                     drawLine(reflectanceKV, sample.id, false, true)
                     drawLine(roverKV, sample.id + '_r', true)
                 } else if (roverized) {
@@ -532,15 +547,9 @@
                 document.getElementById('normal-switch').checked = false
             };
             //Toggle the line based on the checkbox
-            const toggleLine = function (boxID, index) {
+            const toggleSpectrum = function (boxID, index) {
                 activeLines[boxID.id.slice(6)] = !!boxID.checked
-                deWaveNormalize()
-                deNormalize()
-                generateLine(graph[index])
-            };
-
-            const instrumentalize = function (boxID, index) {
-                activeLines[boxID.id.slice(8) + '_r'] = !!boxID.checked;
+                activeLines[boxID.id.slice(6) + "_r"] = !!boxID.checked
                 deWaveNormalize()
                 deNormalize()
                 generateLine(graph[index])
@@ -555,11 +564,33 @@
             })
 
             // Toggle whether or not to show datapoint marks
+            // and lines
             const togglePoints = function (checkbox) {
                 if (checkbox.checked) {
-                    $(".tic").show();
+                    $(".data-tick").show();
                 } else {
-                    $(".tic").hide();
+                    $(".data-tick").hide();
+                }
+            };
+            const toggleInstrumentPoints = function (checkbox) {
+                if (checkbox.checked) {
+                    $(".instrument-tick").show();
+                } else {
+                    $(".instrument-tick").hide();
+                }
+            };
+            const toggleLines = function (checkbox) {
+                if (checkbox.checked) {
+                    $(".data-line").show();
+                } else {
+                    $(".data-line").hide();
+                }
+            };
+            const toggleInstrumentLines = function (checkbox) {
+                if (checkbox.checked) {
+                    $(".instrument-line").show();
+                } else {
+                    $(".instrument-line").hide();
                 }
             };
 
@@ -739,7 +770,6 @@
             };
 
 
-
             // maybe should be several separate functions
 
             const updateGraphBounds = function (samples, useLines) {
@@ -807,7 +837,6 @@
             // set bounds & make sliders ASAP on page load
             makeSliders()
             updateGraphBounds(graph)
-
 
 
             // background svg container
@@ -1090,7 +1119,7 @@
             };
 
             const moveCalcFocus = function (coord, line) {
-                if (calcFocus.first.active & calcFocus.second.active) {
+                if (calcFocus.first.active && calcFocus.second.active) {
                     if (document.getElementById('band-custom-calc').checked) {
                         if (line !== calcFocus.first.line) {
                         } else if (calcFocus.third.active) {
@@ -1112,7 +1141,7 @@
                 } else if (document.getElementById('no-calc').checked) {
                     hideCalcFocus()
                 } else if (calcFocus.first.active) {
-                    if ((coord[0] === calcFocus.first.coord[0]) & (coord[1] === calcFocus.first.coord[1])) {
+                    if ((coord[0] === calcFocus.first.coord[0]) && (coord[1] === calcFocus.first.coord[1])) {
                         calcFocus.first.active = false
                         calcFocus.first.style("opacity", 0)
                     } else if (line !== calcFocus.first.line) {
@@ -1229,7 +1258,22 @@
                 })
 
 
-
+            // Function for drawing tick marks
+            function tickMark(d) {
+                const size = 1;
+                const pathArray = [];
+                for (let i = 0; i < d.length; i++) {
+                    const x = xScale(d[i].key);
+                    const y = yScale(d[i].value);
+                    pathArray.push(["M", [x - size, y],
+                        "L", [x, y + size],
+                        "L", [x + size, y],
+                        "L", [x, y - size],
+                        "Z"
+                    ].join(" "));
+                }
+                return pathArray.join(" ");
+            }
 
 
             // scaling function for reflectance values
@@ -1243,30 +1287,12 @@
                 })
                 .interpolate("linear");
 
-            // Function for drawing tick marks
-            function tickMark(d) {
-                const size = 3;
-                const pathArray = [];
-                for (let i = 0; i < d.length; i++) {
-                    const x = xScale(d[i].key);
-                    const y = yScale(d[i].value);
-                    pathArray.push(["M", [x - size, y],
-                        "L", [x + size, y],
-                        "M", [x, y - size],
-                        "L", [x, y + size]
-                    ].join(" "));
-                }
-                return pathArray.join(" ");
-            }
-
             //Define the function that sorts the data
             const keySort = function (sortfunc, field) {
                 return function (a, b) {
                     return sortfunc(parseFloat(a[field]), parseFloat(b[field]));
                 }
             };
-
-
 
 
             const makecalcFocus = function () {
@@ -1337,7 +1363,7 @@
                     swap = true
                     document.getElementById("arm-div").style.display = "block"
                 }
-                if (normWavelength | swap) {
+                if (normWavelength || swap) {
                     graph.forEach(function (sample) {
                         generateLine(sample)
                     })
@@ -1386,7 +1412,8 @@
                 // but don't fight with the widget that's setting the value!
                 // except: allow the widgets to fight
                 // if the user is making the constraints screwy
-                // very finicky UX issue. also, the mouse panner in this version of d3 leaves a lot to be desired. the behavior remains a little gross.
+                // very finicky UX issue. also, the mouse panner in this version of d3
+                // leaves a lot to be desired. the behavior remains a little gross.
 
 
                 if (updateMaxY > maxY + 5 * yOff) {
@@ -1672,6 +1699,7 @@
 
             graph.forEach(function (sample) {
                 activeLines[sample.id] = true
+                activeLines[sample.id + "_r"] = true
                 generateLine(sample)
             })
 
