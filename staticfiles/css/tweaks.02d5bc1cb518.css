@@ -1,6 +1,11 @@
+/*overriding materialize*/
+ul:not(.browser-default) {
+    padding-left: inherit;
+    list-style-type: inherit;
+}
+
 ul.note-list {
     list-style-type: circle;
-    line-height:1.1rem
 }
 
 label {
