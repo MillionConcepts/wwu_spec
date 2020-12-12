@@ -1,6 +1,7 @@
 import zipfile
 from functools import reduce
 
+from django.db import models
 import pandas as pd
 import PIL
 from PIL import Image
@@ -8,6 +9,10 @@ import numpy as np
 
 # queryset constructors
 from mars.models import Sample, SampleType, Database
+
+
+def fields(model):
+    return [field.name for field in model._meta.fields]
 
 
 def or_query(first_query, second_query):
@@ -30,20 +35,24 @@ def search_all_samples(entry):
 
 # utilities for making lists to render in html
 
-
-def make_choice_list(choice_fields):
+def make_choice_list(
+        model: models.Model,
+        field: str,
+        conceal_unreleased=False
+) -> list[tuple]:
     """
     format data to feed to html selection fields.
     used by forms.SearchForm
     """
-    choice_data = {}
-    for choice_category in choice_fields.keys():
-        model = choice_fields[choice_category][0]
-        field = choice_fields[choice_category][1]
-        choice_data[choice_category] = [
-            (c, c) for c in model.objects.values_list(field, flat=True)
+    queryset: models.query.QuerySet  # just a type hint, for secret reasons
+    if conceal_unreleased and ('released' in fields(model)):
+        queryset = model.objects.filter(released=True)
+    else:
+        queryset = model.objects.all()
+    choice_data = [
+            (c, c) for c in queryset.values_list(field, flat=True)
         ]
-        choice_data[choice_category].insert(0, ("Any", "Any"))
+    choice_data.insert(0, ("Any", "Any"))
     return choice_data
 
 

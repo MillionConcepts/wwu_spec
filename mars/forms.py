@@ -1,20 +1,25 @@
+from functools import partial
+
 from django import forms
+from django.forms import formset_factory
 
 from mars.models import Database, SampleType, Library
 from mars.utils import make_choice_list
 
 
 class SearchForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, conceal_unreleased=True, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
         choice_fields = {
             'origin__name': [Database, 'name'],
             'sample_type__name': [SampleType, 'name'],
             'library__name': [Library, 'name']
         }
-        choice_data = make_choice_list(choice_fields)
-        for field in choice_data:
-            self.fields[field].choices = choice_data[field]
+        for form_field, model_plus_field in choice_fields.items():
+            self.fields[form_field].choices = make_choice_list(
+                *model_plus_field,
+                conceal_unreleased=conceal_unreleased
+            )
 
     sample_name = forms.CharField(
         required=False,
@@ -40,6 +45,13 @@ class SearchForm(forms.Form):
     )
     sample_type__name = forms.ChoiceField(
         required=False, label="Type of Sample"
+    )
+
+
+def concealed_search_factory(request):
+    return partial(
+        formset_factory(SearchForm),
+        form_kwargs=({'conceal_unreleased': not request.user.is_superuser})
     )
 
 
