@@ -1,10 +1,15 @@
 {% extends "layouts/base.html" %}
 {% load static %}
 {% block content %}
+    <style>
+    h4, h5 {
+        margin-top: 3rem
+    }
+    </style>
     <div class="container section">
         <div class="col warm-content"
              style="width:60rem; padding:5rem; margin-left:5rem">
-            <h4>About the WWU VNIRSD</h4>
+            <h4 style="margin-top: 0">About the WWU VNIRSD</h4>
             <p>The Western Washington University Vis-NIR Spectroscopy
                 Database (VNIRSD) is an online tool for searching, graphing,
                 and downloading publicly-available laboratory spectra. We
@@ -19,9 +24,7 @@
                 for testing. We want to hear from you if you have spectra
                 to contribute or if you have ideas about how we can make
                 the site more useful.</p>
-            <p>Want to contribute? <a href="{{ CSVFormat.document.url }}">Format
-                your data</a> and contact Melissa Rice (ricem5@wwu.edu).
-            </p>
+            <p>Want to contribute? Contact melissa.rice@wwu.edu.</p>
             <br>
             <h5>Attribution</h5>
             <p>The VNIRSD was created by:</p>
@@ -38,7 +41,7 @@
                 used. We would also appreciate that you acknowledge your use of
                 the Western Washington
                 University Vis-NIR Spectroscopy Database and link to this page
-                [note to closed alpha
+                [note to closed beta
                 testers: don't link to this particular page, as it is unlikely
                 to continue to exist!]
             </p>
@@ -49,18 +52,14 @@
             <br>
             <h5>Data Sources</h5>
             {% for database in databases %}
-                <p>{{ database.name }}
-                    - <a href={{ database.url }}>{{ database.url }}</a>
-                    {{ database.description }}
-                    {{ database.citation }}</p>
+                <p><a href={{ database.url }}>{{ database.name }}</a></p>
                 {% if not forloop.last %}
                     <div class="divider"></div>
                 {% endif %}
             {% endfor %}
             <h5>Instrument Filter Citations</h5>
             {% for filterset in filtersets %}
-                <p>{{ filterset.name }}
-                    {{ filterset.citation }}</p>
+                <p><a href={{ filterset.url }}>{{ filterset.name }}</a></p>
                 {% if not forloop.last %}
                     <div class="divider"></div>
                 {% endif %}

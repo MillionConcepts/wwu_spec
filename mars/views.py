@@ -11,11 +11,11 @@ import PIL
 from PIL import Image
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.forms.formsets import formset_factory
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from mars.forms import SearchForm, UploadForm, AdminUploadImageForm
+from mars.forms import UploadForm, AdminUploadImageForm, \
+    concealed_search_factory
 from mars.models import Database, Sample, FilterSet
 from mars.utils import search_all_samples, handle_csv_upload, \
     handle_zipped_upload
@@ -27,25 +27,23 @@ def search(request):
     presently doesn't do any other manipulation (some former
     features determined crufty and cut)
     """
-    page_params = {"search_formset": formset_factory(SearchForm)}
+    page_params = {
+        "search_formset": concealed_search_factory(request)
+    }
     return render(request, "search.html", page_params)
 
 
 def results(request):
-
     search_results_id_list = []
     search_results = Sample.objects.none()
     # selected_spectra = Sample.objects.none() # TODO: missing functionality?
-    search_form_set = formset_factory(SearchForm)
-
     # deliver an empty page for malformed requests.
     # also deliver clean data for each form while we're at it.
-
     try:
-        search_formset = search_form_set(request.GET)
+        search_formset = concealed_search_factory(request)(request.GET)
         for search_form in search_formset:
-            search_form.is_valid()  # todo: assert?
-    except:
+            assert search_form.is_valid()
+    except AssertionError:
         return render(
             request,
             "results.html",
@@ -78,7 +76,8 @@ def results(request):
         if request.user.is_superuser:
             form_results = Sample.objects.all().order_by(*sort_params)
         else:
-            form_results = Sample.objects.filter(released=True).order_by(*sort_params)
+            form_results = Sample.objects.filter(released=True).order_by(
+                *sort_params)
 
         for field in searchable_fields + choice_fields:
             entry = search_form.cleaned_data.get(field, None)
@@ -100,7 +99,8 @@ def results(request):
             else:
                 query = field + "__icontains"
                 filters = [
-                    form_results.filter(**{query: word}) for word in entry.split(" ")
+                    form_results.filter(**{query: word}) for word in
+                    entry.split(" ")
                 ]
                 form_results = reduce(or_, filters)
 
@@ -139,7 +139,8 @@ def results(request):
     page_selected = int(request.GET.get("page_selected", 1))
     page_results = paginator.page(page_selected)
     page_choices = range(
-        max(1, page_selected - 3), min(page_selected + 4, paginator.num_pages + 1)
+        max(1, page_selected - 3),
+        min(page_selected + 4, paginator.num_pages + 1)
     )
 
     page_ids = []
@@ -162,55 +163,55 @@ def results(request):
 
 
 def graph(request):
-    if request.method == "GET":
-        if "graphForm" in request.GET:
-            selections = request.GET.getlist("selection")
-            prev_selected_list = request.GET.getlist("prev_selected")
-            selections = list(set(selections + prev_selected_list))
+    if not request.method == "GET":
+        return HttpResponse(status=204)
+    if "graphForm" not in request.GET:
+        return HttpResponse(status=204)
+    selections = request.GET.getlist("selection")
+    prev_selected_list = request.GET.getlist("prev_selected")
+    selections = list(set(selections + prev_selected_list))
+    if not selections:
+        return HttpResponse(status=204)
+    search_formset = concealed_search_factory(request)(request.GET)
 
-            search_form_set = formset_factory(SearchForm)
-            search_formset = search_form_set(request.GET)
+    samples = Sample.objects.filter(id__in=selections)
 
-            samples = Sample.objects.filter(id__in=selections)
+    dumplist = [obj.as_json() for obj in samples]
 
-            dumplist = [obj.as_json() for obj in samples]
+    json_string = json.dumps(dumplist)
 
-            json_string = json.dumps(dumplist)
-
-            filtersets = [
-                filterset.name
-                for filterset
-                in FilterSet.objects.all().order_by("display_order")
-            ]
-            filtersets += [
-                filterset.name + " (no illumination)"
-                for filterset
-                in FilterSet.objects.all().order_by("display_order")
-            ]
-            return render(
-                request,
-                "graph.html",
-                {
-                    "selected_ids": selections,
-                    "graphResults": samples,
-                    "graphJSON": json_string,
-                    "search_formset": search_formset,
-                    "filtersets": filtersets,
-                },
-            )
+    filtersets = [
+        filterset.short_name
+        for filterset
+        in FilterSet.objects.all().order_by("display_order")
+    ]
+    filtersets += [
+        filterset.short_name + " (no illumination)"
+        for filterset
+        in FilterSet.objects.all().order_by("display_order")
+    ]
+    return render(
+        request,
+        "graph.html",
+        {
+            "selected_ids": selections,
+            "graphResults": samples,
+            "graphJSON": json_string,
+            "search_formset": search_formset,
+            "filtersets": filtersets,
+        },
+    )
 
 
 def meta(request):
     if request.method == "GET":
-        if "meta" in request.GET:  # TODO: else what? maybe just return 5**?
-            selections = request.GET.getlist("selection")
-            prev_selected_list = request.GET.getlist("prev_selected")
-
-            search_form_set = formset_factory(SearchForm)
-            search_formset = search_form_set(request.GET)
-
-            selections = list(set(selections + prev_selected_list))
-            samples = Sample.objects.filter(id__in=selections)
+        if "meta" not in request.GET:  # something's busted, just ignore it
+            return HttpResponse(status=204)
+        selections = request.GET.getlist("selection")
+        prev_selected_list = request.GET.getlist("prev_selected")
+        search_formset = concealed_search_factory(request)(request.GET)
+        selections = list(set(selections + prev_selected_list))
+        samples = Sample.objects.filter(id__in=selections)
         dictionaries = [obj.as_dict() for obj in samples]
         return render(
             request,
@@ -232,7 +233,8 @@ def export(request):
     selections = list(selections)
     samples = Sample.objects.filter(id__in=selections)
     zip_buffer = io.BytesIO()
-    field_list = [[field.verbose_name, field.name] for field in Sample._meta.fields]
+    field_list = [[field.verbose_name, field.name] for field in
+                  Sample._meta.fields]
     field_list.sort()
 
     with zipfile.ZipFile(zip_buffer, "w") as output:
@@ -277,112 +279,119 @@ def export(request):
 
     date = dt.datetime.today().strftime("%y-%m-%d")
     response = HttpResponse(zip_buffer, content_type="application/zip")
-    response["Content-Disposition"] = "attachment; filename=spectra-%s.zip;" % date
+    response[
+        "Content-Disposition"] = "attachment; filename=spectra-%s.zip;" % date
 
     return response
 
 
 def upload(request):
-    if request.method == "POST":
-        form = UploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            uploaded_file = request.FILES["file"]
-            if uploaded_file.name[-3:] == "csv":
-                upload_results = handle_csv_upload(uploaded_file)
-            elif uploaded_file.name[-3:] == "zip":
-                upload_results = handle_zipped_upload(uploaded_file)
-            else:
-                headline = "File upload failed."
-                upload_errors = ["Please upload a csv or zip file."]
-                return render(
-                    request,
-                    "upload.html",
-                    {"form": form, "headline": headline, "upload_errors": upload_errors},
-                )
+    if not request.method == "POST":
+        # ignore it!
+        return HttpResponse(status=204)
 
-        successful = []
-        unsuccessful = []
-        # we get an integer flag at the beginning from handle_zipped_upload
-        if isinstance(upload_results[0], int):
-            if upload_results[0] == 0:
-                upload_errors = upload_results[1]
-                return render(
-                    request,
-                    "upload.html",
-                    {"form": form, "upload_errors": upload_errors},
-                )
+    form = UploadForm(request.POST, request.FILES)
 
-            elif upload_results[0] == 1:
-                headline = "No samples uploaded successfully."
-                unsuccessful = [
-                    {
-                        "filename": upload_result["filename"],
-                        "errors": upload_result["errors"],
-                    }
-                    for upload_result in upload_results[1]
-                ]
-
-            else:
-                headline = "The following samples uploaded successfully."
-                successful = [
-                    {
-                        "filename": file_result["filename"],
-                        "sample": file_result["sample"],
-                        "warnings": file_result["sample"].import_notes,
-                    }
-                    for file_result in upload_results[1]
-                ]
-
-                if upload_results[0] == 2:
-                    unsuccessful = [
-                        {
-                            "filename": file_result["filename"],
-                            "sample": file_result["sample"],
-                            "errors": file_result["errors"],
-                        }
-                        for file_result in upload_results[2]
-                    ]
-
-        # and here's the logic for displaying the results of a single CSV
-        # file upload it might be better to concatenate both of these into a
-        # single, distinct function now that we're handling multisamples
-
-        else:
-            if upload_results[0]["errors"] is not None:
-                headline = (
-                    upload_results[0]["filename"] + " did not upload successfully."
-                )
-                unsuccessful = [
-                    {
-                        "filename": upload_results[0]["filename"],
-                        "errors": upload_results[0]["errors"],
-                    }
-                ]
-            else:
-                headline = upload_results[0]["filename"] + "uploaded successfully."
-                successful = [
-                    {
-                        "filename": upload_result["filename"],
-                        "sample": upload_result["sample"],
-                        "warnings": upload_result["sample"].import_notes,
-                    }
-                    for upload_result in upload_results
-                ]
-
+    upload_errors = []
+    if not form.is_valid():
+        form = UploadForm()
+        return render(request, "upload.html", {"form": form})
+    uploaded_file = request.FILES["file"]
+    if uploaded_file.name[-3:] == "csv":
+        upload_results = handle_csv_upload(uploaded_file)
+    elif uploaded_file.name[-3:] == "zip":
+        upload_results = handle_zipped_upload(uploaded_file)
+    else:
+        headline = "File upload failed."
+        upload_errors.append("Please upload a csv or zip file.")
         return render(
             request,
             "upload.html",
-            {
-                "form": form,
-                "successful": successful,
-                "unsuccessful": unsuccessful,
-                "headline": headline,
-            },
+            {"form": form, "headline": headline,
+             "upload_errors": upload_errors},
         )
 
+    successful = []
+    unsuccessful = []
+    # we get an integer flag at the beginning from handle_zipped_upload
+    if isinstance(upload_results[0], int):
+        if upload_results[0] == 0:
+            upload_errors = upload_results[1]
+            return render(
+                request,
+                "upload.html",
+                {"form": form, "upload_errors": upload_errors},
+            )
+
+        elif upload_results[0] == 1:
+            headline = "No samples uploaded successfully."
+            unsuccessful = [
+                {
+                    "filename": upload_result["filename"],
+                    "errors": upload_result["errors"],
+                }
+                for upload_result in upload_results[1]
+            ]
+
+        else:
+            headline = "The following samples uploaded successfully."
+            successful = [
+                {
+                    "filename": file_result["filename"],
+                    "sample": file_result["sample"],
+                    "warnings": file_result["sample"].import_notes,
+                }
+                for file_result in upload_results[1]
+            ]
+
+            if upload_results[0] == 2:
+                unsuccessful = [
+                    {
+                        "filename": file_result["filename"],
+                        "sample": file_result["sample"],
+                        "errors": file_result["errors"],
+                    }
+                    for file_result in upload_results[2]
+                ]
+
+    # and here's the logic for displaying the results of a single CSV
+    # file upload it might be better to concatenate both of these into a
+    # single, distinct function now that we're handling multisamples
+
     else:
-        form = UploadForm()
-        return render(request, "upload.html", {"form": form})
+        if upload_results[0]["errors"] is not None:
+            headline = (
+                    upload_results[0][
+                        "filename"] + " did not upload successfully."
+            )
+            unsuccessful = [
+                {
+                    "filename": upload_results[0]["filename"],
+                    "errors": upload_results[0]["errors"],
+                }
+            ]
+        else:
+            headline = upload_results[0][
+                           "filename"] + "uploaded successfully."
+            successful = [
+                {
+                    "filename": upload_result["filename"],
+                    "sample": upload_result["sample"],
+                    "warnings": upload_result["sample"].import_notes,
+                }
+                for upload_result in upload_results
+            ]
+
+    return render(
+        request,
+        "upload.html",
+        {
+            "form": form,
+            "successful": successful,
+            "unsuccessful": unsuccessful,
+            "headline": headline,
+        },
+    )
 
 
 def admin_upload_image(request, ids):
@@ -418,7 +427,7 @@ def admin_upload_image(request, ids):
 
 def about(request):
     databases = Database.objects.all()
-    filtersets = FilterSet.objects.all()
+    filtersets = FilterSet.objects.all().order_by("display_order")
     return render(
         request,
         "about.html",

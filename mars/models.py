@@ -19,7 +19,8 @@ from mars.spectral import simulate_spectrum
 
 
 class FilterSet(models.Model):
-    name = models.CharField(max_length=100, unique=True, blank=False)
+    short_name = models.CharField(max_length=45, unique=True, blank=False)
+    name = models.CharField(max_length=120, blank=True)
 
     # stringified array of frequency bins, must be shared by all filters
     wavelengths = models.TextField(blank=False)
@@ -43,7 +44,7 @@ class FilterSet(models.Model):
     # TODO: it would be useful to have a reasonable cleaning function at
     #  some point
 
-    citation = models.TextField(blank=True)
+    url = models.TextField(blank=True)
     description = models.TextField(blank=True)
 
     # display order in simulation dropdown
@@ -82,6 +83,9 @@ class Database(models.Model):
     description = models.TextField(blank=True)
     short_name = models.CharField(max_length=20, blank=True, null=True)
     citation = models.TextField(blank=True)
+    released = models.BooleanField(
+        "Released to Public", default=False, blank=False
+    )
 
     def clean(self, *args, **kwargs):
         errors = []

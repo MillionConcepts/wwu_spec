@@ -20,6 +20,13 @@ directly to mstclair@millionconcepts.com.
 
 ## patch notes
 
+### v 0.23 (12/11/2020)
+
+* added features for verbose display of object names and citations
+* fixed several bugs / unwanted behaviors wrt null or malformed requests
+* removed entries of inaccessible databases from search dialogs
+* various text changes
+
 ### v 0.22 (12/10/2020)
 
 * added 'status' page for patch notes, known issues, feature implementation
