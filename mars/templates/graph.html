@@ -122,11 +122,10 @@
 
 
                                 <div class="button"
-                                     style="height:30px; margin-bottom:5px">
+                                     style="height:30px; margin-left:25%; margin-bottom:5px">
                                     <a class="btn redButton graphButton"
-                                       style="height:30px;line-height:30px; margin-bottom:0"
-                                       onclick="eraseVerts()">Erase All
-                                        Vertical Lines
+                                       style="height:30px; margin-bottom:0"
+                                       onclick="eraseVerts()">Erase Lines
                                     </a>
                                 </div>
                             </div>
@@ -193,7 +192,7 @@
                                                type="checkbox"
                                                onclick="normalizeSpectra()">
                                         <span class="lever"></span>
-                                        Normalize Peaks
+                                        Peaks
                                     </label>
                                 </div>
                                 <div class="switch" style="margin-bottom:9px">
@@ -202,7 +201,7 @@
                                                type="checkbox"
                                                onclick="waveNormalizeSpectra()">
                                         <span class="lever"></span>
-                                        Normalize Wavelength
+                                        Wavelength
                                     </label>
                                 </div>
                                 <div class="brightswitch switch" id="arm-div"
@@ -217,11 +216,11 @@
                             </div>
                         </div>
                         <div class="col" id="calc-control-div"
-                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 3%; margin-top: 2px; text-align:center">
+                             style=" font-size: 12pt; font-weight: bold; max-width:40%; margin-left: 3%; margin-top: 2px; text-align:center">
                             Click to Calculate
                             <div class="row"
                                  style="font-weight: 100; margin-top:5px; text-align:left">
-                                <div class="col" style="width:35%">
+                                <div class="col" style="max-width: 10rem;">
                                     <input name="calc-mode" type="radio"
                                            id="no-calc" checked="checked"
                                            onclick="hideCalcFocus()">
@@ -232,7 +231,7 @@
                                            onclick="updateCalc()"/>
                                     <label for="slope-calc">Slope</label>
                                 </div>
-                                <div class="col" style="width:50%">
+                                <div class="col" style="max-width:17rem;">
                                     <input name="calc-mode" type="radio"
                                            id="band-min-calc"
                                            onclick="updateCalc()"/>
