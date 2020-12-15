@@ -20,14 +20,18 @@ directly to mstclair@millionconcepts.com.
 
 ## patch notes
 
-### v 0.23 (12/11/2020)
+### v0.24 (12/15/2020)
+
+* optimizations for improved stability, performance, and fault tolerance
+
+### v0.23 (12/11/2020)
 
 * added features for verbose display of object names and citations
 * fixed several bugs / unwanted behaviors wrt null or malformed requests
 * removed entries of inaccessible databases from search dialogs
 * various text changes
 
-### v 0.22 (12/10/2020)
+### v0.22 (12/10/2020)
 
 * added 'status' page for patch notes, known issues, feature implementation
   roadmap
@@ -55,14 +59,14 @@ directly to mstclair@millionconcepts.com.
 * fixed a bug related to inappropriately flexible search results from some
   spectra sources
 
-### v 0.21 (12/8/2020)
+### v0.21 (12/8/2020)
 
 * added custom libraries to sample search and the admin interface
 * fixed a bug related to propagation of model choice fields into search
   results
 * various small bugfixes and assorted cleanup changes
 
-### v 0.2 (2/7/2020)
+### v0.2 (2/7/2020)
 
 * Changes from items discussed in 2/3 meeting
 * Added handling for uploaded files with multiple reflectance columns
@@ -98,7 +102,7 @@ directly to mstclair@millionconcepts.com.
       palette are simulated spectra
 * Redesigned about page
 
-### v.0.1 (1/31/2020)
+### v0.1 (1/31/2020)
 
 * First release of major application redesign.
 * updated to python 3.x / django 3.x. Backend changes related to update not
