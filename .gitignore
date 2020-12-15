@@ -3,4 +3,6 @@
 .idea
 __pycache__
 secret*
+settings.py
 *.log
+ubuntu@*
