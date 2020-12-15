@@ -69,13 +69,11 @@ def results(request):
 
     choice_fields = ["origin__name", "sample_type__name", "library__name"]
 
-    numeric_constraints = ["min_included_range", "max_included_range"]
     numeric_fields = ['min_reflectance', 'max_reflectance']
 
     searchable_fields = choice_fields + phrase_fields + numeric_fields
-    # note that profiling these big inner joins seems to make
-    # django-debug-toolbar really slow (not important for prod)
-    form_results = Sample.objects.only(*searchable_fields)\
+
+    form_results = Sample.objects.only(*searchable_fields)
 
     if not request.user.is_superuser:
         form_results = form_results.filter(
@@ -113,7 +111,7 @@ def results(request):
             form_results = reduce(or_, filters)
 
     # this is a placeholder for the planned 'select by band' functionality
-
+    # numeric_constraints = ["min_included_range", "max_included_range"]
     # for field in numeric_constraints:
     #     entry = search_form.cleaned_data.get(field)
     #     if entry:

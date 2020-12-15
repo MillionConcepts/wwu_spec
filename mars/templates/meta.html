@@ -23,15 +23,10 @@
             </div>
 
 
-            <!--- Search Forms --->
-            <div style="display:None">
-                {{ search_formset.management_form }}
-                {% for search_form in search_formset.forms %}
-                    {% for field in search_form.fields %}
-                        {{ field }}
-                    {% endfor %}
-                {% endfor %}
-            </div>
+              <!--- holding search form data --->
+              <div style="display:None">
+                  {{ search_formset }}
+              </div>
 
             <div class="container section">
               <input id="selectAllBox" type="checkbox" name="selectall" onClick="toggle(this)"/>
