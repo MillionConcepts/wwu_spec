@@ -41,8 +41,9 @@ def results(request):
     # also deliver clean data for each form while we're at it.
     try:
         search_formset = concealed_search_factory(request)(request.GET)
-        for search_form in search_formset:
-            assert search_form.is_valid()
+        assert len(search_formset.forms) == 1
+        search_form = search_formset.forms[0]
+        assert search_form.is_valid()
     except AssertionError:
         return render(
             request,
@@ -62,67 +63,71 @@ def results(request):
     # double underscore in these field names is an ugly but compact way to
     # access the ForeignKey object fields
 
-    searchable_fields = [
-        "sample_name",
-        "sample_id",
-        "material_class",
+    phrase_fields = [
+        "sample_name"
     ]
 
     choice_fields = ["origin__name", "sample_type__name", "library__name"]
 
     numeric_constraints = ["min_included_range", "max_included_range"]
+    numeric_fields = ['min_reflectance', 'max_reflectance']
 
-    for search_form in search_formset:
-        if request.user.is_superuser:
-            form_results = Sample.objects.all().order_by(*sort_params)
+    searchable_fields = choice_fields + phrase_fields + numeric_fields
+    # note that profiling these big inner joins seems to make
+    # django-debug-toolbar really slow (not important for prod)
+    form_results = Sample.objects.only(*searchable_fields)\
+
+    if not request.user.is_superuser:
+        form_results = form_results.filter(
+            released=True
+        )
+    form_results = form_results.order_by(*sort_params)
+
+    for field in phrase_fields + choice_fields:
+        entry = search_form.cleaned_data.get(field, None)
+        if not entry:
+            continue
+        # "Any" entries do not restrict the search
+        if entry == "Any":
+            continue
+        # require exact phrase searches for choice fields,
+        # don't waste time checking any other possibilities
+        query = field + "__iexact"
+        if field in choice_fields:
+            form_results = form_results.filter(**{query: entry})
+        # use an inflexible search for other fields
+        # if an exact phrase match exists in the currently-
+        # selected corpus
+        # NOTE: making this form_results.filter rather than
+        # Sample.objects.filter would (1) make it slightly more permissive
+        # and (2) means that ordering of fields in this loop matters
+        elif Sample.objects.filter(**{query: entry}):
+            form_results = form_results.filter(**{query: entry})
+        # otherwise treat multiple words as an 'or' search
         else:
-            form_results = Sample.objects.filter(released=True).order_by(
-                *sort_params)
+            query = field + "__icontains"
+            filters = [
+                form_results.filter(**{query: word}) for word in
+                entry.split(" ")
+            ]
+            form_results = reduce(or_, filters)
 
-        for field in searchable_fields + choice_fields:
-            entry = search_form.cleaned_data.get(field, None)
-            if not entry:
-                continue
-            # "Any" entries do not restrict the search
-            if entry == "Any":
-                continue
-            # require exact phrase searches for choice fields,
-            # don't waste time checking any other possibilities
-            query = field + "__iexact"
-            if field in choice_fields:
-                form_results = form_results.filter(**{query: entry})
-            # use an inflexible search for other fields
-            # if an exact phrase match exists in the database
-            elif Sample.objects.filter(**{query: entry}):
-                form_results = form_results.filter(**{query: entry})
-            # otherwise treat multiple words as an 'or' search
-            else:
-                query = field + "__icontains"
-                filters = [
-                    form_results.filter(**{query: word}) for word in
-                    entry.split(" ")
-                ]
-                form_results = reduce(or_, filters)
+    # this is a placeholder for the planned 'select by band' functionality
 
-            # the utility of spectrum limit constraints as part of UX is
-            # unclear to me _must_ have a band makes sense to me _cannot_
-            # have a band does not so leaving this in but it's presently
-            # vestigial
+    # for field in numeric_constraints:
+    #     entry = search_form.cleaned_data.get(field)
+    #     if entry:
+    #         if field == "min_included_range":
+    #             query = "min_reflectance__lte"
+    #         elif field == "max_included_range":
+    #             query = "max_reflectance__gte"
+    #         form_results = form_results.filter(**{query: entry})
 
-        for field in numeric_constraints:
-            entry = search_form.cleaned_data.get(field)
-            if entry:
-                if field == "min_included_range":
-                    query = "min_reflectance__lte"
-                elif field == "max_included_range":
-                    query = "max_reflectance__gte"
-                form_results = form_results.filter(**{query: entry})
-
-        # add in 'search all fields' functionality
-        entry = search_form.cleaned_data.get("any_field")
-        if entry:
-            form_results = form_results & search_all_samples(entry)
-        search_results = search_results | form_results
+    # 'search all fields' function
+    entry = search_form.cleaned_data.get("any_field")
+    if entry:
+        form_results = form_results & search_all_samples(entry)
+    search_results = search_results | form_results
 
     selections = request.GET.getlist("selection")
 
@@ -168,8 +173,9 @@ def graph(request):
     if "graphForm" not in request.GET:
         return HttpResponse(status=204)
     selections = request.GET.getlist("selection")
-    prev_selected_list = request.GET.getlist("prev_selected")
-    selections = list(set(selections + prev_selected_list))
+    # TODO: cruft?
+    # prev_selected_list = request.GET.getlist("prev_selected")
+    # selections = list(set(selections + prev_selected_list))
     if not selections:
         return HttpResponse(status=204)
     search_formset = concealed_search_factory(request)(request.GET)

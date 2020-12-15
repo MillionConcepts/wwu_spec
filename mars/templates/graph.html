@@ -18,6 +18,9 @@
 
 {% block content %}
 
+
+    <link rel="stylesheet" href="{% static 'css/nouislider.css' %}">
+
     <body onresize="redraw();">
     {% csrf_token %}
 
@@ -90,7 +93,8 @@
                 </div>
                 <div id="control-panel"
                      style="border-top: thin solid gray; display:none">
-                    <div class="row" style="margin-top: 15px; margin-bottom: 5px">
+                    <div class="row"
+                         style="margin-top: 15px; margin-bottom: 5px">
                         <div class="col" id="line-control-div"
                              style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 2%; margin-top: 2px; text-align:center">
                             Line Controls
@@ -116,10 +120,12 @@
                                 </div>
 
 
-                                <div class="button" style="height:30px; margin-bottom:5px">
+                                <div class="button"
+                                     style="height:30px; margin-bottom:5px">
                                     <a class="btn redButton graphButton"
                                        style="height:30px;line-height:30px; margin-bottom:0"
-                                       onclick="eraseVerts()">Erase All Vertical Lines
+                                       onclick="eraseVerts()">Erase All
+                                        Vertical Lines
                                     </a>
                                 </div>
                             </div>
@@ -134,82 +140,86 @@
                                     </select>
                             </form>
                         </div>
-                    <div class="col" id="line-toggle-div"
+                        <div class="col" id="line-toggle-div"
                              style="font-size: 12pt; font-weight: bold; width:25%; margin-left: 3%; margin-top: 2px; text-align:center">
-                        Visibility Controls
-                        <div class="row"
+                            Visibility Controls
+                            <div class="row"
                                  style="font-weight: 100; margin-top:5px; margin-bottom:0; text-align:left">
-                            <div class="switch" style="margin-bottom:9px">
-                                <label>
-                                    <input id="point-switch"
-                                           type="checkbox"
-                                           onclick="togglePoints(this)">
-                                    <span class="lever"></span>
-                                    Lab Points
-                                </label>
+                                <div class="switch" style="margin-bottom:9px">
+                                    <label>
+                                        <input id="point-switch"
+                                               type="checkbox"
+                                               onclick="togglePoints(this)">
+                                        <span class="lever"></span>
+                                        Lab Points
+                                    </label>
+                                </div>
+                                <div class="switch" style="margin-bottom:9px">
+                                    <label>
+                                        <input id="instrument-point-switch"
+                                               type="checkbox"
+                                               onclick="toggleInstrumentPoints(this)">
+                                        <span class="lever"></span>
+                                        Instrumentalized Points
+                                    </label>
+                                </div>
+                                <div class="switch" style="margin-bottom:9px">
+                                    <label>
+                                        <input id="line-switch"
+                                               checked="checked"
+                                               type="checkbox"
+                                               onclick="toggleLines(this)">
+                                        <span class="lever"></span>
+                                        Lab Lines
+                                    </label>
+                                </div>
+                                <div class="switch" style="margin-bottom:9px">
+                                    <label>
+                                        <input id="instrument-line-switch"
+                                               type="checkbox"
+                                               onclick="toggleInstrumentLines(this)">
+                                        <span class="lever"></span>
+                                        Instrumentalized Lines
+                                    </label>
+                                </div>
                             </div>
-                            <div class="switch" style="margin-bottom:9px">
-                                <label>
-                                    <input id="instrument-point-switch"
-                                           type="checkbox"
-                                           onclick="toggleInstrumentPoints(this)">
-                                    <span class="lever"></span>
-                                    Instrumentalized Points
-                                </label>
-                            </div>
-                            <div class="switch" style="margin-bottom:9px">
-                                <label>
-                                    <input id="line-switch" checked="checked"
-                                           type="checkbox"
-                                           onclick="toggleLines(this)">
-                                    <span class="lever"></span>
-                                    Lab Lines
-                                </label>
-                            </div>
-                            <div class="switch" style="margin-bottom:9px">
-                                <label>
-                                    <input id="instrument-line-switch"
-                                           type="checkbox"
-                                           onclick="toggleInstrumentLines(this)">
-                                    <span class="lever"></span>
-                                    Instrumentalized Lines
-                                </label>
+                            Normalization Controls
+                            <div class="row"
+                                 style="font-weight: 100; margin-top:5px; margin-bottom: 5px; text-align:left">
+                                <div class="switch" style="margin-bottom:9px">
+                                    <label>
+                                        <input id="normal-switch"
+                                               type="checkbox"
+                                               onclick="normalizeSpectra()">
+                                        <span class="lever"></span>
+                                        Normalize Peaks
+                                    </label>
+                                </div>
+                                <div class="switch" style="margin-bottom:9px">
+                                    <label>
+                                        <input id="wavenormal-switch"
+                                               type="checkbox"
+                                               onclick="waveNormalizeSpectra()">
+                                        <span class="lever"></span>
+                                        Normalize Wavelength
+                                    </label>
+                                </div>
+                                <div class="brightswitch switch" id="arm-div"
+                                     style="display:none">
+                                    <label>
+                                        <input id="arm-wavenormal-switch"
+                                               type="checkbox">
+                                        <span class="lever"></span>
+                                        Arm Selection
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                        Normalization Controls
-                        <div class="row" style="font-weight: 100; margin-top:5px; margin-bottom: 5px; text-align:left">
-                        <div class="switch" style="margin-bottom:9px">
-                                <label>
-                                    <input id="normal-switch"
-                                           type="checkbox"
-                                           onclick="normalizeSpectra()">
-                                    <span class="lever"></span>
-                                    Normalize Peaks
-                                </label>
-                            </div>
-                            <div class="switch" style="margin-bottom:9px">
-                                <label>
-                                    <input id="wavenormal-switch"
-                                           type="checkbox"
-                                           onclick="waveNormalizeSpectra()">
-                                    <span class="lever"></span>
-                                    Normalize Wavelength
-                                </label>
-                            </div>
-                            <div class="brightswitch switch" id="arm-div"
-                                 style="display:none">
-                                <label>
-                                    <input id="arm-wavenormal-switch"
-                                           type="checkbox">
-                                    <span class="lever"></span>
-                                    Arm Selection
-                                </label>
-                            </div>
-                        </div>
-                    </div>
                         <div class="col" id="calc-control-div"
-                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 3%; margin-top: 2px; text-align:center">Click to Calculate
-                            <div class="row" style="font-weight: 100; margin-top:5px; text-align:left">
+                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 3%; margin-top: 2px; text-align:center">
+                            Click to Calculate
+                            <div class="row"
+                                 style="font-weight: 100; margin-top:5px; text-align:left">
                                 <div class="col" style="width:35%">
                                     <input name="calc-mode" type="radio"
                                            id="no-calc" checked="checked"
@@ -244,100 +254,98 @@
                     </div>
                 </div>
 
-            <table class="graph results"
-                   style="width:85%; margin-left:2%">
-                <thead>
-                <tr style="height:25px">
-                    <th style="flex-grow:0.2; padding-top:5px"><label>Line</label></th>
-                    <th style="flex-grow:0.2; padding-top:5px"><label>Color</label></th>
-                    <th style="padding-top:5px"><label>ID</label></th>
-                    <th style="padding-top:5px"><label>Name</label></th>
-                    <th style="padding-top:5px"><label>Origin</label></th>
-                    <th style="padding-top:5px"><label>Offset</label></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for result in graphResults %}
-                    <tr>
-                        <td style="flex-grow:0.2">
-                            <div style="position: relative">
-                                <input type="checkbox" checked="checked"
-                                       name="selection"
-                                       id="option{{ result.id }}"
-                                       value={{ result.id }}""
-                                       onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
-                                <label for="option{{ result.id }}"></label>
-                            </div>
-                        </td>
-                        <td>
-                            <div id="rect-{{ result.id }}"
-                                 style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2">
-                            </div>
-                        </td>
-
-                        <td><label class="truncate"
-                                   for="option{{ result.id }}">{{ result.sample_id }}</label>
-                        </td>
-                        <td><label class="truncate"
-                                   for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
-                        </td>
-                        <td><label class="truncate"
-                                   for="option{{ result.id }}"> {{ result.origin }} </label>
-                        </td>
-                        <td>
-                            <label for="offset-dialog{{ result.id }}">
-                                <input id="offset-dialog{{ result.id }}" step=".02" type="number">
-                            </label>
-                        </td>
-
-
+                <table class="graph results"
+                       style="width:85%; margin-left:2%">
+                    <thead>
+                    <tr style="height:25px">
+                        <th style="flex-grow:0.2; padding-top:5px">
+                            <label>Line</label></th>
+                        <th style="flex-grow:0.2; padding-top:5px">
+                            <label>Color</label></th>
+                        <th style="padding-top:5px"><label>ID</label></th>
+                        <th style="padding-top:5px"><label>Name</label></th>
+                        <th style="padding-top:5px"><label>Origin</label></th>
+                        <th style="padding-top:5px"><label>Offset</label></th>
                     </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <form id="resultsForm" method="GET" name="resultsform">
-                <div class="section center-align">
-                    <button type="submit" name="search"
-                            formaction="/"
-                            class="btn btn-success">Back to Search
-                    </button>
-                    <button type="submit" name="resultsform"
-                            formaction="/mars/results/"
-                            class="btn btn-success">Results
-                    </button>
-                    <button type="submit" name="export"
-                            formaction="/mars/export/"
-                            class="btn btn-success">Export
-                    </button>
-                    <button type="submit" name="meta"
-                            formaction="/mars/meta/"
-                            class="btn btn-success">View Metadata
-                    </button>
-                    <br>
-                </div>
-                {% for id in selected_ids %}
-                    <input type="hidden" name="selection"
-                           value="{{ id }}"/>
-                {% endfor %}
+                    </thead>
+                    <tbody>
+                    {% for result in graphResults %}
+                        <tr>
+                            <td style="flex-grow:0.2">
+                                <div style="position: relative">
+                                    <input type="checkbox" checked="checked"
+                                           name="selection"
+                                           id="option{{ result.id }}"
+                                           value={{ result.id }}""
+                                           onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
+                                    <label for="option{{ result.id }}"></label>
+                                </div>
+                            </td>
+                            <td>
+                                <div id="rect-{{ result.id }}"
+                                     style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2">
+                                </div>
+                            </td>
+
+                            <td><label class="truncate"
+                                       for="option{{ result.id }}">{{ result.sample_id }}</label>
+                            </td>
+                            <td><label class="truncate"
+                                       for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
+                            </td>
+                            <td><label class="truncate"
+                                       for="option{{ result.id }}"> {{ result.origin }} </label>
+                            </td>
+                            <td>
+                                <label for="offset-dialog{{ result.id }}">
+                                    <input id="offset-dialog{{ result.id }}"
+                                           step=".02" type="number">
+                                </label>
+                            </td>
 
 
-                {{ search_formset.management_form }}
-                <div style="display:None">
-                    {% for search_form in search_formset.forms %}
-                        {{ search_form.id }}
-                        {{ search_form.sample_id }}
-                        {{ search_form.sample_name }}
-                        {{ search_form.material_class }}
-                        {{ search_form.min_included_range }}
-                        {{ search_form.max_included_range }}
-                        {{ search_form.sample_type__name }}
-                        {{ search_form.origin__name }}
+                        </tr>
                     {% endfor %}
-                </div>
+                    </tbody>
+                </table>
+                <form id="resultsForm" method="GET" name="resultsform">
+                    <div class="section center-align">
+                        <button type="submit" name="search"
+                                formaction="/"
+                                class="btn btn-success">Back to Search
+                        </button>
+                        <button type="submit" name="resultsform"
+                                formaction="/mars/results/"
+                                class="btn btn-success">Results
+                        </button>
+                        <button type="submit" name="export"
+                                formaction="/mars/export/"
+                                class="btn btn-success">Export
+                        </button>
+                        <button type="submit" name="meta"
+                                formaction="/mars/meta/"
+                                class="btn btn-success">View Metadata
+                        </button>
+                        <br>
+                    </div>
+                    {% for id in selected_ids %}
+                        <input type="hidden" name="selection"
+                               value="{{ id }}"/>
+                    {% endfor %}
 
 
-            </form>
-        </div>
+                    <div style="display:None">
+                        {{ search_formset.management_form }}
+                        {% for search_form in search_formset.forms %}
+                            {% for field in search_form.fields %}
+                            {{ field }}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+
+
+                </form>
+            </div>
         </div>
 
         <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
@@ -594,7 +602,7 @@
                 }
             };
 
-            const updateDataVisibility = function() {
+            const updateDataVisibility = function () {
                 togglePoints(document.getElementById('point-switch'))
                 toggleInstrumentPoints(document.getElementById('instrument-point-switch'))
                 toggleLines(document.getElementById('line-switch'))
@@ -1664,7 +1672,7 @@
                 // X Axis label
                 xlabel.attr("class", "x label")
                     .style("text-anchor", "end")
-                    .attr("x", width/2)
+                    .attr("x", width / 2)
                     .attr("y", height + xLabelOffset)
                     .text("Wavelength (nm)");
 

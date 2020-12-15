@@ -23,15 +23,14 @@
             </div>
 
 
-  {{search_formset.management_form}}
-
-
             <!--- Search Forms --->
             <div style="display:None">
-              {% for search_form in search_formset.forms %}
-                {{search_form.sample_id}}
-                {{search_form.id}}
-              {% endfor %}
+                {{ search_formset.management_form }}
+                {% for search_form in search_formset.forms %}
+                    {% for field in search_form.fields %}
+                        {{ field }}
+                    {% endfor %}
+                {% endfor %}
             </div>
 
             <div class="container section">
