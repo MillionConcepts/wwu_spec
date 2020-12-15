@@ -13,24 +13,28 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import debug_toolbar
+from django.conf import settings
 from django.contrib import admin
-from django.urls import path,re_path,include
+from django.urls import path, include
 from django.views.generic import RedirectView
-from mars import views, forms, urls
 
 # redirect base URL to Mars, given that currently we only serve Mars data
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('mars/', include('mars.urls')),
-    path('', RedirectView.as_view(url='mars/',permanent=True)),
+    path('', RedirectView.as_view(url='mars/', permanent=True)),
 ]
 
-# use static() to serve static files during development
-# remove for deployment
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns.append(
+        path('__debug__/', include(debug_toolbar.urls))
+    )
 
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-

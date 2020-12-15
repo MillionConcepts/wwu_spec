@@ -19,36 +19,36 @@ from mars.spectral import simulate_spectrum
 
 
 class FilterSet(models.Model):
-    short_name = models.CharField(max_length=45, unique=True, blank=False)
-    name = models.CharField(max_length=120, blank=True)
+    short_name = models.CharField(max_length=45, unique=True, blank=False, db_index=True)
+    name = models.CharField(max_length=120, blank=True, db_index=True)
 
     # stringified array of frequency bins, must be shared by all filters
-    wavelengths = models.TextField(blank=False)
+    wavelengths = models.TextField(blank=False, db_index=True)
 
     # JSON string containing dictionary of filters, formatted like:
     # {"filter name":array_of_responsivity_values}
     # we expect all filters to be power-normalized
     # such that the integral over the frequency bins = 1
     # see normalize_power() in spectral.py
-    filters = models.TextField(blank=False)
+    filters = models.TextField(blank=False, db_index=True)
 
     # stringified 2-D array containing wavelength and spectrum
     # of reference illuminating radiation(e.g., solar spectrum)
-    illumination = models.TextField(blank=True)
+    illumination = models.TextField(blank=True, db_index=True)
 
     # stringified 2-D array of effective center frequencies for
     # each filter, formatted like: ["filter name",center_frequency]
     # must have same names as filters
-    filter_frequencies = models.TextField(blank=False)
+    filter_frequencies = models.TextField(blank=False, db_index=True)
 
     # TODO: it would be useful to have a reasonable cleaning function at
     #  some point
 
-    url = models.TextField(blank=True)
-    description = models.TextField(blank=True)
+    url = models.TextField(blank=True, db_index=True)
+    description = models.TextField(blank=True, db_index=True)
 
     # display order in simulation dropdown
-    display_order = models.IntegerField(blank=True, default=10000)
+    display_order = models.IntegerField(blank=True, default=10000, db_index=True)
 
     def __str__(self):
         return self.name
@@ -58,8 +58,8 @@ class Library(models.Model):
     """
     table holding spectra assignments to custom libraries
     """
-    name = models.CharField(max_length=100, unique=True, blank=False)
-    description = models.TextField(blank=True)
+    name = models.CharField(max_length=100, unique=True, blank=False, db_index=True)
+    description = models.TextField(blank=True, db_index=True)
 
     def clean(self, *args, **kwargs):
         self.name = str(self.name).strip()
@@ -78,11 +78,11 @@ class Database(models.Model):
     table holding information on source databases such as the
     USGS spectral database.
     """
-    name = models.CharField(max_length=100, unique=True, blank=False)
-    url = models.TextField(blank=True)
-    description = models.TextField(blank=True)
-    short_name = models.CharField(max_length=20, blank=True, null=True)
-    citation = models.TextField(blank=True)
+    name = models.CharField(max_length=100, unique=True, blank=False, db_index=True)
+    url = models.TextField(blank=True, db_index=True)
+    description = models.TextField(blank=True, db_index=True)
+    short_name = models.CharField(max_length=20, blank=True, null=True, db_index=True)
+    citation = models.TextField(blank=True, db_index=True)
     released = models.BooleanField(
         "Released to Public", default=False, blank=False
     )
@@ -124,46 +124,46 @@ class SampleType(models.Model):
 
 class Sample(models.Model):
     actions = ["mass_change_selected"]
-    composition = models.CharField("Composition", blank=True, max_length=40)
-    date_added = models.DateTimeField("Date Added", auto_now=True)
+    composition = models.CharField("Composition", blank=True, max_length=40, db_index=True)
+    date_added = models.DateTimeField("Date Added", auto_now=True, db_index=True)
     filename = models.CharField("Name of Uploaded File", blank=True,
                                 max_length=80)
-    formula = models.CharField("Formula", blank=True, max_length=40)
-    grain_size = models.CharField("Grain Size", blank=True, max_length=40)
-    image = models.CharField("Path to Image", blank=True, max_length=100)
-    import_notes = models.TextField("File import notes", blank=True)
-    locality = models.TextField("Locality", blank=True)
-    library = models.ManyToManyField(Library, blank=True)
-    min_reflectance = models.FloatField("Minimum Reflectance", blank=True)
-    sample_name = models.CharField("Sample Name", blank=True, max_length=40)
-    max_reflectance = models.FloatField("Maximum Reflectance", blank=True)
+    formula = models.CharField("Formula", blank=True, max_length=40, db_index=True)
+    grain_size = models.CharField("Grain Size", blank=True, max_length=40, db_index=True)
+    image = models.CharField("Path to Image", blank=True, max_length=100, db_index=True)
+    import_notes = models.TextField("File import notes", blank=True, db_index=True)
+    locality = models.TextField("Locality", blank=True, db_index=True)
+    library = models.ManyToManyField(Library, blank=True, db_index=True)
+    min_reflectance = models.FloatField("Minimum Reflectance", blank=True, db_index=True)
+    sample_name = models.CharField("Sample Name", blank=True, max_length=40, db_index=True)
+    max_reflectance = models.FloatField("Maximum Reflectance", blank=True, db_index=True)
     origin = models.ForeignKey(
         Database,
         on_delete=models.PROTECT,
         blank=False,
         verbose_name="Database of Origin",
     )
-    other = models.TextField("Other Information", blank=True)
-    references = models.TextField("References", blank=True)
+    other = models.TextField("Other Information", blank=True, db_index=True)
+    references = models.TextField("References", blank=True, db_index=True)
     released = models.BooleanField(
         "Released to Public", default=False, blank=False
     )
 
     # stringified array
-    reflectance = models.TextField("Reflectance", default="[0,0]")
-    resolution = models.CharField("Resolution", blank=True, max_length=40)
+    reflectance = models.TextField("Reflectance", default="[0,0]", db_index=True)
+    resolution = models.CharField("Resolution", blank=True, max_length=40, db_index=True)
     material_class = models.CharField("Material Class", blank=True,
                                       max_length=40)
-    sample_desc = models.TextField("Sample Description", blank=True)
-    sample_id = models.CharField("Sample ID", max_length=40)
+    sample_desc = models.TextField("Sample Description", blank=True, db_index=True)
+    sample_id = models.CharField("Sample ID", max_length=40, db_index=True)
     sample_type = models.ForeignKey(
         SampleType, on_delete=models.PROTECT, null=True,
         verbose_name="Sample Type"
     )
 
     # dictionary of pandas dataframes stored as json string
-    simulated_spectra = models.TextField("Simulated Spectra", default="{}")
-    view_geom = models.CharField("Viewing Geometry", blank=True, max_length=40)
+    simulated_spectra = models.TextField("Simulated Spectra", default="{}", db_index=True)
+    view_geom = models.CharField("Viewing Geometry", blank=True, max_length=40, db_index=True)
 
     def clean(self, *args, **kwargs):
         errors = []

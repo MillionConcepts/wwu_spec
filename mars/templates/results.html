@@ -3,267 +3,322 @@
 {% block content %}
 
 
-  {% if search_results %}
-    <div class="container section">
-      <div class="card section warm-content">
-        <form id="resultsForm" method="GET" name="resultsForm">
-          <div class="section center-align">
-            <button type="submit" name="graphForm" formaction="/mars/graph/" class="btn btn-success">Graph</button>
-            <button type="submit" name="export" formaction="/mars/export/" class="btn btn-success">Export</button>
-            <button type="submit" name="meta" formaction="/mars/meta/" class="btn btn-success">View Metadata</button><br>
-          </div>
-          <div class="container section">
-            <div class="center-align">
-              <label class="center-align" halign="center">
-                Showing results {{page_results.start_index}}-{{page_results.end_index}} of {{page_results.paginator.count}}
-              </label>
-            </div>
-            <input id="selectAllBox" type="checkbox" name="selectall" onClick="toggle(this)"/>
-            <label id="selectAllLabel" for="selectAllBox" > Select All</label>
-          </div>
-          <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
-              <table class="results">
-                <thead>
-                  <tr>
-                    <th style="width:65px; flex-grow:0; flex-shrink:0"></th>
-                    <th class="result_column" onclick="sortByField('sample_id')">
-                      <label class="truncate"><a>
-                        ID
-                        {% if "sample_id" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons">arrow_drop_up</i>
-                        {% elif "-sample_id" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons">arrow_drop_down</i>
-                        {% endif %}
-                      </a></label>
-                    </th>
-                    <th class="result_column" onclick="sortByField('sample_name')">
-                      <label class="truncate"><a>
-                        Name
-                        {% if "sample_name" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons align-vertical">arrow_drop_up</i>
-                        {% elif "-sample_name" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons align-vertical">arrow_drop_down</i>
-                        {% endif %}
-                      </a></label>
-                    </th>
-                    
-                    <th class="result_column" onclick="sortByField('origin')">
-                      <label class="truncate"><a>
-                        Origin
-                        {% if "origin" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons align-vertical">arrow_drop_up</i>
-                        {% elif "-origin" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons align-vertical">arrow_drop_down</i>
-                        {% endif %}
-                      </a></label>
-                    </th>
-                    <th class="result_column" onclick="sortByField('sample_type')">
-                      <label class="truncate"><a>
-                        Sample Type
-                        {% if "sample_type" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons align-vertical">arrow_drop_down</i>
-                        {% elif "-sample_type" in sort_params %}
-                          <i style="vertical-align: bottom;" class="material-icons align-vertical">arrow_drop_down</i>
-                        {% endif %}
-                      </a></label>
-                    </th>
-                    <th class="result_column" >
-                      <label class="truncate"><a style="color:#1c2023">
-                        Wavelengths
-                      </a></label>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody style='max-height:1024px; overflow-y: auto'>
-                  {% for result in page_results %}
-                  <tr>
-                  
-                      <td style="width:65px; flex-grow:0; flex-shrink:0">
-                        <div >
-                            {% if result.id in selected_ids %}
-                          <input type="checkbox" checked="checked" name="selection" id="option{{ result.id }}" value={{result.id}} />
-                          {% else %}
-                          <input type="checkbox" name="selection" id="option{{ result.id }}" value={{result.id}} />
-                          {% endif %}
-                          <label for="option{{result.id }}"></label>
+    {% if search_results %}
+        <div class="container section">
+            <div class="card section warm-content">
+                <form id="resultsForm" method="GET" name="resultsForm">
+                    <div class="section center-align">
+                        <button type="submit" name="graphForm"
+                                formaction="/mars/graph/"
+                                class="btn btn-success">Graph
+                        </button>
+                        <button type="submit" name="export"
+                                formaction="/mars/export/"
+                                class="btn btn-success">Export
+                        </button>
+                        <button type="submit" name="meta"
+                                formaction="/mars/meta/"
+                                class="btn btn-success">View Metadata
+                        </button>
+                        <br>
+                    </div>
+                    <div class="container section">
+                        <div class="center-align">
+                            <label class="center-align" halign="center">
+                                Showing
+                                results {{ page_results.start_index }}-{{ page_results.end_index }}
+                                of {{ page_results.paginator.count }}
+                            </label>
                         </div>
-                      </td>
-                         
-                    
-                    <td class="result_column"><label class="truncate" for="option{{ result.id }}"> {{ result.sample_id }}</label></td>
-                    <td class="result_column"><label class="truncate" for="option{{ result.id }}"> {{ result.sample_name | title }} </label></td>
-                    
-                    <td class="result_column"><label class="truncate" for="option{{ result.id }}"> {{ result.origin }} </label></td>
-                    <td class="result_column"><label class="truncate" for="option{{ result.id }}"> {{ result.sample_type }} </label></td>
-                    <td class="result_column"><label for="option{{ result.id }}"> {{ result.min_reflectance }}-{{result.max_reflectance}} </label></td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-              <div class="section center-align">
-                <button type="submit" name="graphForm" formaction="/mars/graph/" class="btn btn-success">Graph</button>
-                <button type="submit" name="export" formaction="/mars/export/" class="btn btn-success">Export</button>
-                <button type="submit" name="meta" formaction="/mars/meta/" class="btn btn-success">View Metadata</button><br>
+                        <input id="selectAllBox" type="checkbox"
+                               name="selectall" onClick="toggle(this)"/>
+                        <label id="selectAllLabel" for="selectAllBox"> Select
+                            All</label>
+                    </div>
+                    <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
+                        <table class="results">
+                            <thead>
+                            <tr>
+                                <th style="width:65px; flex-grow:0; flex-shrink:0"></th>
+                                <th class="result_column"
+                                    onclick="sortByField('sample_id')">
+                                    <label class="truncate"><a>
+                                        ID
+                                        {% if "sample_id" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons">arrow_drop_up</i>
+                                        {% elif "-sample_id" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons">arrow_drop_down</i>
+                                        {% endif %}
+                                    </a></label>
+                                </th>
+                                <th class="result_column"
+                                    onclick="sortByField('sample_name')">
+                                    <label class="truncate"><a>
+                                        Name
+                                        {% if "sample_name" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons align-vertical">arrow_drop_up</i>
+                                        {% elif "-sample_name" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons align-vertical">arrow_drop_down</i>
+                                        {% endif %}
+                                    </a></label>
+                                </th>
+
+                                <th class="result_column"
+                                    onclick="sortByField('origin')">
+                                    <label class="truncate"><a>
+                                        Origin
+                                        {% if "origin" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons align-vertical">arrow_drop_up</i>
+                                        {% elif "-origin" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons align-vertical">arrow_drop_down</i>
+                                        {% endif %}
+                                    </a></label>
+                                </th>
+                                <th class="result_column"
+                                    onclick="sortByField('sample_type')">
+                                    <label class="truncate"><a>
+                                        Sample Type
+                                        {% if "sample_type" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons align-vertical">arrow_drop_down</i>
+                                        {% elif "-sample_type" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons align-vertical">arrow_drop_down</i>
+                                        {% endif %}
+                                    </a></label>
+                                </th>
+                                <th class="result_column">
+                                    <label class="truncate"><a
+                                            style="color:#1c2023">
+                                        Wavelengths
+                                    </a></label>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody style='max-height:1024px; overflow-y: auto'>
+                            {% for result in page_results %}
+                                <tr>
+
+                                    <td style="width:65px; flex-grow:0; flex-shrink:0">
+                                        <div>
+                                            {% if result.id in selected_ids %}
+                                                <input type="checkbox"
+                                                       checked="checked"
+                                                       name="selection"
+                                                       id="option{{ result.id }}"
+                                                       value={{ result.id }}>
+                                            {% else %}
+                                                <input type="checkbox"
+                                                       name="selection"
+                                                       id="option{{ result.id }}"
+                                                       value={{ result.id }}>
+                                            {% endif %}
+                                            <label for="option{{ result.id }}"></label>
+                                        </div>
+                                    </td>
+
+
+                                    <td class="result_column"><label
+                                            class="truncate"
+                                            for="option{{ result.id }}"> {{ result.sample_id }}</label>
+                                    </td>
+                                    <td class="result_column"><label
+                                            class="truncate"
+                                            for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
+                                    </td>
+
+                                    <td class="result_column"><label
+                                            class="truncate"
+                                            for="option{{ result.id }}"> {{ result.origin }} </label>
+                                    </td>
+                                    <td class="result_column"><label
+                                            class="truncate"
+                                            for="option{{ result.id }}"> {{ result.sample_type }} </label>
+                                    </td>
+                                    <td class="result_column"><label
+                                            for="option{{ result.id }}"> {{ result.min_reflectance }}-{{ result.max_reflectance }} </label>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="section center-align">
+                            <button type="submit" name="graphForm"
+                                    formaction="/mars/graph/"
+                                    class="btn btn-success">Graph
+                            </button>
+                            <button type="submit" name="export"
+                                    formaction="/mars/export/"
+                                    class="btn btn-success">Export
+                            </button>
+                            <button type="submit" name="meta"
+                                    formaction="/mars/meta/"
+                                    class="btn btn-success">View Metadata
+                            </button>
+                            <br>
+                        </div>
+                    </div>
+
+
+
+
+                    <!--- holding search form data -- perhaps awkward? --->
+                    <div style="display:None">
+                        {{ search_formset.management_form }}
+                        {% for search_form in search_formset.forms %}
+                            {% for field in search_form.fields %}
+                            {{ field }}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+
+{# TODO: this is crufty and doesn't really do what we want, but should maybe be replaced with _something_ ('memory') #}
+{# for the results view on returning from graph  -- maybe just [age tracking#}
+{#                    {% for id in selected_ids %}#}
+{#                        {% if id not in page_ids %}#}
+{#                            <input type="hidden" name="prev_selected"#}
+{#                                   value="{{ id }}"/>#}
+{#                        {% endif %}#}
+{#                    {% endfor %}#}
+{##}
+{#                    {% if results_string %}#}
+{#                        <input type="hidden" name="results_string"#}
+{#                               value="{{ results_string }}"/>#}
+{#                    {% endif %}#}
+{#                    {% if prev_selected %}#}
+{#                        <input type="hidden" name="prev_selected"#}
+{#                               value="{{ prev_selected }}"/>#}
+{#                    {% endif %}#}
+
+                    {% for sort_param in sort_params %}
+                        <input type="hidden" name="sort_params"
+                               value="{{ sort_param }}"/>
+                    {% endfor %}
+
+
+                    <!-- Pagination -->
+                    <input id="page_selected" type="hidden"
+                           name="page_selected"
+                           value="{{ page_results.number }}"/>
+                    <ul class="pagination center-align">
+                        {% if page_results.has_previous %}
+                            <li class="waves-effect">
+                                <a onclick="selectPage({{ page_results.previous_page_number }});"
+                                   name="action" value="results"/>
+                                <i class="material-icons">chevron_left</i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="disabled">
+                                <a name="action" value="results"/>
+                                <i class="material-icons">chevron_left</i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for page in page_choices %}
+
+                            {% if page_results.number == page %}
+                                <li class="active">
+                                    <a name="action" value="results"/>
+                                    {{ page_results.number }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="waves-effect">
+                                    <a onclick="selectPage({{ page }});"
+                                       name="action" value="results">
+                                    {{ page }}
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                        {% endfor %}
+
+                        {% if page_results.has_next %}
+                            <li class="waves-effect">
+                                <a onclick="selectPage({{ page_results.next_page_number }});"
+                                   name="action" value="results">
+                                    <i class="material-icons">chevron_right</i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="disabled">
+                                <a name="action" value="results">
+                                    <i class="material-icons">chevron_right</i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </form>
+
             </div>
-          </div>
-
-
-
-
-          
-            {{search_formset.management_form}}
-
-
-            <!--- Search Forms --->
-            <div style="display:None">
-              {% for search_form in search_formset.forms %}
-            {{search_formset.management_form}}
-                {{search_form.id}}
-                {{search_form.sample_id}}
-                {{search_form.sample_name}}
-                {{search_form.material_class}}
-                {{search_form.min_included_range}}
-                {{search_form.max_included_range}}
-                {{search_form.sample_type__name}}
-                {{search_form.origin__name}}
-              {% endfor %}
+        </div>
+    {% else %}
+        <div id="meta" class="container section">
+            <div class="card-panel center-align">
+                <p>Unfortunately, there are no samples that match your search.
+                    Try a different one.</p>
             </div>
+        </div>
+    {% endif %}
 
+    <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
+    <script src="{% static 'js/materialize.min.js' %}"></script>
 
-          {% for id in selected_ids %}
-            {% if id not in page_ids %}
-              <input type="hidden" name="prev_selected" value="{{id}}"/>
-            {% endif %}
-          {% endfor %}
-
-
-
-          {% if results_string %}
-            <input type="hidden" name="results_string" value="{{results_string}}"/>
-          {% endif %}
-
-          {% if prev_selected %}
-            <input type="hidden" name="prev_selected" value="{{prev_selected}}"/>
-          {% endif %}
-
-          {% for sort_param in sort_params %}
-            <input type="hidden" name="sort_params" value="{{sort_param}}"/>
-          {% endfor %}
-
-
-          <!-- Pagination -->
-          <input id="page_selected" type="hidden" name="page_selected" value="{{page_results.number}}"/>
-          <input type="hidden" name="page_number" value="{{results.number}}"/>
-          <ul class="pagination center-align">
-            {% if page_results.has_previous %}
-              <li class="waves-effect">
-                <a onclick="selectPage({{page_results.previous_page_number}});" name="action" value="results"/>
-                <i class="material-icons">chevron_left</i>
-                </a>
-              </li>
-            {% else %}
-              <li class="disabled">
-                <a name="action" value="results"/>
-                <i class="material-icons">chevron_left</i>
-                </a>
-              </li>
-            {% endif %}
-
-            {% for page in page_choices %}
-
-            {% if page_results.number == page %}
-              <li class="active">
-                <a  name="action" value="results"/>
-                {{page_results.number}}
-                </a>
-              </li>
-            {% else %}
-              <li class="waves-effect">
-                <a onclick="selectPage({{page}});" name="action" value="results"/>
-                {{page}}
-                </a>
-              </li>
-            {% endif%}
-
-            {% endfor %}
-
-            {% if page_results.has_next %}
-              <li class="waves-effect">
-                <a onclick="selectPage({{page_results.next_page_number}});" name="action" value="results">
-                <i class="material-icons">chevron_right</i>
-                </a>
-              </li>
-            {% else %}
-              <li class="disabled">
-                <a name="action" value="results">
-                <i class="material-icons">chevron_right</i>
-                </a>
-              </li>
-            {% endif %}
-          </ul>
-        </form>
-
-      </div>
-    </div>
-  {% else %}
-    <div id="meta" class="container section">
-      <div class="card-panel center-align">
-        <p>Unfortunately, there are no samples that match your search. Try a different one.</p>
-      </div>
-    </div>
-  {% endif %}
-
-  <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
-  <script src="{% static 'js/materialize.min.js' %}"></script>
-
-  <script>
-    // Select all toggle
-    function toggle(source){
-        let checkboxes = document.getElementsByName("selection");
-        let i = 0, n = checkboxes.length;
-        for(; i<n; i++){
-        checkboxes[i].checked = source.checked;
-      }
-    }
-
-    // Pagination value. Allows user to select the next page
-    function selectPage(pageNumber) {
-      document.getElementById("page_selected").value = pageNumber;
-      document.getElementById("resultsForm").submit();
-    }
-
-    function removeElement(element) {
-      element.parentNode.removeChild(element);
-    }
-
-    // Sort results by fields. Allows user to sort the table by clicking on table header
-    function sortByField(field) {
-        const form = document.forms['resultsForm'];
-        const sortParams = document.getElementsByName("sort_params");
-
-        const input = document.createElement('input');
-
-        input.type = 'hidden';
-      input.name = 'sort_params';
-      input.value = field;
-
-      for (let i = 0; i < sortParams.length; i++) {
-        if (sortParams[i].value === field) {
-          input.value = "-"+field;
-          removeElement(sortParams[i]);
+    <script>
+        // Select all toggle
+        function toggle(source) {
+            let checkboxes = document.getElementsByName("selection");
+            let i = 0, n = checkboxes.length;
+            for (; i < n; i++) {
+                checkboxes[i].checked = source.checked;
+            }
         }
-        else if (sortParams[i].value === "-" + field) {
-          removeElement(sortParams[i]);
+
+        // Pagination value. Allows user to select the next page
+        function selectPage(pageNumber) {
+            document.getElementById("page_selected").value = pageNumber;
+            document.getElementById("resultsForm").submit();
         }
-      }
 
-      form.insertBefore(input, form.firstChild);
-      //form.appendChild(input);
+        function removeElement(element) {
+            element.parentNode.removeChild(element);
+        }
+
+        // Sort results by fields. Allows user to sort the table by clicking on table header
+        function sortByField(field) {
+            const form = document.forms['resultsForm'];
+            const sortParams = document.getElementsByName("sort_params");
+
+            const input = document.createElement('input');
+
+            input.type = 'hidden';
+            input.name = 'sort_params';
+            input.value = field;
+
+            for (let i = 0; i < sortParams.length; i++) {
+                if (sortParams[i].value === field) {
+                    input.value = "-" + field;
+                    removeElement(sortParams[i]);
+                } else if (sortParams[i].value === "-" + field) {
+                    removeElement(sortParams[i]);
+                }
+            }
+
+            form.insertBefore(input, form.firstChild);
+            //form.appendChild(input);
 
 
-      document.getElementById("resultsForm").submit(); 
-   }
+            document.getElementById("resultsForm").submit();
+        }
 
-  </script>
+    </script>
 
 {% endblock %}

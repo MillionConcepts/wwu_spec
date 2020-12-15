@@ -6,3 +6,4 @@ secret*
 settings.py
 *.log
 ubuntu@*
+/staticfiles**
