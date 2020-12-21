@@ -165,7 +165,7 @@ def results(request):
     )
 
 
-def graph(request):
+def graph(request, template="graph.html"):
     if not request.method == "GET":
         return HttpResponse(status=204)
     if "graphForm" not in request.GET:
@@ -196,7 +196,7 @@ def graph(request):
     ]
     return render(
         request,
-        "graph.html",
+        template,
         {
             "selected_ids": selections,
             "graphResults": samples,
@@ -205,6 +205,11 @@ def graph(request):
             "filtersets": filtersets,
         },
     )
+
+
+# debug
+def graph_future(request):
+    return graph(request, "graph_future.html")
 
 
 def meta(request):

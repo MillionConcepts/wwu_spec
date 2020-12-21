@@ -8,17 +8,34 @@ directly to mstclair@millionconcepts.com.
 ## short-term planned features
 
 * improved interface for normalizing to particular wavelengths
-* retain zoom/pan when turning spectra off or switching simulated filter sets
-* include a "calculate for all" feature in the graph view
 * add a toggle for simulated illumination in the graph view
 * export simulated spectra as well as lab spectra
 
 ## known issues
 
-* Some toggles related to the vertical line in the graph view may behave
-  unreliably
+* when pointer is on graph but outside the bounding box of any line, focus
+  may snap to unexpected points
+* calculation foci may sometimes clip out of the graph pane
+* band depth minima aren't properly computed on multiple spectra simultaneously
 
 ## patch notes
+
+### v0.3
+
+* new behavior for 'normalize-to-wavelength' option. Instead of clicking on the
+  graph, you may now enter a target wavelength in the box next to the 'wavelength'
+  switch in the control panel.
+* pan and zoom are now retained when spectra are switched off and on,
+  simulation options are changed, or normalization states are changed. 'reset window,'
+  as before, will always center the rendered spectra in their current state, 
+  should you normalize yourself into a corner of the plane with nothing in it.
+* new option to perform calculations on all spectra simultaneously 
+* numerous under-the-hood changes to enable futureproofing, extensibility, and bugfixes
+* improved pan and zoom behavior from both mouse and window-control widgets
+* fixed a bug related to point selection at the right-hand ends of spectra
+* fixed issues related to instrumentalized vs. lab spectra selection ambiguities
+* visual feedback added for normalization states
+* many edge cases and ambiguities in calculation behavior resolved
 
 ### v0.24 (12/15/2020)
 
