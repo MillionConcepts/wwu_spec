@@ -7,6 +7,7 @@ urlpatterns = [
     path('search/', views.search, name='search'),
     path(r'admin/', include('massadmin.urls')),
     re_path(r'^graph/$', views.graph, name='graph'),
+    re_path(r'^graph_future/$', views.graph_future, name='graph_future'),
     re_path(r'^results/$', views.results, name='results'),
     re_path(r'^export/$', views.export, name='export'),
     re_path(r'^meta/$', views.meta, name='meta'),
