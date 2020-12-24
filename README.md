@@ -7,18 +7,22 @@ directly to mstclair@millionconcepts.com.
 
 ## short-term planned features
 
-* improved interface for normalizing to particular wavelengths
 * add a toggle for simulated illumination in the graph view
-* export simulated spectra as well as lab spectra
+* export simulated spectra as distinct CSV files
+* improved on-screen display of calculation outputs
 
 ## known issues
 
-* when pointer is on graph but outside the bounding box of any line, focus
-  may snap to unexpected points
 * calculation foci may sometimes clip out of the graph pane
-* band depth minima aren't properly computed on multiple spectra simultaneously
 
 ## patch notes
+
+### v0.31 (2020-12-24)
+
+* fixed a bug related to simultaneous band depth calculations on multiple spectra
+* fixed an issue related to focus snapping
+* made normalization behaviors clearer and more consistent
+* less drawing
 
 ### v0.3
 
