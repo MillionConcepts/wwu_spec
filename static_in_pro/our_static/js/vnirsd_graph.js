@@ -101,8 +101,6 @@ const updateGraphBounds = function (samples, useLines) {
             graphYValues.push(Object.values(sample['reflectance']))
         })
     }
-
-
     graphXValues = graphXValues[0]
         .map(Number)
         .concat.apply([], graphXValues)
@@ -440,18 +438,19 @@ const hideCalcFoci = function (focusIx) {
 
 
 // vertical locator lines
-const vertPalette = [
-    '#d73fff', '#43ce8a', '#3d4911', '#ff7e7e',
-    '#8f8eac', '#3d728f', '#0021ff'
-];
-const vertPaletteStart = Math.round((Math.random() * vertPalette.length - 1));
+// const vertPalette = [
+//     '#d73fff', '#43ce8a', '#3d4911', '#ff7e7e',
+//     '#8f8eac', '#3d728f', '#0021ff'
+// ];
+// const vertPaletteStart = Math.round((Math.random() * vertPalette.length - 1));
 let vertCount = 0;
+// commenting out all color stuff for now but we may want it back someday
 
 // the line that follows the mouse
 
 const drawVert = function (xPosition) {
     vertCount++
-    let activeColor = vertPalette[(vertCount + vertPaletteStart) % vertPalette.length];
+    // let activeColor = vertPalette[(vertCount + vertPaletteStart) % vertPalette.length];
     chart.append("line")
         .attr("x1", 0)
         .attr("y1", 0)
@@ -462,15 +461,14 @@ const drawVert = function (xPosition) {
         .attr('x-position', xPosition)
         .attr('transform', "translate(" + activeXScale(xPosition) + ",0)")
         .style("stroke-width", 2)
-        .style("stroke", activeColor)
+        .style("stroke", 'black')
+        .style('opacity', 0.4)
         .style("fill", "none")
         .style("display", null);
 };
 
 drawVert(xScale.invert(0))
 activeLine = d3.select('line#verticalLine1');
-
-// the lines you can affix to static points
 
 const drawLocator = function (coord) {
     chart.append("text")
@@ -496,147 +494,184 @@ const eraseVerts = function () {
 };
 
 
-// function that's called to initially graph a spectrum.
-// later we just scale it.
-const eraseLine = function (id) {
-    d3.select("path#line_path" + id)
+// erase every path associated with a line. use
+// during redraws and such.
+const eraseLine = function (lineID) {
+    d3.select("path#line_path" + lineID)
         .remove()
-    d3.select("path#tick_path" + id)
+    d3.select("path#tick_path" + lineID)
+        .remove()
+    d3.select("path#line_path" + lineID + "_r")
+        .remove()
+    d3.select("path#tick_path" + lineID + "_r")
         .remove()
 };
-const drawLine = function (line, id, is_rover = false, complement_rover = false) {
-    chartBody.append('svg:path')
-        .attr('d', scaleLine(line))
-        .attr('class', 'data-line')
-        .attr('stroke', lineColors[id])
-        .attr('stroke-width', 2)
-        .attr('id', 'line_path' + id)
-        .style("fill", "none")
-        .attr('fill', 'none')
-    //Append tick marks to graph
-    chartBody.append('svg:path')
-        .attr('d', scaleLine(line))
-        .attr('stroke', lineColors[id])
-        .attr('stroke-width', 4)
-        .attr('class', 'data-tick')
-        .attr('id', 'tick_path' + id)
-        .style("fill", "none")
-        .attr('fill', 'none')
-        .style("opacity", 0.85)
 
+// toggle whether or not to draw instrument / lab points / lines
+let labLinesVisible = true
+let instrumentLinesVisible = false
+let labPointsVisible = false
+let instrumentPointsVisible = false
 
-    if (is_rover) {
+// further functions for restricting interaction based on visibility
+const isLabVisible = function () {
+    return labLinesVisible || labPointsVisible
+}
+const isInstrumentVisible = function () {
+    return instrumentLinesVisible || instrumentPointsVisible
+}
+const arePointsVisible = function () {
+    return instrumentPointsVisible || labPointsVisible
+}
+const areLinesVisible = function () {
+    return instrumentLinesVisible || labLinesVisible
+}
 
-        d3.select('path#tick_path' + id)
-            .attr('class', 'instrument-tick')
-            .attr('stroke-width', 8)
-
-        d3.select('path#line_path' + id)
-            .attr('class', 'instrument-line')
+// function that's called to initially graph spectra (not to scale them, that's in zoomGraphElements)
+// decides whether to draw points or lines or neither. also removes as appropriate.
+const drawLine = function (lineID, isInstrument = false, complementInstrument = false) {
+    const line = lines[lineID];
+    const instrumentLine = lines[lineID + "_r"]
+    if (labLinesVisible) {
+        chartBody.append('svg:path')
+            .attr('d', scaleLine(line))
+            .attr('class', 'lab-line')
+            .attr('stroke', lineColors[lineID])
             .attr('stroke-width', 2)
+            .attr('id', 'line_path' + lineID)
+            .style("fill", "none")
+            .style("opacity", 0.8)
+            .attr('fill', 'none')
+    }
+    if (instrumentLinesVisible) {
+        chartBody.append('svg:path')
+            .attr('d', scaleLine(instrumentLine))
+            .attr('class', 'instrument-line')
+            .attr('stroke', lineColors[lineID + "_r"])
+            .attr('stroke-width', 3)
+            .attr('id', 'line_path' + lineID + "_r")
+            .attr("fill", "none")
             .style("stroke-dasharray", ("3, 3"))
     }
-
-    if (complement_rover) {
-        d3.select('path#line_path' + id)
-            .style("opacity", 0.8)
-
-        d3.select('path#tick_path' + id)
-            .style('opacity', 0.6)
-
+    if (labPointsVisible) {
+        chartBody.append('svg:path')
+            .attr('d', tickMark(line))
+            .attr('stroke', lineColors[lineID])
+            .attr('stroke-width', 5)
+            .attr('stroke-linecap', 'round')
+            .attr('class', 'data-tick')
+            .attr('id', 'tick_path' + lineID)
+            .style("fill", "none")
+            .attr('fill', 'none')
+            .style("opacity", 0.6)
     }
+    if (instrumentPointsVisible) {
+        chartBody.append('svg:path')
+            .attr('d', tickMark(instrumentLine))
+            .attr('stroke', lineColors[lineID + "_r"])
+            .attr('stroke-width', 9)
+            .attr('class', 'instrument-tick')
+            .attr('stroke-linecap', 'square')
+            .attr('id', 'tick_path' + lineID + "_r")
+            .style("fill", "none")
+            .attr('fill', 'none')
+            .style("opacity", 0.95)
+    }
+}
 
-};
 let normalized = false;
 let waveNormalized = false;
 let normWavelength = null;
 
-const generateLine = function (sample, offset = 0) {
-    const active = activeLines[sample.id];
-
-    if (!active) {
-        eraseLine(sample.id)
-        eraseLine(sample.id + '_r')
-        return;
+const pickLineColor = function (sampleID) {
+    const colorSpin = Math.round((Math.random() * (linePalette.length - 1)));
+    let activeColor = linePalette[colorSpin];
+    linePalette.splice(colorSpin, 1)
+    if (activeColor === 'undefined') {
+        activeColor = "#000000"
     }
-
-    const filterSet = filterPicker.value;
-
-    // we might be better off breaking this into several functions
-
-    if (!lines[sample.id]) {
-        // initial draw on page load. pick colors etc.
-        // basically: pick colors on page load
-        const colorSpin = Math.round((Math.random() * (linePalette.length - 1)));
-        let activeColor = linePalette[colorSpin];
-        linePalette.splice(colorSpin, 1)
-        if (activeColor === 'undefined') {
-            activeColor = "#000000"
-        }
-        lineColors[sample.id] = activeColor
-        //make the rover color complementary
-        const roverColor = tinycolor(activeColor);
-        if (roverColor.isDark()) {
-            roverColor.lighten(25)
-        }
-        roverColor.spin(180)
-
-        lineColors[sample.id + '_r'] = roverColor.toHexString()
-        gid('rect-' + sample.id).style.backgroundColor = activeColor
+    lineColors[sampleID] = activeColor
+    //make the rover color complementary
+    const roverColor = tinycolor(activeColor);
+    if (roverColor.isDark()) {
+        roverColor.lighten(25)
     }
+    roverColor.spin(180)
 
-    const roverKV = Object.entries(sample[filterSet]);
-    const reflectanceKV = Object.entries(sample["reflectance"]);
+    lineColors[sampleID + '_r'] = roverColor.toHexString()
+    gid('rect-' + sampleID).style.backgroundColor = activeColor
+}
 
-    if (normalized) {
-        const peak = Math.max.apply(null, lineToArrays(reflectanceKV)[1]);
-        let scale = 1 / peak;
+let firstMaxWave;
+const findAutoNormWavelength = function () {
+    let firstSample = lineToArrays(Object.entries(graph[0]['reflectance']))
+    let firstMaxReflectance = Math.max.apply(null, firstSample[1])
+    firstMaxWave = firstSample[0][firstSample[1].indexOf(firstMaxReflectance)]
+}
+findAutoNormWavelength()
+
+const applyNormOffset = function (reflectanceKV, offset, scale) {
+    // look at key-value pairs from samples, scale and offset as appropriate
+    if (scale !== 1) {
         Object.keys(reflectanceKV).forEach(function (i) {
             reflectanceKV[i][1] *= scale
-        })
-        Object.keys(roverKV).forEach(function (i) {
-            roverKV[i][1] *= scale
-        })
-    }
-
-    if (waveNormalized && (normWavelength != null)) {
-
-        let scale = normLineToWavelength(reflectanceKV);
-        Object.keys(reflectanceKV).forEach(function (i) {
-            reflectanceKV[i][1] *= scale
-        })
-        Object.keys(roverKV).forEach(function (i) {
-            roverKV[i][1].value *= scale
         })
     }
     if (offset !== 0) {
         Object.keys(reflectanceKV).forEach(function (i) {
             reflectanceKV[i][1] += offset
         })
-        Object.keys(roverKV).forEach(function (i) {
-            roverKV[i][1] += offset
-        })
     }
+    return reflectanceKV
+}
 
-    lines[sample.id] = reflectanceKV;
-    lines[sample.id + '_r'] = roverKV
+const generateLine = function (sample) {
+    // go over both lab and instrument line associated
+    // with a particular sample, make sure they're in order,
+    // and trigger draws as necessary.
 
-    drawLine(reflectanceKV, sample.id, false, true)
-    drawLine(roverKV, sample.id + '_r', true)
+    // make sure a color is defined for the line.
+    // usually this will happen on page load.
+    if (!Object.keys(lineColors).includes(sample.id.toString())) {
+        pickLineColor(sample.id)
+    }
+    const active = activeLines[sample.id];
 
+    // decline to do anything at all if the spectrum isn't active,
+    // and indeed ensure the line is erased
+    if (!active) {
+        eraseLine(sample.id)
+        eraseLine(sample.id + '_r')
+        return;
+    }
+    const filterSet = filterPicker.value;
+    let labReflectance = Object.entries(sample["reflectance"])
+    let instReflectance = Object.entries(sample[filterSet])
+    const offset = parseFloat(
+        gid('offset-dialog' + sample.id).value
+    )
+    let scale = 1
+    if (normalized) {
+        scale = normLineToWavelength(labReflectance, firstMaxWave)
+    } else if (waveNormalized && (normWavelength != null)) {
+        scale = normLineToWavelength(labReflectance, normWavelength)
+    }
+    lines[sample.id] = applyNormOffset(
+        labReflectance, offset, scale
+    )
+    lines[sample.id + '_r'] = applyNormOffset(
+        instReflectance, offset, scale
+    )
+    drawLine(sample.id)
     updateGraphBounds(lines, true)
-    updateDataVisibility()
-    redraw()
 };
 
 const makeNormText = function () {
     if (normalized) {
-        normText.text("normalized to spectra peaks")
-    }
-    else if (waveNormalized && !(normWavelength === null)) {
-        normText.text("normalized to value at " + normWavelength + " nm")
-    }
-    else {
+        normText.text("normalized to 1.0 at " + firstMaxWave + " nm")
+    } else if (waveNormalized && !(normWavelength === null)) {
+        normText.text("normalized to 1.0 at " + normWavelength + " nm")
+    } else {
         normText.text("")
     }
 
@@ -648,6 +683,7 @@ const deWaveNormalize = function () {
     // gid("arm-div").style.display = "none"
     makeNormText()
     removeCalcFoci()
+    resetZoom()
 };
 
 const deNormalize = function () {
@@ -655,9 +691,8 @@ const deNormalize = function () {
     gid('normal-switch').checked = false
     makeNormText()
     removeCalcFoci()
+    resetZoom()
 };
-
-
 
 
 //Toggle the line based on the checkbox
@@ -680,58 +715,24 @@ filterPicker.addEventListener('change', function () {
 
 }, {passive: true})
 
-// Toggle whether or not to show datapoint marks
-// and lines
-// TODO: concatenate this list of functions more
-// sanely
-const togglePoints = function (checkbox) {
-    if (checkbox.checked) {
-        $(".data-tick").show();
-    } else {
-        $(".data-tick").hide();
-    }
-};
-const toggleInstrumentPoints = function (checkbox) {
-    if (checkbox.checked) {
-        $(".instrument-tick").show();
-    } else {
-        $(".instrument-tick").hide();
-    }
-};
-const toggleLines = function (checkbox) {
-    if (checkbox.checked) {
-        $(".data-line").show();
-    } else {
-        $(".data-line").hide();
-    }
-};
-const toggleInstrumentLines = function (checkbox) {
-    if (checkbox.checked) {
-        $(".instrument-line").show();
-    } else {
-        $(".instrument-line").hide();
-    }
-};
-
 const updateDataVisibility = function () {
-    togglePoints(gid('point-switch'))
-    toggleInstrumentPoints(gid('instrument-point-switch'))
-    toggleLines(gid('line-switch'))
-    toggleInstrumentLines(gid('instrument-line-switch'))
+    labPointsVisible = gid('point-switch').checked
+    instrumentPointsVisible = gid('instrument-point-switch').checked
+    labLinesVisible = gid('line-switch').checked
+    instrumentLinesVisible = gid('instrument-line-switch').checked
+    for (let sample of Object.values(graph)) {
+        // always erasing everything is lazy but i think loses
+        // us almost nothing in performance and gains us a
+        // great deal of fault-tolerance
+        eraseLine(sample.id)
+        generateLine(sample)
+    }
     if (gid('calc-all-switch').checked) {
         updateMaxCalc()
     }
+    redraw();
 }
 
-// functions for restricting interaction based on visibility
-
-const isLabVisible = function () {
-    return (gid('point-switch').checked || gid('line-switch').checked)
-}
-
-const isInstrumentVisible = function () {
-    return (gid('instrument-point-switch').checked || gid('instrument-line-switch').checked)
-}
 /**
  *
  * @param lineID {string}
@@ -830,6 +831,13 @@ const simpleBandDepthMin = function (calcFocusEntry) {
 };
 
 
+const shouldNotBeCalculated = function(thing) {
+    if (thing === undefined) {
+        return true
+    }
+    return thing.filter(isNaN).length > 0;
+}
+
 // set a new focused line and create calcFoci for one or all lines as appropriate
 const setCalcFoci = function (newLineID) {
     const calcAll = gid('calc-all-switch').checked
@@ -865,8 +873,8 @@ const setCalcFoci = function (newLineID) {
         for (const entry of Object.entries(calcFoci[focusedLineID])) {
             let focusIx = entry[0]
             let focus = entry[1]
-            if (focus.coord === undefined) {
-                continue;
+            if (shouldNotBeCalculated(focus.coord)) {
+                continue
             }
             moveCalcFoci(focusIx, focus.coord[0])
             drawCalcFoci(focusIx)
@@ -885,27 +893,34 @@ const setCalcFoci = function (newLineID) {
     return newLineID;
 }
 
-const moveCalcFoci = function (focus_ix, wavelength) {
+
+// move just a single calcfocus
+const moveCalcFocus = function (lineID, focusIx, wavelength) {
     /**
      * @type: {}
      * this declaration is just to provide a type hint
      */
-    let thisLine;
-    for (thisLine of Object.entries(calcFoci)) {
-        let line_id = thisLine[0]
-        let focus = thisLine[1][focus_ix]
-        let interpolatedReflectance = interpRefAtWavelength(lines[line_id], wavelength)
-        if (interpolatedReflectance === "out of bounds") {
-            focus.coord = [NaN, NaN];
-            focus.style("display", "none")
+    let focus = calcFoci[lineID][focusIx]
+    let interpolatedReflectance = interpRefAtWavelength(lines[lineID], wavelength)
+    if (interpolatedReflectance === "out of bounds") {
+        focus.coord = [NaN, NaN];
+        focus.style("display", "none")
         } else {
             focus.coord = [wavelength, interpolatedReflectance]
             focus.attr(
                 "transform",
-                "translate(" + activeXScale(focus.coord[0]) + "," + activeYScale(focus.coord[1]) + ")");
+                "translate(" + activeXScale(focus.coord[0]) + "," + activeYScale(focus.coord[1]) + ")"
+            )
         }
     }
+
+// move all calcfoci of an individual index
+const moveCalcFoci = function (focusIx, wavelength) {
+    for (let lineID of Object.keys(calcFoci)) {
+        moveCalcFocus(lineID, focusIx, wavelength)
+    }
 }
+
 
 const getMaxFoci = function () {
     let maxFoci;
@@ -1008,7 +1023,7 @@ const getSampleName = function (sampleID) {
         sampleName = sample['sample_name']
     }
     if (sampleID.endsWith('_r')) {
-        let instrumentName = " ("+filterPicker.value+")";
+        let instrumentName = " (" + filterPicker.value + ")";
         sampleName += instrumentName
     }
     return sampleName
@@ -1052,22 +1067,30 @@ const triggerCalculations = function () {
         calcType = "ratio"
     }
     calcResults = {}
-    for (entry of Object.entries(calcFoci)) {
-        if (isNaN(entry[1][0].coord[0])) {
-            continue;
+    for (let entry of Object.entries(calcFoci)) {
+        let stopCalc = false
+        let lineFoci = entry[1]
+        if (shouldNotBeCalculated(lineFoci[0].coord)) {
+            stopCalc = true
+        }
+        if (shouldNotBeCalculated(lineFoci[1].coord)) {
+            stopCalc = true
+        }
+        if (stopCalc) {
+            continue
         }
         if (calcFunction === simpleBandDepthMin) {
             let response = calcFunction(entry)
             result = response[0]
-            moveCalcFoci(2, response[1][0])
-            drawCalcFoci(2)
+            if (!(response[1][0] === undefined)) {
+                moveCalcFocus(entry[0], 2, response[1][0])
+                drawCalcFoci(2)
+            }
         } else {
             result = calcFunction(entry);
         }
         calcResults[entry[0]] = [result, calcType]
     }
-
-    console.log('beep')
     let text = makeCalcText();
     calcText.text(text)
 }
@@ -1160,19 +1183,17 @@ chartBody.on("click", function (event) {
         }
     })
 
-
 // Function for drawing tick marks
-
+// the shape is now all controlled by the stroke-linecap
+// property set in drawLine()
 const tickMark = function (d) {
-    const size = 1;
     const pathArray = [];
     for (let i = 0; i < d.length; i++) {
         const x = activeXScale(d[i][0]);
         const y = activeYScale(d[i][1]);
-        pathArray.push(["M", [x - size, y],
-            "L", [x, y + size],
-            "L", [x + size, y],
-            "L", [x, y - size],
+        pathArray.push([
+            "M", [x, y],
+            "L", [x, y],
             "Z"
         ].join(" "));
     }
@@ -1226,6 +1247,7 @@ const normalizeSpectra = function () {
     })
     makeNormText()
     removeCalcFoci()
+    resetZoom()
 };
 
 const waveNormalizeSpectra = function () {
@@ -1247,6 +1269,7 @@ const waveNormalizeSpectra = function () {
     }
     makeNormText()
     removeCalcFoci()
+    resetZoom()
 };
 
 // right-hand nearest-neighbor 1D interpolation, sort of.
@@ -1294,10 +1317,16 @@ const interpRefAtWavelength = function (reflectanceKV, wavelength) {
     return checkArray[1][waveIndex] * rightWeight + checkArray[1][waveIndex - 1] * leftWeight;
 }
 
-const normLineToWavelength = function (reflectanceKV) {
-    let interpolatedReflectance = interpRefAtWavelength(reflectanceKV, normWavelength)
+const normLineToWavelength = function (reflectanceKV, wavelength) {
+        let interpolatedReflectance = interpRefAtWavelength(reflectanceKV, wavelength)
     if (interpolatedReflectance === "out of bounds") {
-        return 1;
+        let differences = lineToArrays(reflectanceKV)[0].map(
+            function (number) {
+                return Math.abs(number - wavelength)
+            }
+        )
+        let closestWave = Math.min(...differences)
+        interpolatedReflectance = reflectanceKV[differences.indexOf(closestWave)][1]
     }
     return 1 / interpolatedReflectance
 };
@@ -1313,7 +1342,8 @@ const updateWindow = function (updateMinX, updateMaxX, updateMinY, updateMaxY, c
     updateMinY = Math.max(0, updateMinY)
     updateMinX = Math.max(0, updateMinX)
 
-    if (caller !== mouseZoom) {
+    if (caller === "redraw") {
+    } else if (caller !== mouseZoom) {
         xScale.domain([updateMinX, updateMaxX]);
         yScale.domain([updateMaxY, updateMinY]);
         xScaleZoom = xScale;
@@ -1378,12 +1408,20 @@ function zoomGraphElements() {
     pointerFocus.style("display", "none");
     chart.select(".x.axis").call(xAxis.scale(activeXScale));
     chart.select(".y.axis").call(yAxis.scale(activeYScale));
-    Object.keys(lines).forEach(function (id) {
-        let line = lines[id]
-        d3.select("path#line_path" + id)
-            .attr('d', scaleLine(line));
-        d3.select("path#tick_path" + id)
-            .attr('d', tickMark(line));
+    Object.keys(lines).forEach(function (lineID) {
+        let line = lines[lineID]
+        // we shouldn't need to do another check for whether
+        // these are drawn, instrumentalization, etc.; if
+        // they are not drawn, it should simply be that nothing
+        // happens
+        if (areLinesVisible()) {
+            d3.select("path#line_path" + lineID)
+                .attr('d', scaleLine(line));
+        }
+        if (arePointsVisible()) {
+            d3.select("path#tick_path" + lineID)
+                .attr('d', tickMark(line));
+        }
         d3.selectAll('.verticalLine').nodes().forEach(function (item) {
             line = d3.select(item)
             if (line.attr("id") !== activeLine.attr("id")) {
@@ -1406,7 +1444,7 @@ function zoomGraphElements() {
         let thisLine;
         for (thisLine of Object.values(calcFoci)) {
             for (let focus of Object.values(thisLine)) {
-                if (focus.coord === undefined) {
+                if (shouldNotBeCalculated(focus.coord)) {
                     continue;
                 }
                 focus.attr(
@@ -1417,6 +1455,8 @@ function zoomGraphElements() {
         }
     });
 }
+
+
 
 
 // add zooming functionality for range / domain widgets
@@ -1486,7 +1526,7 @@ const makeOffsetListeners = function () {
             offsetDialog.addEventListener(
                 'change',
                 function () {
-                    generateLine(sample, parseFloat(offsetDialog.value))
+                    generateLine(sample)
                 })
         },
         {passive: true}
@@ -1506,6 +1546,7 @@ waveNormInput.addEventListener(
             generateLine(sample)
         })
         makeNormText()
+        resetZoom()
     },
     {passive: true}
 )
@@ -1602,21 +1643,20 @@ function redraw() {
             rectBounds[1] * normTextY +
             ")"
         )
-
     updateWindow(
         activeXScale.domain()[0],
         activeXScale.domain()[1],
         activeYScale.domain()[1],
-        activeYScale.domain()[0]
+        activeYScale.domain()[0],
+        "redraw"
     )
 }
 
 graph.forEach(function (sample) {
     activeLines[sample.id] = true
     activeLines[sample.id + "_r"] = true
-    generateLine(sample)
 })
 
-redraw()
+updateDataVisibility()
 resetZoom()
 constrainZoom(mouseZoom)

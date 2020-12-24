@@ -155,7 +155,7 @@
                                     <label>
                                         <input id="point-switch"
                                                type="checkbox"
-                                               onclick="togglePoints(this)">
+                                               onclick="updateDataVisibility()">
                                         <span class="lever"></span>
                                         Lab Points
                                     </label>
@@ -164,7 +164,7 @@
                                     <label>
                                         <input id="instrument-point-switch"
                                                type="checkbox"
-                                               onclick="toggleInstrumentPoints(this)">
+                                               onclick="updateDataVisibility()">
                                         <span class="lever"></span>
                                         Instrumentalized Points
                                     </label>
@@ -174,7 +174,7 @@
                                         <input id="line-switch"
                                                checked="checked"
                                                type="checkbox"
-                                               onclick="toggleLines(this)">
+                                               onclick="updateDataVisibility()">
                                         <span class="lever"></span>
                                         Lab Lines
                                     </label>
@@ -183,7 +183,7 @@
                                     <label>
                                         <input id="instrument-line-switch"
                                                type="checkbox"
-                                               onclick="toggleInstrumentLines(this)">
+                                               onclick="updateDataVisibility()">
                                         <span class="lever"></span>
                                         Instrumentalized Lines
                                     </label>
@@ -198,7 +198,7 @@
                                                type="checkbox"
                                                onclick="normalizeSpectra()">
                                         <span class="lever"></span>
-                                        Peaks
+                                        Auto
                                     </label>
                                 </div>
                                 <div class="switch" style="margin-bottom:9px">
@@ -253,7 +253,7 @@
                                            onclick="updateCalc(this)">
                                     <label for="ratio-calc">Ratio</label>
                                 </div>
-                                <div class="brightswitch switch"
+                                <div class="switch"
                                      id="calc-all-div">
                                     <label for="calc-all-switch">
                                         <input id="calc-all-switch"
@@ -313,7 +313,7 @@
                             <td>
                                 <label for="offset-dialog{{ result.id }}">
                                     <input id="offset-dialog{{ result.id }}"
-                                           step=".02" type="number">
+                                           step=".02" type="number" value="0">
                                 </label>
                             </td>
 
