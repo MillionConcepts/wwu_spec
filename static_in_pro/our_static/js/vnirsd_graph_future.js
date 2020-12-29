@@ -4,8 +4,10 @@ let gid = function (element) {
 }
 
 // lines themselves, i.e., scaled reflectance data
-
 let lines = {};
+
+// and their simulated counterpart
+let instrumentLines = {};
 
 // indicators as to line activity & status
 
@@ -13,17 +15,11 @@ let activeLines = {};
 
 // line colors
 
-let linePalette = [
-    '#FF3500',
-    '#FF8900',
-    '#0CB0FF',
-    '#00e102',
-    '#FF00FF',
-    '#1DCEA8',
-    '#d2aa00'
-];
+let linePalette = ['#FF3500', '#FF8900', '#0CB0FF', '#00FF04',
+    '#FF00FF', '#1DCEA8', '#FFD600'];
 
 let lineColors = {};
+let instrumentLineColors = {};
 
 // size, margin, various ratios for page elements
 
@@ -90,6 +86,7 @@ const updateGraphBounds = function (samples, useLines) {
     let graphYValues = [];
     // are we setting graph bounds based on currently-rendered lines?
     if (useLines === true) {
+        // well, don't try if there aren't any
         if (Object.values(activeLines).includes(true) === false) {
             return
         }
@@ -99,9 +96,7 @@ const updateGraphBounds = function (samples, useLines) {
                 graphYValues.push(hStack(samples[line])[1])
             }
         })
-
         // or are we setting graph bounds simply based on the received data (as on page load)?
-
     } else {
         samples.forEach(function (sample) {
             graphXValues.push(Object.keys(sample['reflectance']))
@@ -114,7 +109,6 @@ const updateGraphBounds = function (samples, useLines) {
     graphYValues = graphYValues[0]
         .map(Number)
         .concat.apply([], graphYValues)
-
     minX = Math.min.apply(null, graphXValues)
     maxX = Math.max.apply(null, graphXValues)
     minY = Math.min.apply(null, graphYValues)
@@ -141,10 +135,10 @@ const updateGraphBounds = function (samples, useLines) {
 
 // set bounds  ASAP on page load
 updateGraphBounds(graph)
-
 // utility function. converts N 2-item [string, number] arrays to
 // 2 N-item [number, .... ] arrays
 // similar to np.hstack
+
 /**
  *
  * @param {Array.<Array.<string, number>>} line
@@ -179,10 +173,11 @@ const getIndex = function (array, target, constraints = null) {
 let yLabelOffset = -50
 let xLabelOffset = 40
 
-let normTextX = 0.02
-let normTextY = 0.02
-let calcTextX = 15
-let calcTextY = 15
+let calcTextX = 0.04
+let calcTextY = 0.92
+
+let normTextX = 0.04
+let normTextY = 0.08
 
 
 const makeSliders = function () {
@@ -346,19 +341,28 @@ const pointerFocus = chart.append("g")
     .attr("class", "focus")
     .style("display", "null");
 
-const makeTextDisplay = function (idRoot, attachmentPoint) {
-    const display = attachmentPoint.append("foreignObject")
-        .attr("id", idRoot + "-text-holder")
-        .attr("class", "svg-text-holder")
-    display.append("xhtml:div")
-        .attr("id", idRoot + "-text-div")
-        .attr("class", "svg-text-div")
-    return display
-}
+const calcText = chart.append("text")
+    .attr("transform",
+        "translate(" +
+        rectBounds[0] * calcTextX +
+        "," +
+        rectBounds[1] * calcTextY +
+        ")"
+    )
+    .style("font-size", "14px")
+    .style("font-family", "Fira Mono");
 
-const calcTextDisplay = makeTextDisplay('calc', chart)
-const normTextDisplay = makeTextDisplay('norm', chart)
+const normText = chart.append("text")
+    .attr("transform",
+        "translate(" +
+        rectBounds[0] * normTextX +
+        "," +
+        rectBounds[1] * normTextY +
+        ")"
+    )
     .style("font-size", "22px")
+    .style("font-family", "Fira Mono");
+
 
 let calcFoci = {};
 let focusedLineID = 'none';
@@ -368,13 +372,12 @@ let fociWavelengths = [null, null, null]
 const createCalcFoci = function (line_id) {
     calcFoci[line_id] = {}
     for (const ix of Array(3).keys()) {
-        calcFoci[line_id][ix] = chartBody.append("g")
+        calcFoci[line_id][ix] = chart.append("g")
             .attr("class", "focus")
             .attr("class", "calc-focus")
     }
 }
 
-//remove calc foci; clear calc text
 const removeCalcFoci = function () {
     /**
      * @type: {}
@@ -389,7 +392,7 @@ const removeCalcFoci = function () {
     calcFoci = {};
     activeFoci = [false, false, false];
     fociWavelengths = [null, null, null];
-    d3.selectAll('.calc-content').remove()
+    calcText.text("")
 }
 
 const drawCalcFoci = function (focus_ix) {
@@ -425,6 +428,7 @@ const showCalcFoci = function (focusIx) {
 const hideCalcFoci = function (focusIx) {
     for (let thisLine of Object.entries(calcFoci)) {
         thisLine[1][focusIx].style("display", "none")
+
     }
 }
 
@@ -476,7 +480,6 @@ const drawLocator = function (coord) {
         .text(coord[0] + ', ' + coord[1].toFixed(3))
 };
 
-
 const eraseVerts = function () {
     d3.selectAll('.locator').remove()
     d3.selectAll('.verticalLine').remove()
@@ -485,17 +488,16 @@ const eraseVerts = function () {
     trackingVertLine = d3.select('line#verticalLine1')
 };
 
-
 // erase every path associated with a line. use
 // during redraws and such.
 const eraseLine = function (lineID) {
-    d3.select("#line" + lineID)
+    d3.select("#lab-line" + lineID)
         .remove()
-    d3.select("#line" + lineID + "_r")
+    d3.select("#instrument-line" + lineID)
         .remove()
-    d3.select("#points" + lineID)
+    d3.select("#lab-tick" + lineID)
         .remove()
-    d3.select("#points" + lineID + "_r")
+    d3.select("#instrument-tick" + lineID)
         .remove()
 };
 
@@ -523,14 +525,14 @@ const areLinesVisible = function () {
 // decides whether to draw points or lines or neither. also removes as appropriate.
 const drawLine = function (lineID) {
     const line = lines[lineID];
-    const instrumentLine = lines[lineID + "_r"]
+    const instrumentLine = instrumentLines[lineID]
     if (labLinesVisible) {
         chartBody.append('svg:path')
             .attr('d', scaleLine(line))
             .attr('class', 'lab-line')
             .attr('stroke', lineColors[lineID])
             .attr('stroke-width', 2)
-            .attr('id', 'line' + lineID)
+            .attr('id', 'lab-line' + lineID)
             .style("fill", "none")
             .style("opacity", 0.8)
             .attr('fill', 'none')
@@ -539,9 +541,9 @@ const drawLine = function (lineID) {
         chartBody.append('svg:path')
             .attr('d', scaleLine(instrumentLine))
             .attr('class', 'instrument-line')
-            .attr('stroke', lineColors[lineID + "_r"])
+            .attr('stroke', instrumentLineColors[lineID])
             .attr('stroke-width', 3)
-            .attr('id', 'line' + lineID + "_r")
+            .attr('id', 'instrument-line' + lineID)
             .attr("fill", "none")
             .style("stroke-dasharray", ("3, 3"))
     }
@@ -551,8 +553,8 @@ const drawLine = function (lineID) {
             .attr('stroke', lineColors[lineID])
             .attr('stroke-width', 5)
             .attr('stroke-linecap', 'round')
-            .attr('class', 'lab-point')
-            .attr('id', 'points' + lineID)
+            .attr('class', 'lab-tick')
+            .attr('id', 'lab-tick' + lineID)
             .style("fill", "none")
             .attr('fill', 'none')
             .style("opacity", 0.6)
@@ -560,11 +562,11 @@ const drawLine = function (lineID) {
     if (instrumentPointsVisible) {
         chartBody.append('svg:path')
             .attr('d', tickMark(instrumentLine))
-            .attr('stroke', lineColors[lineID + "_r"])
+            .attr('stroke', instrumentLineColors[lineID])
             .attr('stroke-width', 9)
-            .attr('class', 'instrument-point')
+            .attr('class', 'instrument-tick')
             .attr('stroke-linecap', 'square')
-            .attr('id', 'points' + lineID + "_r")
+            .attr('id', 'instrument-tick' + lineID)
             .style("fill", "none")
             .attr('fill', 'none')
             .style("opacity", 0.95)
@@ -590,7 +592,7 @@ const pickLineColor = function (sampleID) {
     }
     roverColor.spin(180)
 
-    lineColors[sampleID + '_r'] = roverColor.toHexString()
+    instrumentLineColors[sampleID] = roverColor.toHexString()
     gid('rect-' + sampleID).style.backgroundColor = activeColor
 }
 
@@ -633,7 +635,6 @@ const generateLine = function (sample) {
     // and indeed ensure the line is erased
     if (!active) {
         eraseLine(sample.id)
-        eraseLine(sample.id + '_r')
         return;
     }
     const filterSet = filterPicker.value;
@@ -651,26 +652,20 @@ const generateLine = function (sample) {
     lines[sample.id] = applyNormOffset(
         labReflectance, offset, scale
     )
-    lines[sample.id + '_r'] = applyNormOffset(
+    instrumentLines[sample.id] = applyNormOffset(
         instReflectance, offset, scale
     )
     drawLine(sample.id)
     updateGraphBounds(lines, true)
 };
 
-
 const makeNormText = function () {
-    const normDiv = d3.select('#norm-text-div')
     if (normalized) {
-        normDiv.append("p")
-            .attr('class', 'svg-text-content norm-content')
-            .html("normalized to 1.0 @ " + firstMaxWave + "nm")
+        normText.text("normalized to 1.0 at " + firstMaxWave + " nm")
     } else if (waveNormalized && !(normWavelength === null)) {
-        normDiv.append("p")
-            .attr('class', 'svg-text-content norm-content')
-            .html("normalized to 1.0 @" + normWavelength + "nm")
+        normText.text("normalized to 1.0 at " + normWavelength + " nm")
     } else {
-        d3.selectAll('.norm-content').remove()
+        normText.text("")
     }
 
 }
@@ -707,7 +702,6 @@ const filterPicker = gid('filter-picker');
 filterPicker.addEventListener('change', function () {
     graph.forEach(function (sample) {
         eraseLine(sample.id)
-        eraseLine(sample.id + '_r')
         generateLine(sample)
     })
 
@@ -740,10 +734,6 @@ const isLineClickable = function (lineID) {
     if (!activeLines[lineID]) {
         return false;
     }
-    if (lineID.endsWith('_r') && !isInstrumentVisible()) {
-        return false;
-    }
-    return lineID.endsWith('_r') || isLabVisible();
 }
 
 
@@ -784,18 +774,16 @@ const calcRatio = function (calcFocusEntry) {
 // this potentially gives unwanted results if there are multiple minima (with the same value) in the selected range. not sure about the desired behavior in those cases.
 const simpleBandDepthMin = function (calcFocusEntry) {
     let lineID = calcFocusEntry[0]
-    // we are only using two of them but there _are_ three potentially
-    let fociTrio = calcFocusEntry[1]
+    let calcFoci = calcFocusEntry[1]
     let [xLine, yLine] = hStack(lines[lineID])
 
     // find minimum reflectance in the selected region
-
     let indexOne = interpWavelength(
-        fociTrio[0].coord[0],
+        calcFoci[0].coord[0],
         xLine
     )
     let indexTwo = interpWavelength(
-        fociTrio[1].coord[0],
+        calcFoci[1].coord[0],
         xLine
     )
     let indices
@@ -815,10 +803,10 @@ const simpleBandDepthMin = function (calcFocusEntry) {
 
     minIndex = minIndex + indices[0]
 
-    const x1 = fociTrio[0].coord[0];
-    const y1 = fociTrio[0].coord[1];
-    const x2 = fociTrio[1].coord[0];
-    const y2 = fociTrio[1].coord[1];
+    const x1 = calcFoci[0].coord[0];
+    const y1 = calcFoci[0].coord[1];
+    const x2 = calcFoci[1].coord[0];
+    const y2 = calcFoci[1].coord[1];
     const x3 = xLine[minIndex];
 
     const continuumSlope = (y2 - y1) / (x2 - x1);
@@ -829,12 +817,7 @@ const simpleBandDepthMin = function (calcFocusEntry) {
     // the second element of the returned array
     // is simply coordinates for placing calcFocus.third
 
-    return [
-        (1 - (localMinReflectance / continuumReflectance))
-            .toFixed(3)
-        + " @ " + x3.toFixed(0) + "nm",
-        [xLine[minIndex], yLine[minIndex]]
-    ]
+    return [(1 - (localMinReflectance / continuumReflectance)).toFixed(3) + " at " + x3 + " nm", [xLine[minIndex], yLine[minIndex]]]
 };
 
 
@@ -875,7 +858,11 @@ const setCalcFoci = function (newLineID) {
             if (!isLineClickable(otherLineID)) {
                 continue;
             }
-            createCalcFoci(otherLineID)
+            if (isLabVisible()) {
+                createCalcFoci(otherLineID)
+            }
+
+
         }
         for (const entry of Object.entries(calcFoci[focusedLineID])) {
             let focusIx = entry[0]
@@ -901,7 +888,7 @@ const setCalcFoci = function (newLineID) {
 }
 
 
-// move just a single calcFocus
+// move just a single calcfocus
 const moveCalcFocus = function (lineID, focusIx, wavelength) {
     /**
      * @type: {}
@@ -921,7 +908,7 @@ const moveCalcFocus = function (lineID, focusIx, wavelength) {
     }
 }
 
-// move all calcFoci of an individual index
+// move all calcfoci of an individual index
 const moveCalcFoci = function (focusIx, wavelength) {
     for (let lineID of Object.keys(calcFoci)) {
         moveCalcFocus(lineID, focusIx, wavelength)
@@ -958,14 +945,17 @@ const updateCalc = function (thing) {
         showCalcFoci(0)
         showCalcFoci(1)
         showCalcFoci(2)
+        calcText.style("display", "block")
     } else if (thing.id === 'no-calc') {
         hideCalcFoci(0)
         hideCalcFoci(1)
         hideCalcFoci(2)
+        calcText.style("display", "none")
     } else {
         showCalcFoci(0)
         showCalcFoci(1)
         hideCalcFoci(2)
+        calcText.style("display", "block")
     }
     let maxFoci = getMaxFoci()
     if (activeFoci[maxFoci] === true) {
@@ -993,26 +983,24 @@ const stepCalcFoci = function (wavelength, line) {
     if (setter === null) {
         return;
     }
-    let focusIx = null
+
     // render the next set of foci
     if (!(activeFoci.includes(true))) {
-        focusIx = 0
+        moveCalcFoci(0, wavelength)
+        activeFoci[0] = true
+        drawCalcFoci(0)
     } else if (!activeFoci[1]) {
-        focusIx = 1
+        moveCalcFoci(1, wavelength)
+        activeFoci[1] = true
+        drawCalcFoci(1)
     } else if (!(activeFoci[2]) && (maxFoci === 2)) {
-        focusIx = 2
+        moveCalcFoci(2, wavelength)
+        activeFoci[2] = true
+        drawCalcFoci(2)
     }
-    if (focusIx !== null) {
-        moveCalcFoci(focusIx, wavelength)
-        activeFoci[focusIx] = true
-        drawCalcFoci(focusIx)
-        fociWavelengths[focusIx] = wavelength
-    }
+
     // do calculations if we have all the sets of foci
     if (activeFoci[maxFoci] === false) {
-        // NOTE: this may be overkill. evaluate.
-        d3.selectAll('.calc-content').remove()
-        renderCalcFocusText()
         return;
     }
     triggerCalculations();
@@ -1036,104 +1024,19 @@ const getSampleName = function (sampleID) {
 
 }
 
-const resizeCalcText = function () {
-    d3.selectAll('.calc-content')
-        .style(
-            'font-size',
-            Math.max(rect.attr('height') / 18, 17)
-        )
-        .style(
-            'line-height',
-            Math.max(rect.attr('height') / 300, 1.1)
-        )
-}
-
-// const calcFocusWavelengths = function () {
-//     let minWave, maxWave
-//     let midWaves = []
-//     //TODO: add some error-checking code here.
-//     //this has the potential to create a bunch of badness
-//     //if somehow the foci have not been placed where we would like.
-//     //this may broadly also be excessively baroque,
-//     //and we should just record these values in fociWavelengths
-//     //or something.
-//     /**
-//      * @type: {}
-//      * this declaration is just to provide a type hint
-//      */
-//     let foci
-//     let waves = []
-//     for (foci of Object.values(calcFoci)) {
-//         for (const entry of Object.entries(foci)) {
-//             let focusIx = entry[0]
-//             let focus = entry[1]
-//             if (shouldNotBeCalculated(focus.coord)) {
-//                 continue
-//             }
-//             if (focusIx !== 2) {
-//                 waves.push(focus.coord[0])
-//                 continue
-//             }
-//             midWaves.push(focus.coord[0]).toFixed(0)
-//         }
-//     }
-//     minWave = Math.min(...waves).toFixed(0)
-//     maxWave = Math.max(...waves).toFixed(0)
-//     return [minWave, maxWave, midWaves]
-// }
-
-//TODO: determine what actual desired behavior for handedness is
-const renderCalcFocusText = function () {
-    const ctDiv = d3.select('#calc-text-div')
-    // this shouldn't be getting called in this case,
-    // but just gracefully ignore it
-    if (fociWavelengths[0] === null) {
-        return
-    }
-    let minWave, maxWave
-    if (fociWavelengths[1] === null) {
-        minWave = fociWavelengths[0]
-        maxWave = null
-    } else {
-        minWave = fociWavelengths[0]
-        maxWave = fociWavelengths[1]
-    }
-    ctDiv.append("p")
-        .attr('class', 'svg-text-content calc-content')
-        .html("L shoulder: " + minWave + "nm")
-    if (maxWave !== null) {
-        ctDiv.append("p")
-            .attr('class', 'svg-text-content calc-content')
-            .html("R shoulder: " + maxWave + "nm")
-    }
-    resizeCalcText()
-}
-
 const makeCalcText = function () {
-    const results = Object.entries(calcResults)
-    const ctDiv = d3.select('#calc-text-div')
-    let trailingText = ": "
-    // TODO: again, this could probably use error-checking
-    if (results[0][1][1] === "band depth @") {
-        trailingText = " " + fociWavelengths[2] + "nm: "
+    let text = ""
+    let calcType
+    for (let entry of Object.entries(calcResults)) {
+        let sampleName = getSampleName(entry[0])
+        let result = entry[1][0]
+        calcType = entry[1][1]
+        text = text + sampleName + " " + result + "; "
     }
-    if (results.length > 3) {
-        trailingText += "<br>"
-    }
-    const resultLine = ctDiv.append("p")
-        .attr('class', 'svg-text-content calc-content')
-        .html("<br>" + results[0][1][1] + trailingText)
-    for (const entry of results) {
-        const lineColor = lineColors[entry[0]]
-        const result = entry[1][0]
-        resultLine.append("span")
-            .attr('class', 'svg-text-content calc-content')
-            .style('color', lineColor)
-            .html(result + " ")
-    }
-    resizeCalcText()
+    // calcType should all be the same
+    text = calcType + ": " + text
+    return text
 }
-
 
 // read state from all calcFoci sets and generate appropriate calc results
 const triggerCalculations = function () {
@@ -1151,7 +1054,7 @@ const triggerCalculations = function () {
     }
     if (gid('band-custom-calc').checked) {
         calcFunction = simpleBandDepthCustom
-        calcType = "band depth @"
+        calcType = "band depth"
     }
     if (gid('ratio-calc').checked) {
         calcFunction = calcRatio
@@ -1182,9 +1085,8 @@ const triggerCalculations = function () {
         }
         calcResults[entry[0]] = [result, calcType]
     }
-    d3.selectAll('.calc-content').remove()
-    renderCalcFocusText()
-    makeCalcText()
+    let text = makeCalcText();
+    calcText.text(text)
 }
 
 //TODO: maybe yuck? rewrite?
@@ -1222,22 +1124,35 @@ const l2Norm = function (x1, y1, x2, y2) {
 
 //Given a line, find the closest x point to your mouse
 //and return the x,y coordinate
-const findClosestLinePoint = function (lineObject, mouseX, mouseY) {
+const findClosestLinePoint = function (mouseX, mouseY) {
     let closestDistance = Number.MAX_VALUE;
     let closestLineID, closestPoint;
-    for (let lineID of Object.keys((lineObject))) {
-        if (!isLineClickable(lineID)) {
-            continue;
+    let lineObjects = []
+    if (isInstrumentVisible()) {
+        lineObjects.push(instrumentLines)
+    }
+    if (isLabVisible()) {
+        lineObjects.push(lines)
+    }
+    let idTail = ""
+    for (let lineObject of lineObjects) {
+        if (lineObject === instrumentLines) {
+            idTail = "_simulated"
         }
-        const point = findClosestPoint(lineObject[lineID], mouseX);
-        const visibleDistance = l2Norm(
-            activeXScale(mouseX), activeYScale(mouseY),
-            activeXScale(point[0]), activeYScale(point[1])
-        );
-        if (visibleDistance < closestDistance) {
-            closestPoint = point;
-            closestDistance = visibleDistance;
-            closestLineID = lineID
+        for (let lineID of Object.keys(lineObject)) {
+            if (!isLineClickable(lineID)) {
+                continue;
+            }
+            const point = findClosestPoint(lineObject[lineID], mouseX);
+            const visibleDistance = l2Norm(
+                activeXScale(mouseX), activeYScale(mouseY),
+                activeXScale(point[0]), activeYScale(point[1])
+            );
+            if (visibleDistance < closestDistance) {
+                closestPoint = point;
+                closestDistance = visibleDistance;
+                closestLineID = lineID + idTail
+            }
         }
     }
     return [closestPoint, closestLineID];
@@ -1247,7 +1162,7 @@ const findClosestLinePoint = function (lineObject, mouseX, mouseY) {
 chartBody.on("click", function (event) {
     let mouseX = activeXScale.invert(d3.pointer(event, this)[0]);
     let mouseY = activeYScale.invert(d3.pointer(event, this)[1]);
-    let closest = findClosestLinePoint(lines, mouseX, mouseY);
+    let closest = findClosestLinePoint(mouseX, mouseY);
     let line = closest[1];
     let coord = closest[0];
     stepCalcFoci(coord[0], line)
@@ -1259,7 +1174,7 @@ chartBody.on("click", function (event) {
     .on("mousemove", function (event) {
         let mouseX = activeXScale.invert(d3.pointer(event, this)[0])
         let mouseY = activeYScale.invert(d3.pointer(event, this)[1])
-        let closest = findClosestLinePoint(lines, mouseX, mouseY);
+        let closest = findClosestLinePoint(mouseX, mouseY);
         let coord = closest[0];
         pointerFocus.attr("transform", "translate(" + activeXScale(coord[0]) +
             "," + activeYScale(coord[1]) + ")");
@@ -1279,6 +1194,7 @@ chartBody.on("click", function (event) {
 // the shape is now all controlled by the stroke-linecap
 // property set in drawLine()
 const tickMark = function (d) {
+    console.log('bing')
     const pathArray = [];
     for (let i = 0; i < d.length; i++) {
         const x = activeXScale(d[i][0]);
@@ -1291,7 +1207,6 @@ const tickMark = function (d) {
     }
     return pathArray.join(" ");
 }
-
 
 // scaling function for reflectance values
 
@@ -1327,7 +1242,6 @@ const normalizeSpectra = function () {
     }
     graph.forEach(function (sample) {
         eraseLine(sample.id)
-        eraseLine(sample.id + '_r')
         generateLine(sample)
     })
     makeNormText()
@@ -1348,7 +1262,6 @@ const waveNormalizeSpectra = function () {
     if (normWavelength || swap) {
         graph.forEach(function (sample) {
             eraseLine(sample.id)
-            eraseLine(sample.id + "_r")
             generateLine(sample)
         })
     }
@@ -1496,21 +1409,21 @@ const zoomSpectra = function () {
             continue;
         }
         const line = lines[lineID];
-        const instrumentLine = lines[lineID + "_r"]
+        const instrumentLine = instrumentLines[lineID]
         if (labLinesVisible) {
-            d3.select("#line" + lineID)
+            d3.select("#lab-line" + lineID)
                 .attr('d', scaleLine(line));
         }
         if (instrumentLinesVisible) {
-            d3.select("#line" + lineID + "_r")
+            d3.select("#instrument-line" + lineID)
                 .attr('d', scaleLine(instrumentLine));
         }
         if (labPointsVisible) {
-            d3.select("#points" + lineID)
+            d3.select("#lab-tick" + lineID)
                 .attr('d', tickMark(line));
         }
         if (instrumentPointsVisible) {
-            d3.select("#points" + lineID + "_r")
+            d3.select("#instrument-tick" + lineID)
                 .attr('d', tickMark(instrumentLine));
         }
     }
@@ -1655,7 +1568,6 @@ waveNormInput.addEventListener(
         normWavelength = this.value;
         graph.forEach(function (sample) {
             eraseLine(sample.id)
-            eraseLine(sample.id + "_r")
             generateLine(sample)
         })
         makeNormText()
@@ -1694,8 +1606,7 @@ function redraw() {
     chart.attr("width", width).attr("height", height).attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     rect.attr("width", width).attr("height", height);
     clip.attr("width", width).attr("height", height);
-    calcTextDisplay.attr("width", width / (1.3)).attr("height", height / 2)
-    normTextDisplay.attr("width", "40rem").attr("height", "2rem")
+
     xScale.range([0, width]);
     yScale.range([0, height]);
 
@@ -1722,11 +1633,6 @@ function redraw() {
     d3.select("#x-slider").style("width", width);
     d3.select("#y-slider").style("height", height);
 
-    rectBounds = [
-        d3.select("#rectangle").node().width.animVal.value,
-        d3.select("#rectangle").node().height.animVal.value
-    ]
-
     // X Axis
     xSVG.attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
@@ -1738,19 +1644,20 @@ function redraw() {
 
     // calculation text
 
+    rectBounds = [
+        d3.select("#rectangle").node().width.animVal.value,
+        d3.select("#rectangle").node().height.animVal.value
+    ]
 
-    calcTextDisplay
+    calcText
         .attr("transform",
             "translate(" +
-            (calcTextX).toString() +
+            rectBounds[0] * calcTextX +
             "," +
-            (rectBounds[1] * 0.5 - calcTextY).toString() +
+            rectBounds[1] * calcTextY +
             ")"
         )
-
-    resizeCalcText()
-
-    normTextDisplay
+    normText
         .attr("transform",
             "translate(" +
             rectBounds[0] * normTextX +

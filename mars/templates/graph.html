@@ -267,26 +267,28 @@
                         </div>
                     </div>
                 </div>
-
-                <table class="graph results"
-                       style="width:85%; margin-left:2%">
+            <div class = "row" style="height:fit-content">
+            <div class="col s1" style="flex-shrink:1">
+            </div>
+            <div class="col s10">
+                <table class="graph-legend">
                     <thead>
-                    <tr style="height:25px">
-                        <th style="flex-grow:0.2; padding-top:5px">
+                    <tr style="height:2rem">
+                        <th class="graph-column">
                             <label>Line</label></th>
-                        <th style="flex-grow:0.2; padding-top:5px">
+                        <th class="graph-column">
                             <label>Color</label></th>
-                        <th style="padding-top:5px"><label>ID</label></th>
-                        <th style="padding-top:5px"><label>Name</label></th>
-                        <th style="padding-top:5px"><label>Origin</label></th>
-                        <th style="padding-top:5px"><label>Offset</label></th>
+                        <th><label>ID</label></th>
+                        <th><label>Name</label></th>
+                        <th><label>Origin</label></th>
+                        <th><label>Offset</label></th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for result in graphResults %}
                         <tr>
-                            <td style="flex-grow:0.2">
-                                <div style="position: relative">
+                            <td class="graph-column">
+                                <div>
                                     <input type="checkbox" checked="checked"
                                            name="selection"
                                            id="option{{ result.id }}"
@@ -295,9 +297,9 @@
                                     <label for="option{{ result.id }}"></label>
                                 </div>
                             </td>
-                            <td>
+                            <td class="graph-column">
                                 <div id="rect-{{ result.id }}"
-                                     style="border:1px solid gray; width:15px; height:15px; flex-grow:0.2">
+                                     style="border:1px solid gray; width:15px; height:15px">
                                 </div>
                             </td>
 
@@ -308,7 +310,7 @@
                                        for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
                             </td>
                             <td><label class="truncate"
-                                       for="option{{ result.id }}"> {{ result.origin }} </label>
+                                       for="option{{ result.id }}"> {{ result.origin.short_name }} </label>
                             </td>
                             <td>
                                 <label for="offset-dialog{{ result.id }}">
@@ -322,6 +324,10 @@
                     {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            <div class="col s1">
+            </div>
+            </div>
                 <form id="resultsForm" method="GET" name="resultsform">
                     <div class="section center-align">
                         <button type="submit" name="search"
@@ -361,7 +367,6 @@
         <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
         <script src="{% static 'js/materialize.min.js' %}"></script>
         <script src="{% static 'js/vendor/d3.js' %}"></script>
-        {#        <script src="{% static 'js/d3.v3.min.js' %}"></script>#}
         <script src="{% static 'js/tinycolor.js' %}"></script>
         <script src="{% static 'js/nouislider.js' %}"></script>
 
@@ -380,8 +385,8 @@
 
         </script>
         <script>
-            {# note the argument of parse actually gets rendered by the template engine #}
-            {# so this line must be contained in this file #}
+            {# note that the argument of parse is filled from db by django template engine #}
+            {# so this line of script must be in this template file #}
             const graph = JSON.parse('{{graphJSON|safe | escapejs}}');
         </script>
         <script src="{% static 'js/wNumb.js' %}"></script>

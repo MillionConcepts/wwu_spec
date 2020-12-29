@@ -7,6 +7,36 @@ from mars.models import Database, SampleType, Library
 from mars.utils import make_choice_list
 
 
+class SelectMultipleHide(forms.SelectMultiple):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,**kwargs)
+
+    def create_option(self, name, value, label, selected, index, subindex=None,
+                      attrs=None):
+        index = str(index) if subindex is None else "%s_%s" % (index, subindex)
+        if attrs is None:
+            attrs = {}
+        option_attrs = self.build_attrs(self.attrs,
+                                        attrs) if self.option_inherits_attrs else {}
+        if selected:
+            option_attrs.update(self.checked_attribute)
+        if 'id' in option_attrs:
+            option_attrs['id'] = self.id_for_label(option_attrs['id'], index)
+        if not value:
+            option_attrs['disabled'] = 'disabled'
+            option_attrs['hidden'] = True
+        return {
+            'name': name,
+            'value': value,
+            'label': label,
+            'selected': selected,
+            'index': index,
+            'attrs': option_attrs,
+            'type': self.input_type,
+            'template_name': self.option_template_name,
+            'wrap_label': True,
+        }
+
 class SearchForm(forms.Form):
     def __init__(self, *args, conceal_unreleased=True, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
@@ -26,13 +56,13 @@ class SearchForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'placeholder': 'e.g. Gypsum',
-                'id': 'sample_name',
+                'id': 'sample-name',
             }
         )
     )
     any_field = forms.CharField(
         required=False,
-        widget=forms.TextInput(attrs={'id': 'any_field'})
+        widget=forms.TextInput(attrs={'id': 'any-field'})
     )
 
     id = forms.CharField(required=False)
@@ -45,6 +75,21 @@ class SearchForm(forms.Form):
     )
     sample_type__name = forms.ChoiceField(
         required=False, label="Type of Sample"
+    )
+    frequency_range = forms.MultipleChoiceField(
+        required=False,
+        widget=SelectMultipleHide(
+            attrs = {'id': 'frequency-range', 'value': '', 'placeholder': ''}
+        ),
+        label="require values from specific frequency ranges:",
+        choices=[
+            ('', ''),
+            ('UVB', 'UVB (<315 nm)'),
+            ('UVA', 'UVA (315-400 nm)'),
+            ('VIS', 'VIS (400-750 nm)'),
+            ('NIR', 'NIR  (750-2500 nm)'),
+            ('MIR', 'MIR (>2500 nm)')
+        ]
     )
 
 

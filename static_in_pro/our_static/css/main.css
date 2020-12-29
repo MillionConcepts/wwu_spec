@@ -31,26 +31,26 @@ a {
 }
 
 @font-face {
-  font-family: 'Material Icons';
-  font-style: normal;
-  font-weight: 400;
-  src: url('../fonts/Material Icons/material_icons_67.woff2') format('woff2')
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/Material Icons/material_icons_67.woff2') format('woff2')
 }
 
 .material-icons {
-  font-family: 'Material Icons', fantasy;
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -moz-font-feature-settings: 'liga';
-  -moz-osx-font-smoothing: grayscale;
+    font-family: 'Material Icons', fantasy;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -moz-font-feature-settings: 'liga';
+    -moz-osx-font-smoothing: grayscale;
 }
 
 html {
@@ -61,21 +61,21 @@ html {
 }
 
 @font-face {
-  font-family: "Fira Mono";
-  src: url("../fonts/Fira Mono/FiraMono-Regular.ttf") format("truetype");
-  font-weight: 400;
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Regular.ttf") format("truetype");
+    font-weight: 400;
 }
 
 @font-face {
-  font-family: "Fira Mono";
-  src: url("../fonts/Fira Mono/FiraMono-Medium.ttf") format("truetype");
-  font-weight: 500;
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Medium.ttf") format("truetype");
+    font-weight: 500;
 }
 
 @font-face {
-  font-family: "Fira Mono";
-  src: url("../fonts/Fira Mono/FiraMono-Bold.ttf") format("truetype");
-  font-weight: 700;
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Bold.ttf") format("truetype");
+    font-weight: 700;
 }
 
 .container {
@@ -295,15 +295,88 @@ th {
     width: 100%
 }
 
-
-.graph td, th {
-    max-width: 160px;
+.svg-text-holder {
+    pointer-events: none;
 }
 
-.graph th {
+.svg-text-div {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height:100%;
+    width:100%;
+}
+
+.svg-text-content {
+    font-size: 24px;
+    line-height: 2rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-family: Fira Mono, monospace;
+    pointer-events: none;
+    width: fit-content;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.graph-legend {
+    width: 100%;
+    border: 0;
+    border-collapse: collapse;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+table.graph-legend {
+    max-width:80vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height:fit-content;
+}
+
+.graph-legend tr {
+    display: flex;
+    align-items:center;
+}
+
+.graph-legend td, th {
+    flex-grow: 1;
+    flex-shrink: 1;
+    display: block;
     width: auto;
+    max-width: 160px;
+    padding-top:5px;
+    padding-bottom:5px
 }
 
+/*.graph-legend td {*/
+/*    padding-bottom:0.1rem;*/
+/*    padding-top:0.1rem*/
+/*}*/
+
+.graph-legend thead, tbody {
+    width:100%;
+}
+
+.graph-legend tbody {
+    display: inline;
+    overflow-y: auto;
+}
+
+.graph-legend .graph-column {
+    flex: 0;
+}
+
+.graph-column div {
+    position:relative
+}
+
+td.graph-column, th.graph-column {
+    padding-right:2rem
+}
 
 .imgContainer {
     width: 100%;

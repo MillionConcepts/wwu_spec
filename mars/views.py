@@ -5,12 +5,14 @@ import json
 import zipfile
 from ast import literal_eval
 from functools import reduce
+from itertools import chain
 from operator import or_
 
 import PIL
 from PIL import Image
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import render
 
@@ -63,22 +65,17 @@ def results(request):
     # double underscore in these field names is an ugly but compact way to
     # access the ForeignKey object fields
 
-    phrase_fields = [
-        "sample_name"
-    ]
-
+    phrase_fields = ["sample_name"]
     choice_fields = ["origin__name", "sample_type__name", "library__name"]
-
-    numeric_fields = ['min_reflectance', 'max_reflectance']
-
-    searchable_fields = choice_fields + phrase_fields + numeric_fields
-
+    numeric_fields = ["min_reflectance", "max_reflectance"]
+    searchable_fields = phrase_fields + choice_fields + numeric_fields
     form_results = Sample.objects.only(*searchable_fields)
 
     if not request.user.is_superuser:
         form_results = form_results.filter(
             released=True
         )
+
     form_results = form_results.order_by(*sort_params)
 
     for field in phrase_fields + choice_fields:
@@ -110,21 +107,37 @@ def results(request):
             ]
             form_results = reduce(or_, filters)
 
-    # this is a placeholder for the planned 'select by band' functionality
-    # numeric_constraints = ["min_included_range", "max_included_range"]
-    # for field in numeric_constraints:
-    #     entry = search_form.cleaned_data.get(field)
-    #     if entry:
-    #         if field == "min_included_range":
-    #             query = "min_reflectance__lte"
-    #         elif field == "max_included_range":
-    #             query = "max_reflectance__gte"
-    #         form_results = form_results.filter(**{query: entry})
+    # NOTE: this function assumes that there are no large gaps in
+    # frequency coverage within a given lab spectrum; i.e., that if a
+    # spectrum has both UVA and NIR, it also has VIS. if this becomes a bad
+    # assumption, we will need to modify it.
+    frequency_ranges = {
+        'UVB': [0, 314],
+        'UVA': [315, 399],
+        'VIS': [400, 749],
+        'NIR': [750, 2500],
+        'MIR': [2501, 10000000]
+    }
 
-    # 'search all fields' function
-    entry = search_form.cleaned_data.get("any_field")
-    if entry:
-        form_results = form_results & search_all_samples(entry)
+    frequency_query = search_form.cleaned_data.get('frequency_range')
+    if frequency_query:
+        requested_range = list(chain.from_iterable(
+            [frequency_ranges[range_name] for range_name in frequency_query]
+        ))
+        maximum_minimum = requested_range[1]
+        minimum_maximum = requested_range[-2]
+        form_results = form_results.filter(
+            min_reflectance__lte=maximum_minimum
+        )
+        form_results = form_results.filter(
+            max_reflectance__gte=minimum_maximum
+        )
+    # don't bother continuing if we're already empty
+    if form_results:
+        # 'search all fields' function
+        entry = search_form.cleaned_data.get("any_field")
+        if entry:
+            form_results = form_results & search_all_samples(entry)
     search_results = search_results | form_results
 
     selections = request.GET.getlist("selection")
