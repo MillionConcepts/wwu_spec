@@ -46,6 +46,12 @@
                         {% endif %}
                         {{ search_form.any_field.label_tag }}
                         {{ search_form.any_field }}</div>
+                <div class="col s6">
+                        {% if search_form.frequency_range.errors %}
+                            {{ search_form.frequency_range.errors }}
+                        {% endif %}
+                        {{ search_form.frequency_range.label_tag }}
+                        {{ search_form.frequency_range}}</div>
                 </div>
 
             {% endfor %}
