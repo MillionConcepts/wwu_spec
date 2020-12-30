@@ -1639,6 +1639,7 @@ const makeOffsetListeners = function () {
             offsetDialog.addEventListener(
                 'change',
                 function () {
+                    eraseLine(sample.id)
                     generateLine(sample)
                 })
         },
@@ -1698,7 +1699,6 @@ function redraw() {
     normTextDisplay.attr("width", "40rem").attr("height", "2rem")
     xScale.range([0, width]);
     yScale.range([0, height]);
-
 
     d3.selectAll('.verticalLine')
         .attr("y1", 0)

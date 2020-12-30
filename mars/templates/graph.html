@@ -30,7 +30,7 @@
     {% if graphResults %}
         <div style="margin-left: 40px; margin-right: 40px">
             <div class="card " style="background:#e3e7e9">
-                <div class="container">
+                <div class="container" style="max-width:90vw">
                     <div class="row"
                          style="margin-bottom: 0; margin-left:0; margin-right: 0;">
                         <div class="col s11">
@@ -52,8 +52,8 @@
                             Graph<br>Window
                         </div>
                         <div class="col"
-                             style="font-size: 12pt;font-weight: bold; width: 11%; margin-top: 3px;">
-                            Nanometers
+                             style="width: 11%; margin-top: 3px;">
+                            <span class="control-header">Nanometers</span>
                         </div>
                         <div class="col"
                              style="width:13%; text-align:center; margin-top: 3px;">
@@ -65,8 +65,8 @@
                                    style="margin-bottom: 10px"/>
                         </div>
                         <div class="col"
-                             style="font-size: 12pt;font-weight: bold; width: 12%; margin-top: 3px;">
-                            Reflectance
+                             style="width: 12%; margin-top: 3px;">
+                            <span class="control-header">Reflectance</span>
                         </div>
                         <div class="col"
                              style="width:13%; text-align:center; padding:0; margin-top:3px; ">
@@ -97,237 +97,229 @@
                         </div>
                     </div>
                 </div>
-                <div id="control-panel"
-                     style="border-top: thin solid gray; display:none">
-                    <div class="row"
-                         style="margin-top: 15px; margin-bottom: 5px">
-                        <div class="col" id="line-control-div"
-                             style=" font-size: 12pt; font-weight: bold; width:25%; margin-left: 2%; margin-top: 2px; text-align:center">
-                            Line Controls
-                            <div class="row"
-                                 style="font-weight: 100; margin-top:15px; margin-bottom:5px; text-align:left">
-                                <div class="switch"
-                                     style="margin-top: 8px; margin-bottom:5px">
+                <div id="control-panel" class="controls" style="display:none">
+                    <div class="flex-buffer" style="flex-basis:8vw"></div>
+                    <div class="control-section" id="control-section-1">
+                        <div class="control-block" id="vert-control-div">
+                            <span class="control-header">Vertical Lines</span>
+                            <div>
+                                <div class="switch">
                                     <label>
                                         <input id="vertical-line-switch"
                                                checked="checked"
                                                type="checkbox">
                                         <span class="lever"></span>
-                                        Vertical Line Follows Mouse
+                                        Line Follows Mouse
                                     </label>
                                 </div>
-                                <div class="switch" style="margin-bottom:17px">
+                                <div class="switch">
                                     <label>
                                         <input id="drop-switch"
                                                type="checkbox">
                                         <span class="lever"></span>
-                                        Clicking Affixes Vertical Lines
+                                        Clicks Drop Lines
                                     </label>
                                 </div>
-
-
-                                <div class="button"
-                                     style="height:30px; margin-left:25%; margin-bottom:5px">
-                                    <a class="btn redButton graphButton"
-                                       style="height:30px; margin-bottom:0"
-                                       onclick="eraseVerts()">Erase Lines
-                                    </a>
-                                </div>
                             </div>
-                            <form style="margin-bottom: 5px">
-                                <p style="text-align:center">Simulation Options
-                                <p>
-                                    <label for="filter-picker"></label><select
-                                        id="filter-picker"
-                                        style="display:block; font-weight:normal;font-size:10pt">
-                                    {% for filterset in filtersets %}
-                                        <option value= {{ filterset }}>{{ filterset }}</option>
-                                    {% endfor %}
-                                </select>
+                            <div class="button"
+                                 style="height:1.9rem; margin-top:0.4rem; align-self: center">
+                                <a class="btn redButton graphButton"
+                                   style="height:1.9rem"
+                                   onclick="eraseVerts()">Erase Lines
+                                </a>
+                            </div>
+                        </div>
+                        <div class="control-block" id="norm-control-block">
+                            <span class="control-header">Normalization</span>
+                            <div class="switch">
+                                <label>
+                                    <input id="normal-switch"
+                                           type="checkbox"
+                                           onclick="normalizeSpectra()">
+                                    <span class="lever"></span>
+                                    Auto
+                                </label>
+                            </div>
+                            <div class="switch">
+                                <label>
+                                    <input id="wavenormal-switch"
+                                           type="checkbox"
+                                           onclick="waveNormalizeSpectra()">
+                                    <span class="lever"></span>
+                                    Wavelength
+                                    <label>
+                                        <input id="wavenormal-wavelength-input"
+                                               step="20" type="number"
+                                               style="width:5rem">
+                                    </label>
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="control-section" id="lab-inst-controls">
+                        <div class="control-block" id="lab-toggle-div">
+                            <span class="control-header">Spectrum Display</span>
+                            <div class="switch">
+                                <label>
+                                    <input id="line-switch"
+                                           checked="checked"
+                                           type="checkbox"
+                                           onclick="updateDataVisibility()">
+                                    <span class="lever"></span>
+                                    Show Lines
+                                </label>
+                            </div>
+                            <div class="switch">
+                                <label>
+                                    <input id="point-switch"
+                                           type="checkbox"
+                                           onclick="updateDataVisibility()">
+                                    <span class="lever"></span>
+                                    Show Points
+                                </label>
+                            </div>
+
+                        </div>
+                        <div class="control-block" id="inst-control-div">
+                            <span class="control-header">Simulation Options</span>
+                            <form>
+                                <label>
+                                    <select id="filter-picker">
+                                        {% for filterset in filtersets %}
+                                            <option value= {{ filterset }}>{{ filterset }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
                             </form>
-                        </div>
-                        <div class="col" id="line-toggle-div"
-                             style="font-size: 12pt; font-weight: bold; width:25%; margin-left: 3%; margin-top: 2px; text-align:center">
-                            Visibility Controls
-                            <div class="row"
-                                 style="font-weight: 100; margin-top:5px; margin-bottom:0; text-align:left">
-                                <div class="switch" style="margin-bottom:9px">
-                                    <label>
-                                        <input id="point-switch"
-                                               type="checkbox"
-                                               onclick="updateDataVisibility()">
-                                        <span class="lever"></span>
-                                        Lab Points
-                                    </label>
-                                </div>
-                                <div class="switch" style="margin-bottom:9px">
-                                    <label>
-                                        <input id="instrument-point-switch"
-                                               type="checkbox"
-                                               onclick="updateDataVisibility()">
-                                        <span class="lever"></span>
-                                        Instrumentalized Points
-                                    </label>
-                                </div>
-                                <div class="switch" style="margin-bottom:9px">
-                                    <label>
-                                        <input id="line-switch"
-                                               checked="checked"
-                                               type="checkbox"
-                                               onclick="updateDataVisibility()">
-                                        <span class="lever"></span>
-                                        Lab Lines
-                                    </label>
-                                </div>
-                                <div class="switch" style="margin-bottom:9px">
-                                    <label>
-                                        <input id="instrument-line-switch"
-                                               type="checkbox"
-                                               onclick="updateDataVisibility()">
-                                        <span class="lever"></span>
-                                        Instrumentalized Lines
-                                    </label>
-                                </div>
+                            <div class="switch">
+                                <label>
+                                    <input id="instrument-line-switch"
+                                           type="checkbox"
+                                           onclick="updateDataVisibility()">
+                                    <span class="lever"></span>
+                                    Show Lines
+                                </label>
                             </div>
-                            Normalization Controls
-                            <div class="row"
-                                 style="font-weight: 100; margin-top:5px; margin-bottom: 5px; text-align:left">
-                                <div class="switch" style="margin-bottom:9px">
-                                    <label>
-                                        <input id="normal-switch"
-                                               type="checkbox"
-                                               onclick="normalizeSpectra()">
-                                        <span class="lever"></span>
-                                        Auto
-                                    </label>
-                                </div>
-                                <div class="switch" style="margin-bottom:9px">
-                                    <label>
-                                        <input id="wavenormal-switch"
-                                               type="checkbox"
-                                               onclick="waveNormalizeSpectra()">
-                                        <span class="lever"></span>
-                                        Wavelength
-                                        <input id="wavenormal-wavelength-input" step="20" type="number"
-                                            style="max-width:30%">
-                                    </label>
-{#                                <div class="col" id="arm-div"#}
-{#                                     style="display:none; max-width:25rem; text-align:center; margin-top: 3px;">#}
-{#                                    <label>#}
-{##}
-{#                                    </label>#}
-                                </div>
+                            <div class="switch">
+                                <label>
+                                    <input id="instrument-point-switch"
+                                           type="checkbox"
+                                           onclick="updateDataVisibility()">
+                                    <span class="lever"></span>
+                                    Show Points
+                                </label>
                             </div>
                         </div>
-                        <div class="col" id="calc-control-div"
-                             style=" font-size: 12pt; font-weight: bold; max-width:40%; margin-left: 3%; margin-top: 2px; text-align:center">
-                            Click to Calculate
-                            <div class="row"
-                                 style="font-weight: 100; margin-top:5px; text-align:left">
-                                <div class="col" style="max-width: 10rem;">
-                                    <input name="calc-mode" type="radio"
-                                           id="no-calc" checked="checked"
-                                           onclick="updateCalc(this)">
-                                    <label for="no-calc"
-                                           style="margin-bottom:10px">Nothing </label>
-                                    <input name="calc-mode" type="radio"
-                                           id="slope-calc"
-                                           onclick="updateCalc(this)"/>
-                                    <label for="slope-calc">Slope</label>
-                                </div>
-                                <div class="col" style="max-width:17rem;">
-                                    <input name="calc-mode" type="radio"
-                                           id="band-min-calc"
-                                           onclick="updateCalc(this)"/>
-                                    <label for="band-min-calc"
-                                           style="margin-bottom:10px">Band
-                                        Depth (minima)</label>
-                                    <input name="calc-mode" type="radio"
-                                           id="band-custom-calc"
-                                           onclick="updateCalc(this)">
-                                    <label for="band-custom-calc"
-                                           style="margin-bottom:10px">Band
-                                        Depth (selected)</label>
-                                    <input name="calc-mode" type="radio"
-                                           id="ratio-calc"
-                                           onclick="updateCalc(this)">
-                                    <label for="ratio-calc">Ratio</label>
-                                </div>
+
+                    </div>
+                    <div class="control-section" id="calc-control-section">
+                        <span class="control-header">Click to Calculate</span>
+                        <div style="text-align:left">
+                            <div class="control-block">
+                                <input name="calc-mode" type="radio"
+                                       id="no-calc" checked="checked"
+                                       onclick="updateCalc(this)">
+                                <label for="no-calc">Nothing </label>
+                                <input name="calc-mode" type="radio"
+                                       id="slope-calc"
+                                       onclick="updateCalc(this)"/>
+                                <label for="slope-calc">Slope</label>
+                                <input name="calc-mode" type="radio"
+                                       id="band-min-calc"
+                                       onclick="updateCalc(this)"/>
+                                <label for="band-min-calc">Band Depth
+                                    (minima)</label>
+                                <input name="calc-mode" type="radio"
+                                       id="band-custom-calc"
+                                       onclick="updateCalc(this)">
+                                <label for="band-custom-calc">Band Depth
+                                    (selected)</label>
+                                <input name="calc-mode" type="radio"
+                                       id="ratio-calc"
+                                       onclick="updateCalc(this)">
+                                <label for="ratio-calc">Ratio</label>
                                 <div class="switch"
                                      id="calc-all-div">
                                     <label for="calc-all-switch">
                                         <input id="calc-all-switch"
                                                type="checkbox"
                                                onclick="updateMaxCalc()">
-                                        <span class="lever"></span>
+                                        <span class="lever"
+                                              style="margin-left:0; margin-right:0"></span>
                                         calculate on all spectra
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="flex-buffer" style="flex-basis:4vw"></div>
                 </div>
-            <div class = "row" style="height:fit-content">
-            <div class="col s1" style="flex-shrink:1">
-            </div>
-            <div class="col s10">
-                <table class="graph-legend">
-                    <thead>
-                    <tr style="height:2rem">
-                        <th class="graph-column">
-                            <label>Line</label></th>
-                        <th class="graph-column">
-                            <label>Color</label></th>
-                        <th><label>ID</label></th>
-                        <th><label>Name</label></th>
-                        <th><label>Origin</label></th>
-                        <th><label>Offset</label></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for result in graphResults %}
-                        <tr>
-                            <td class="graph-column">
-                                <div>
-                                    <input type="checkbox" checked="checked"
-                                           name="selection"
-                                           id="option{{ result.id }}"
-                                           value={{ result.id }}""
-                                           onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
-                                    <label for="option{{ result.id }}"></label>
-                                </div>
-                            </td>
-                            <td class="graph-column">
-                                <div id="rect-{{ result.id }}"
-                                     style="border:1px solid gray; width:15px; height:15px">
-                                </div>
-                            </td>
-
-                            <td><label class="truncate"
-                                       for="option{{ result.id }}">{{ result.sample_id }}</label>
-                            </td>
-                            <td><label class="truncate"
-                                       for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
-                            </td>
-                            <td><label class="truncate"
-                                       for="option{{ result.id }}"> {{ result.origin.short_name }} </label>
-                            </td>
-                            <td>
-                                <label for="offset-dialog{{ result.id }}">
-                                    <input id="offset-dialog{{ result.id }}"
-                                           step=".02" type="number" value="0">
-                                </label>
-                            </td>
 
 
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="col s1">
-            </div>
-            </div>
+                <div class="row" style="height:fit-content">
+                    <div class="col s1" style="flex-shrink:1">
+                    </div>
+                    <div class="col s10">
+                        <table class="graph-legend">
+                            <thead>
+                            <tr style="height:2rem">
+                                <th class="graph-column">
+                                    <label>Line</label></th>
+                                <th class="graph-column">
+                                    <label>Color</label></th>
+                                <th><label>ID</label></th>
+                                <th><label>Name</label></th>
+                                <th><label>Origin</label></th>
+                                <th><label>Offset</label></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for result in graphResults %}
+                                <tr>
+                                    <td class="graph-column">
+                                        <div>
+                                            <input type="checkbox"
+                                                   checked="checked"
+                                                   name="selection"
+                                                   id="option{{ result.id }}"
+                                                   value={{ result.id }}""
+                                                   onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
+                                            <label for="option{{ result.id }}"></label>
+                                        </div>
+                                    </td>
+                                    <td class="graph-column">
+                                        <div id="rect-{{ result.id }}"
+                                             style="border:1px solid gray; width:15px; height:15px">
+                                        </div>
+                                    </td>
+
+                                    <td><label class="truncate"
+                                               for="option{{ result.id }}">{{ result.sample_id }}</label>
+                                    </td>
+                                    <td><label class="truncate"
+                                               for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
+                                    </td>
+                                    <td><label class="truncate"
+                                               for="option{{ result.id }}"> {{ result.origin.short_name }} </label>
+                                    </td>
+                                    <td>
+                                        <label for="offset-dialog{{ result.id }}">
+                                            <input id="offset-dialog{{ result.id }}"
+                                                   step=".02" type="number"
+                                                   value="0">
+                                        </label>
+                                    </td>
+
+
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col s1">
+                    </div>
+                </div>
                 <form id="resultsForm" method="GET" name="resultsform">
                     <div class="section center-align">
                         <button type="submit" name="search"
@@ -371,18 +363,16 @@
         <script src="{% static 'js/nouislider.js' %}"></script>
 
         <script>
-
             const toggleControls = function () {
                 const foldout = document.getElementById("control-panel");
-                if (foldout.style.display === "block") {
+                if (foldout.style.display === "flex") {
                     foldout.style.display = "none";
                     document.getElementById("control-button").innerHTML = "Controls"
                 } else {
-                    foldout.style.display = "block";
+                    foldout.style.display = "flex";
                     document.getElementById("control-button").innerHTML = "Controls";
                 }
             };
-
         </script>
         <script>
             {# note that the argument of parse is filled from db by django template engine #}
