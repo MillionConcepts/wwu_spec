@@ -10,6 +10,29 @@ import numpy as np
 # queryset constructors
 from mars.models import Sample, SampleType, Database
 
+def qlist(queryset, attribute):
+    return list(queryset.values_list(attribute, flat=True))
+
+
+def djget(model, value, field="name", method_name="filter", querytype="iexact"):
+    """flexible interface to queryset methods"""
+    # get the requested queryset-generating method of model.objects
+    method = getattr(model.objects, method_name)
+    # and then evaluate it on the requested parameters
+    return method(**{field + "__" + querytype: value})
+
+
+def modeldict(django_model_object):
+    """tries to construct a dictionary from arbitrary django model instance"""
+    return {
+        field.name: getattr(django_model_object, field.name)
+        for field in django_model_object._meta.get_fields()
+    }
+
+
+def unique_values(queryset, field):
+    return set([entry[field] for entry in list(queryset.values(field))])
+
 
 def fields(model):
     return [field.name for field in model._meta.fields]
@@ -17,7 +40,6 @@ def fields(model):
 
 def or_query(first_query, second_query):
     return first_query | second_query
-
 
 def search_all_samples(entry):
     queries = [
@@ -253,6 +275,7 @@ def ingest_sample_csv(csv_file):
     # check for and handle multicolumn reflectance data
 
     sample_split = False
+    split_refl = []
     if refl_array.shape[0] > 2:
         sample_split = True
         meta_array = meta_array[0:2]
