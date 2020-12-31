@@ -157,7 +157,7 @@
 
                         </div>
                     </div>
-                    <div class="control-section" id="lab-inst-controls">
+                    <div class="control-section" id="lab-inst-controls" style="flex-grow:0.6">
                         <div class="control-block" id="lab-toggle-div">
                             <span class="control-header">Spectrum Display</span>
                             <div class="switch">
@@ -187,7 +187,9 @@
                                 <label>
                                     <select id="filter-picker">
                                         {% for filterset in filtersets %}
+                                            {% if 'illumination' not in filterset %}
                                             <option value= {{ filterset }}>{{ filterset }}</option>
+                                            {% endif %}
                                         {% endfor %}
                                     </select>
                                 </label>
@@ -208,6 +210,14 @@
                                            onclick="updateDataVisibility()">
                                     <span class="lever"></span>
                                     Show Points
+                                </label>
+                            </div>
+                            <div class="switch">
+                                <label>
+                                    <input id="illumination-switch"
+                                           type="checkbox">
+                                    <span class="lever"></span>
+                                    Add solar illumination
                                 </label>
                             </div>
                         </div>

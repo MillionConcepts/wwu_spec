@@ -322,9 +322,8 @@ th {
 .graph-legend {
     width: 100%;
     border: 0;
+    overflow:visible;
     border-collapse: collapse;
-    overflow-x: hidden;
-    overflow-y: auto;
     white-space: normal;
     word-wrap: break-word;
 }

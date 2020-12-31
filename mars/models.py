@@ -11,6 +11,7 @@ import pandas as pd
 import PIL
 from PIL import Image
 import PIL.ImageFile
+from toolz import valmap
 
 from mars.spectral import simulate_spectrum
 
@@ -425,6 +426,11 @@ class Sample(models.Model):
                         **json_dict, **{field.name: getattr(self, field.name)}
                     )
         return json_dict
+
+    def get_simulated_spectra(self):
+        return valmap(
+            literal_eval,literal_eval(self.as_dict()['simulated_spectra'])
+        )
 
     class Meta:
         ordering = ["sample_id"]

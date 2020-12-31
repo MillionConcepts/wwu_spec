@@ -636,7 +636,13 @@ const generateLine = function (sample) {
         eraseLine(sample.id + '_r')
         return;
     }
-    const filterSet = filterPicker.value;
+    const simulateIlluminated = illuminationBox.checked
+    let filterSet
+    if (simulateIlluminated) {
+        filterSet = filterPicker.value;
+    } else {
+        filterSet = filterPicker.value+'_no_illumination';
+    }
     let labReflectance = Object.entries(sample["reflectance"])
     let instReflectance = Object.entries(sample[filterSet])
     const offset = parseFloat(
@@ -703,15 +709,18 @@ const toggleSpectrum = function (boxID, index) {
 };
 
 const filterPicker = gid('filter-picker');
+const illuminationBox = gid('illumination-switch')
 
-filterPicker.addEventListener('change', function () {
-    graph.forEach(function (sample) {
-        eraseLine(sample.id)
-        eraseLine(sample.id + '_r')
-        generateLine(sample)
-    })
-
-}, {passive: true})
+for (let selection of [filterPicker, illuminationBox]) {
+    selection.addEventListener('change', function () {
+        graph.forEach(function (sample) {
+            eraseLine(sample.id)
+            eraseLine(sample.id + '_r')
+            generateLine(sample)
+        })
+    },
+        {passive: true}
+)}
 
 const updateDataVisibility = function () {
     labPointsVisible = gid('point-switch').checked

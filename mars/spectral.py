@@ -55,7 +55,8 @@ def simulate_spectrum(sample, filterset, illuminated=True):
             illumination_wavelengths = illumination[:, 0]
             illumination_intensity = illumination[:, 1]
 
-            # trim and interpolate solar (or whatever) spectrum to sample spectrum
+            # trim and interpolate solar (or whatever) spectrum to sample
+            # spectrum
             irradiance = interpolate_spectrum(
                 sample_wavelengths,
                 illumination_wavelengths,
@@ -96,9 +97,9 @@ def simulate_spectrum(sample, filterset, illuminated=True):
     ).astype({'wavelength': 'float'}).sort_values(['wavelength'])
     simulated_spectrum["response"] = 0
 
-    # convolve reflectance with each of the filters (dividing illumination back out)
-    # and stick it in the spectral response dataframe
-    # and toss out irradiance if we don't want it
+    # convolve reflectance with each of the filters (dividing illumination
+    # back out) and stick it in the spectral response dataframe and toss out
+    # irradiance if we don't want it
 
     for filt in filters:
         simulated_spectrum.loc[
