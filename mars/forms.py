@@ -76,12 +76,12 @@ class SearchForm(forms.Form):
     sample_type__name = forms.ChoiceField(
         required=False, label="Type of Sample"
     )
-    frequency_range = forms.MultipleChoiceField(
+    wavelength_range = forms.MultipleChoiceField(
         required=False,
         widget=SelectMultipleHide(
-            attrs = {'id': 'frequency-range', 'value': '', 'placeholder': ''}
+            attrs = {'id': 'wavelength-range', 'value': '', 'placeholder': ''}
         ),
-        label="require values from specific frequency ranges:",
+        label="require values from specific wavelength ranges:",
         choices=[
             ('', ''),
             ('UVB', 'UVB (<315 nm)'),
