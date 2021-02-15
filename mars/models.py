@@ -394,37 +394,36 @@ class Sample(models.Model):
     def as_json(self):
         json_dict = {}
         for field in self._meta.fields:
-            if getattr(self, field.name):
-                if field.name == "reflectance":
-                    json_dict = dict(
-                        **json_dict,
-                        **{"reflectance": dict(literal_eval(self.reflectance))}
-                    )
-                elif field.name == "date_added":
-                    json_dict = dict(
-                        **json_dict, **{"date_added": str(self.date_added)}
-                    )
-                elif isinstance(field, models.ForeignKey):
-                    json_dict = dict(
-                        **json_dict,
-                        **{field.name: getattr(self, field.name).name}
-                    )
-                elif field.name == "simulated_spectra":
-                    sims = json.loads(self.simulated_spectra)
-                    for filterset in sims:
-                        name = filterset
-                        # 'astype(float)'' is added because json will not
-                        # treat numpy.int64 as an int or float, unlike its
-                        # treatment of numpy.float64, which causes problems
-                        # for samples that have reflectance ranges that lie
-                        # totally outside of a filterset's range
-                        spectrum = dict(pd.read_json(sims[filterset]).drop(
-                            columns="filter").values.astype(float))
-                        json_dict = dict(**json_dict, **{name: spectrum})
-                else:
-                    json_dict = dict(
-                        **json_dict, **{field.name: getattr(self, field.name)}
-                    )
+            if not getattr(self, field.name):
+                continue
+            if field.name == "reflectance":
+                json_dict = dict(
+                    **json_dict,
+                    **{"reflectance": dict(literal_eval(self.reflectance))}
+                )
+            elif field.name == "date_added":
+                json_dict = dict(
+                    **json_dict, **{"date_added": str(self.date_added)}
+                )
+            elif isinstance(field, models.ForeignKey):
+                json_dict = dict(
+                    **json_dict,
+                    **{field.name: getattr(self, field.name).name}
+                )
+            elif field.name == "simulated_spectra":
+                sims = json.loads(self.simulated_spectra)
+                for filterset in sims:
+                    name = filterset
+                    # 'astype(float)'' is added because json will not
+                    # treat numpy.int64 as an int or float, unlike its
+                    # treatment of numpy.float64, which causes problems
+                    # for samples that have reflectance ranges that lie
+                    # totally outside of a filterset's range
+                    spectrum = dict(pd.read_json(sims[filterset]).drop(
+                        columns="filter").values.astype(float))
+                    json_dict = dict(**json_dict, **{name: spectrum})
+            else:
+                json_dict = json_dict | {field.name: getattr(self, field.name)}
         return json_dict
 
     def get_simulated_spectra(self):
