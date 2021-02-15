@@ -1,5 +1,6 @@
 import zipfile
 from functools import reduce
+from typing import TYPE_CHECKING, Union, Any, IO
 
 from django.db import models
 import pandas as pd
@@ -10,11 +11,18 @@ import numpy as np
 # queryset constructors
 from mars.models import Sample, SampleType, Database
 
-def qlist(queryset, attribute):
+
+def qlist(queryset: models.QuerySet, attribute: str):
     return list(queryset.values_list(attribute, flat=True))
 
 
-def djget(model, value, field="name", method_name="filter", querytype="iexact"):
+def djget(
+        model: models.Model,
+        value: str,
+        field: str = "name",
+        method_name: str = "filter",
+        querytype: str = "iexact",
+) -> models.QuerySet:
     """flexible interface to queryset methods"""
     # get the requested queryset-generating method of model.objects
     method = getattr(model.objects, method_name)
@@ -22,7 +30,7 @@ def djget(model, value, field="name", method_name="filter", querytype="iexact"):
     return method(**{field + "__" + querytype: value})
 
 
-def modeldict(django_model_object):
+def modeldict(django_model_object: models.Model) -> dict:
     """tries to construct a dictionary from arbitrary django model instance"""
     return {
         field.name: getattr(django_model_object, field.name)
@@ -30,26 +38,29 @@ def modeldict(django_model_object):
     }
 
 
-def unique_values(queryset, field):
+def unique_values(queryset: models.QuerySet, field: str) -> set:
     return set([entry[field] for entry in list(queryset.values(field))])
 
 
-def fields(model):
+def fields(model: models.Model) -> list[str]:
     return [field.name for field in model._meta.fields]
 
 
-def or_query(first_query, second_query):
+def or_query(
+        first_query: models.QuerySet, second_query: models.QuerySet
+) -> models.QuerySet:
     return first_query | second_query
 
-def search_all_samples(entry):
+
+def search_all_samples(entry: str) -> models.QuerySet:
     queries = [
         {field.name + "__icontains": entry}
         for field in Sample._meta.fields
         if field.name not in ["origin", "sample_type", "id"]
     ]
     queries += [
-        {field + "__name__icontains": entry} for field in
-        ["origin", "sample_type"]
+        {field + "__name__icontains": entry}
+        for field in ["origin", "sample_type"]
     ]
     filter_list = [Sample.objects.filter(**query) for query in queries]
     return reduce(or_query, filter_list)
@@ -57,28 +68,25 @@ def search_all_samples(entry):
 
 # utilities for making lists to render in html
 
+
 def make_choice_list(
-        model: models.Model,
-        field: str,
-        conceal_unreleased=False
+        model: models.Model, field: str, conceal_unreleased=False
 ) -> list[tuple]:
     """
     format data to feed to html selection fields.
     used by forms.SearchForm
     """
     queryset: models.query.QuerySet  # just a type hint, for secret reasons
-    if conceal_unreleased and ('released' in fields(model)):
+    if conceal_unreleased and ("released" in fields(model)):
         queryset = model.objects.filter(released=True)
     else:
         queryset = model.objects.all()
-    choice_data = [
-            (c, c) for c in queryset.values_list(field, flat=True)
-        ]
+    choice_data = [(c, c) for c in queryset.values_list(field, flat=True)]
     choice_data.insert(0, ("Any", "Any"))
     return choice_data
 
 
-def make_autocomplete_list(autocomplete_fields):
+def make_autocomplete_list(autocomplete_fields: dict):
     """
     format data to feed to jquery autocomplete.
     currently vestigial but may become useful again later.
@@ -99,7 +107,8 @@ def make_autocomplete_list(autocomplete_fields):
 
 # utilities for reading uploaded sample data
 
-def parse_sample_csv(meta_array, warnings, errors):
+
+def parse_sample_csv(meta_array: np.ndarray, warnings: list, errors: list):
     # maps rows from csv file to the fields of a Sample object
     # and throws errors if the csv file is formatted improperly
 
@@ -147,8 +156,9 @@ def parse_sample_csv(meta_array, warnings, errors):
                 )
         elif field_search.size > 1:
             errors.append(
-                "Error: " + column[
-                    0] + " appears to be assigned more than once."
+                "Error: "
+                + column[0]
+                + " appears to be assigned more than once."
             )
         else:
             active_field = field_names[field_search][0][0]
@@ -163,14 +173,16 @@ def parse_sample_csv(meta_array, warnings, errors):
     return field_dict, warnings, errors
 
 
-def check_sample_csv(field_dict, warnings, errors):
+def check_sample_csv(
+        field_dict: dict, warnings: list, errors: list
+) -> (dict, list, list):
     # maps upload text to the ForeignKey fields
     # creates database entries if not present
     # and assigns a sample ID if not present
     if "sample_type" in field_dict.keys():
         if field_dict["sample_type"] not in [
-            sample_type.typeOfSample for sample_type in
-            SampleType.objects.all()
+            sample_type.typeOfSample
+            for sample_type in SampleType.objects.all()
         ]:
             errors.append(
                 field_dict["sample_type"] + " is not an allowable sample type."
@@ -198,13 +210,15 @@ def check_sample_csv(field_dict, warnings, errors):
             "No name was provided for the sample in"
             + field_dict["filename"]
             + ".it has been"
-              "assigned the placeholder identifier " + field_dict[
-                "sample_id"] + "."
+              "assigned the placeholder identifier "
+            + field_dict["sample_id"]
+            + "."
         )
     return field_dict, warnings, errors
 
 
-def ingest_sample_csv(csv_file):
+# TODO: investigate control flow here as part of refactoring
+def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
     warnings = []
     errors = []
 
@@ -236,7 +250,9 @@ def ingest_sample_csv(csv_file):
     refl_search = np.nonzero(csv_in[0] == "Wavelength")[0]
     if refl_search.size == 0:
         errors.append(
-            'Error: the "Wavelength" separator wasn\'t found in ' + filename + "."
+            'Error: the "Wavelength" separator wasn\'t found in '
+            + filename
+            + "."
         )
         return {
             "sample": None,
@@ -299,12 +315,13 @@ def ingest_sample_csv(csv_file):
 
     if sample_split:
         sample_out = [
-            Sample(**dict(**field_dict, **{"reflectance": sample})) for sample
-            in split_refl
+            Sample(**dict(**field_dict, **{"reflectance": sample}))
+            for sample in split_refl
         ]
     else:
         sample_out = Sample(
-            **dict(**field_dict, **{"reflectance": refl_array}))
+            **dict(**field_dict, **{"reflectance": refl_array})
+        )
 
     if errors:
         return {
@@ -321,7 +338,7 @@ def ingest_sample_csv(csv_file):
     }
 
 
-def handle_csv_upload(csv_file):
+def handle_csv_upload(csv_file: Union[str, zipfile.ZipExtFile]) -> list[dict]:
     csv_in = ingest_sample_csv(csv_file)
     if csv_in["errors"] is not None:
         return [{"filename": csv_file.name, "errors": csv_in["errors"]}]
@@ -346,34 +363,47 @@ def handle_csv_upload(csv_file):
     if type(sample) == list:
         flat_samples = []
         for active_sample in sample:
-            flat_samples.append({
-                'sample': active_sample,
-                'filename': csv_file.name,
-                'errors': None
-            })
+            flat_samples.append(
+                {
+                    "sample": active_sample,
+                    "filename": csv_file.name,
+                    "errors": None,
+                }
+            )
         return flat_samples
 
     return [{"sample": sample, "filename": csv_file.name, "errors": None}]
 
 
-def check_zip_structure(zipped_file, upload_errors):
+"""
+TODO: the way that this semiautomatically generated return signature looks 
+suggests to me that I should refactor this code.
+"""
+
+
+def check_zip_structure(
+        zipped_file: zipfile.ZipFile, upload_errors: list
+) -> Union[
+    list[Union[int, list]], dict[str, Union[list, list[str], dict[str, Any]]]
+]:
     uploaded_files = zipped_file.namelist()
 
     csv_files = [file for file in uploaded_files if file[-3:] == "csv"]
     jpg_files = [file for file in uploaded_files if file[-3:] == "jpg"]
-    other_files = [file for file in uploaded_files if
-                   file[-3:] not in ["csv", "jpg"]]
+    other_files = [
+        file for file in uploaded_files if file[-3:] not in ["csv", "jpg"]
+    ]
 
     # check for inappropriate filetypes
 
     if other_files:
         upload_errors.append(
-            "There are files that do not have a csv or jpg extension in the upload."
-            + " Please correct this and reload."
+            "There are files that do not have a csv or jpg extension in the "
+            "upload. Please correct this and reload."
         )
     if len(csv_files) != len(set(csv_files)):
         upload_errors.append(
-            "There appear to be duplicate csv filenames in the upload."
+            "There appear to be duplicate csv filenames in the upload. "
             + "Please correct this and reload."
         )
     if len(csv_files) == 0:
@@ -399,13 +429,15 @@ def check_zip_structure(zipped_file, upload_errors):
         elif jpg_file[-3:] != "jpg":
             upload_errors.append(
                 jpg_file[:-4]
-                + "Has the same name as a csv file but doesn't appear to be a JPEG"
+                + "Has the same name as a csv file but doesn't appear to be "
+                  "a JPEG"
                 + " image. Please remove it from the zip file and reload."
             )
         else:
             matching_csv_file = [
-                csv_file for csv_file in csv_files if
-                csv_file[:-4] == jpg_file[:-4]
+                csv_file
+                for csv_file in csv_files
+                if csv_file[:-4] == jpg_file[:-4]
             ][0]
             try:
                 matching_image = PIL.Image.open(zipped_file.open(jpg_file))
@@ -416,22 +448,26 @@ def check_zip_structure(zipped_file, upload_errors):
                     + " does not appear to be a valid image file."
                     + " Please verify it and reload."
                 )
-    return {"upload_errors": upload_errors, "jpg_files": jpg_files,
-            "csv_files": csv_files, "image_associations": image_associations}
+    return {
+        "upload_errors": upload_errors,
+        "jpg_files": jpg_files,
+        "csv_files": csv_files,
+        "image_associations": image_associations,
+    }
 
 
-def handle_zipped_upload(zipped_file):
+def handle_zipped_upload(zipped_file: IO):
     upload_errors = []
 
     # try opening the file
     try:
         zipped_file = zipfile.ZipFile(zipped_file)
-    except Exception as ex:
+    except Exception as error:
         upload_errors.append(
-            "The input can't be parsed as a zip file." +
-            " Please verify it and reload."
+            "The input can't be parsed as a zip file."
+            + " Please verify it and reload."
         )
-        upload_errors.append(ex)
+        upload_errors.append(error)
         return [0, upload_errors]
 
     check = check_zip_structure(zipped_file, upload_errors)
@@ -451,32 +487,41 @@ def handle_zipped_upload(zipped_file):
 
     # log samples that were successful and erroneous at this stage
 
-    erroneous_samples = [sample for sample in samples if
-                         sample["errors"] is not None]
-    successful_samples = [sample for sample in samples if
-                          sample["errors"] is None]
+    erroneous_samples = [
+        sample for sample in samples if sample["errors"] is not None
+    ]
+    successful_samples = [
+        sample for sample in samples if sample["errors"] is None
+    ]
 
     # flatten sample list in case of multicolumn uploads
 
-    single_samples = [samp for samp in successful_samples if
-                      type(samp["sample"]) != list]
-    multi_samples = [samplist for samplist in successful_samples if
-                     type(samplist["sample"]) == list]
+    single_samples = [
+        samp for samp in successful_samples if type(samp["sample"]) != list
+    ]
+    multi_samples = [
+        samplist
+        for samplist in successful_samples
+        if type(samplist["sample"]) == list
+    ]
     flat_samples = []
     for multi_sample in multi_samples:
         for sample in multi_sample["sample"]:
-            flat_samples.append({
-                'sample': sample,
-                'filename': multi_sample['filename'],
-                'warnings': multi_sample['warnings'],
-                'errors': multi_sample['errors']
-            })
+            flat_samples.append(
+                {
+                    "sample": sample,
+                    "filename": multi_sample["filename"],
+                    "warnings": multi_sample["warnings"],
+                    "errors": multi_sample["errors"],
+                }
+            )
     successful_samples = single_samples + flat_samples
 
     for sample in successful_samples:
         if sample["sample"].filename in image_associations.keys():
             sample["sample"].image = image_associations[
-                sample["sample"].filename]
+                sample["sample"].filename
+            ]
 
     # check against the model's main clean and save methods; also, you know,
     # save

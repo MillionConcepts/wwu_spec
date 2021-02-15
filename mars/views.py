@@ -12,30 +12,34 @@ import PIL
 from PIL import Image
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.template import context
 
-from mars.forms import UploadForm, AdminUploadImageForm, \
-    concealed_search_factory
+from mars.dj_utils import (
+    search_all_samples,
+    handle_csv_upload,
+    handle_zipped_upload,
+)
+from mars.forms import (
+    UploadForm,
+    AdminUploadImageForm,
+    concealed_search_factory,
+)
 from mars.models import Database, Sample, FilterSet
-from mars.utils import search_all_samples, handle_csv_upload, \
-    handle_zipped_upload
 
 
-def search(request):
+def search(request: context) -> HttpResponse:
     """
     render the search page with an empty search form.
     presently doesn't do any other manipulation (some former
     features determined crufty and cut)
     """
-    page_params = {
-        "search_formset": concealed_search_factory(request)
-    }
+    page_params = {"search_formset": concealed_search_factory(request)}
     return render(request, "search.html", page_params)
 
 
-def results(request):
+def results(request: context) -> HttpResponse:
     search_results_id_list = []
     search_results = Sample.objects.none()
     # selected_spectra = Sample.objects.none() # TODO: missing functionality?
@@ -72,9 +76,7 @@ def results(request):
     form_results = Sample.objects.only(*searchable_fields)
 
     if not request.user.is_superuser:
-        form_results = form_results.filter(
-            released=True
-        )
+        form_results = form_results.filter(released=True)
 
     form_results = form_results.order_by(*sort_params)
 
@@ -102,8 +104,8 @@ def results(request):
         else:
             query = field + "__icontains"
             filters = [
-                form_results.filter(**{query: word}) for word in
-                entry.split(" ")
+                form_results.filter(**{query: word})
+                for word in entry.split(" ")
             ]
             form_results = reduce(or_, filters)
 
@@ -112,18 +114,23 @@ def results(request):
     # spectrum has both UVA and NIR, it also has VIS. if this becomes a bad
     # assumption, we will need to modify it.
     frequency_ranges = {
-        'UVB': [0, 314],
-        'UVA': [315, 399],
-        'VIS': [400, 749],
-        'NIR': [750, 2500],
-        'MIR': [2501, 10000000]
+        "UVB": [0, 314],
+        "UVA": [315, 399],
+        "VIS": [400, 749],
+        "NIR": [750, 2500],
+        "MIR": [2501, 10000000],
     }
 
-    frequency_query = search_form.cleaned_data.get('frequency_range')
+    frequency_query = search_form.cleaned_data.get("frequency_range")
     if frequency_query:
-        requested_range = list(chain.from_iterable(
-            [frequency_ranges[range_name] for range_name in frequency_query]
-        ))
+        requested_range = list(
+            chain.from_iterable(
+                [
+                    frequency_ranges[range_name]
+                    for range_name in frequency_query
+                ]
+            )
+        )
         maximum_minimum = requested_range[1]
         minimum_maximum = requested_range[-2]
         form_results = form_results.filter(
@@ -156,7 +163,7 @@ def results(request):
     page_results = paginator.page(page_selected)
     page_choices = range(
         max(1, page_selected - 3),
-        min(page_selected + 4, paginator.num_pages + 1)
+        min(page_selected + 4, paginator.num_pages + 1),
     )
 
     page_ids = []
@@ -178,7 +185,7 @@ def results(request):
     )
 
 
-def graph(request, template="graph.html"):
+def graph(request: context, template="graph.html") -> HttpResponse:
     if not request.method == "GET":
         return HttpResponse(status=204)
     if "graphForm" not in request.GET:
@@ -199,13 +206,11 @@ def graph(request, template="graph.html"):
 
     filtersets = [
         filterset.short_name
-        for filterset
-        in FilterSet.objects.all().order_by("display_order")
+        for filterset in FilterSet.objects.all().order_by("display_order")
     ]
     filtersets += [
         filterset.short_name + " (no illumination)"
-        for filterset
-        in FilterSet.objects.all().order_by("display_order")
+        for filterset in FilterSet.objects.all().order_by("display_order")
     ]
     return render(
         request,
@@ -225,7 +230,7 @@ def graph_future(request):
     return graph(request, "graph_future.html")
 
 
-def meta(request):
+def meta(request: context) -> HttpResponse:
     if request.method == "GET":
         if "meta" not in request.GET:  # something's busted, just ignore it
             return HttpResponse(status=204)
@@ -246,7 +251,7 @@ def meta(request):
         )
 
 
-def export(request):
+def export(request: context) -> HttpResponse:
     selections = request.GET.getlist("selection")
 
     # TODO: is this actually desired?
@@ -255,8 +260,9 @@ def export(request):
     selections = list(selections)
     samples = Sample.objects.filter(id__in=selections)
     zip_buffer = io.BytesIO()
-    field_list = [[field.verbose_name, field.name] for field in
-                  Sample._meta.fields]
+    field_list = [
+        [field.verbose_name, field.name] for field in Sample._meta.fields
+    ]
     field_list.sort()
 
     with zipfile.ZipFile(zip_buffer, "w") as output:
@@ -301,13 +307,14 @@ def export(request):
 
     date = dt.datetime.today().strftime("%y-%m-%d")
     response = HttpResponse(zip_buffer, content_type="application/zip")
-    response[
-        "Content-Disposition"] = "attachment; filename=spectra-%s.zip;" % date
+    response["Content-Disposition"] = (
+        "attachment; filename=spectra-%s.zip;" % date
+    )
 
     return response
 
 
-def upload(request):
+def upload(request: context) -> HttpResponse:
     if not request.method == "POST":
         # ignore it!
         return HttpResponse(status=204)
@@ -329,8 +336,11 @@ def upload(request):
         return render(
             request,
             "upload.html",
-            {"form": form, "headline": headline,
-             "upload_errors": upload_errors},
+            {
+                "form": form,
+                "headline": headline,
+                "upload_errors": upload_errors,
+            },
         )
 
     successful = []
@@ -383,8 +393,7 @@ def upload(request):
     else:
         if upload_results[0]["errors"] is not None:
             headline = (
-                    upload_results[0][
-                        "filename"] + " did not upload successfully."
+                upload_results[0]["filename"] + " did not upload successfully."
             )
             unsuccessful = [
                 {
@@ -393,8 +402,7 @@ def upload(request):
                 }
             ]
         else:
-            headline = upload_results[0][
-                           "filename"] + "uploaded successfully."
+            headline = upload_results[0]["filename"] + "uploaded successfully."
             successful = [
                 {
                     "filename": upload_result["filename"],
@@ -416,7 +424,7 @@ def upload(request):
     )
 
 
-def admin_upload_image(request, ids):
+def admin_upload_image(request: context, ids: str) -> HttpResponse:
     ids = literal_eval(ids)
     if len(ids) > 1:
         warn_multiple = True
@@ -447,15 +455,15 @@ def admin_upload_image(request, ids):
     )
 
 
-def about(request):
+def about(request: context) -> HttpResponse:
     databases = Database.objects.all()
     filtersets = FilterSet.objects.all().order_by("display_order")
     return render(
         request,
         "about.html",
-        {"databases": databases, "filtersets": filtersets}
+        {"databases": databases, "filtersets": filtersets},
     )
 
 
-def status(request):
+def status(request: context) -> HttpResponse:
     return render(request, "status.html")
