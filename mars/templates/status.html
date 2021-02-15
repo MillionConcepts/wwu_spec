@@ -1,0 +1,337 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block content %}
+    <title>Status - WWU VNIRSD</title>
+    <style>
+    h4, h5 {
+        margin-top: 3rem
+    }
+    </style>
+    <div class="container section">
+        <div class="col warm-content body-text-holder">
+            <h4 style="margin-top: 0">WWU VNISRD Release Status</h4>
+            <p>The VNISRD is in an early beta state. Please do not distribute
+                links to
+                the test server outside of your working group. Bug reports,
+                feature requests, and instrument filter set submissions are all
+                very welcome. Please send them directly by email to
+                mstclair@millionconcepts.com.</p>
+            <h4>near-term feature implementation plans</h4>
+            <ul class="note-list"> * improve format of exported simulated spectra
+            </ul>
+
+            <h4>known issues</h4>
+
+            <ul class="note-list"> * some spectra do not properly generate simulated spectra</ul>
+
+            <h4>patch notes</h4>
+
+            <h5>v0.33 (2020-12-31)</h5>
+
+            <ul class="note-list"> * major changes to graph controls layout</ul>
+
+            <h5>v0.32 (2020-12-29)</h5>
+
+            <ul class="note-list"> * improved display of calculation and normalization status</ul>
+            <ul class="note-list"> * fixed a bug related to calculation focus clipping </ul>
+            <ul class="note-list"> * added wavelengths range selection to search page</ul>
+            <ul class="note-list"> * minor layout and cosmetic changes in graph</ul>
+
+            <h5>v0.31 (2020-12-24)</h5>
+
+            <ul class="note-list"> * fixed a bug related to simultaneous band depth calculations on multiple spectra.</ul>
+            <ul class="note-list"> * fixed an issue related to focus snapping.</ul>
+            <ul class="note-list"> * made normalization behaviors clearer and more consistent.</ul>
+            <ul class="note-list"> * less drawing</ul>
+
+            <h5>v0.3 (12/21/2020)</h5>
+
+            <ul class="note-list"> * new behavior for 'normalize-to-wavelength' option. Instead of clicking on the
+                graph, you may now enter a target wavelength in the box next to the 'wavelength'
+                switch in the control panel.</ul>
+            <ul class="note-list"> * pan and zoom are now retained when spectra are switched off and on,
+                simulation options are changed, or normalization states are changed. 'reset window,'
+                as before, will always center the rendered spectra in their current state,
+                should you normalize yourself into a corner of the plane with nothing in it.</ul>
+            <ul class="note-list"> * new option to perform calculations on all spectra simultaneously </ul>
+            <ul class="note-list"> * numerous under-the-hood changes to enable futureproofing, extensibility, and bugfixes</ul>
+            <ul class="note-list"> * improved pan and zoom behavior from both mouse and window-control widgets</ul>
+            <ul class="note-list"> * fixed a bug related to point selection at the right-hand ends of spectra</ul>
+            <ul class="note-list"> * fixed issues related to instrumentalized vs. lab spectra selection ambiguities</ul>
+            <ul class="note-list"> * visual feedback added for normalization states</ul>
+            <ul class="note-list"> * many edge cases and ambiguities in calculation behavior resolved</ul>
+
+
+            <h5>v0.24 (12/14/2020)</h5>
+
+            <ul class="note-list"> * various optimizations for improved stability, performance, and fault tolerance
+
+            </ul>
+
+            <h5>v0.23 [closed beta release] (12/11/2020)</h5>
+
+            <ul class="note-list"> * added features for verbose display of object
+                names and citations
+            </ul>
+            <ul class="note-list"> * fixed several bugs / unwanted behaviors wrt
+                null or malformed requests
+            </ul>
+            <ul class="note-list"> * removed entries of inaccessible databases
+                from search dialogs
+            </ul>
+            <ul class="note-list"> * assorted text / text display changes</ul>
+
+            <h5>v0.22 (12/10/2020)</h5>
+            <ul class="note-list"> * added 'status' page for patch notes, known
+                issues, feature implementation
+                roadmap
+            </ul>
+            <ul class="note-list"> * feature added to enable arbitrary ordering
+                of filtersets in simulation
+                dropdown
+            </ul>
+            <ul class="note-list"> * urls / citations added for spectra
+                databases and filtersets
+            </ul>
+            <ul class="note-list"> * general cleanup of remote js library and
+                font sources, and partial
+                transition to locally-cached versions (reduced page load times,
+                inreased
+                stability, etc.)
+            </ul>
+            <ul class="note-list"> * fixed bug in graphing / exporting / etc.
+                from ‘select all’
+                lists
+            </ul>
+            <ul class="note-list"> * removed autocomplete feature in search
+                interface
+            </ul>
+            <ul class="note-list"> * narrowed navbar (globally) and restored it
+                to graph view
+            </ul>
+            <ul class="note-list"> * changed 'roverize' to 'instrumentalize'
+            </ul>
+            <ul class="note-list"> * changed default display options to lab
+                lines +
+                instrumentalized points
+            </ul>
+            <ul class="note-list"> * created distinct visibility controls for
+                lab lines, lab
+                points, instrument lines, instrument points
+            </ul>
+            <ul class="note-list"> * changed visual characteristics of graph
+                points and lines
+            </ul>
+            <ul class="note-list"> * changed graph line palette</ul>
+            <ul class="note-list"> * rounded all calculations and reflectance
+                values to <= 3 values
+                after the decimal
+            </ul>
+            <ul class="note-list"> * increased axis tick and label font size
+            </ul>
+            <ul class="note-list"> * general graph control layout changes +
+                compression
+            </ul>
+            <ul class="note-list"> * added features for restricting newly-added
+                spectra to
+                superusers prior to review
+            </ul>
+            <ul class="note-list"> * fixed a bug related to inappropriately
+                flexible search results
+                from some spectra sources
+            </ul>
+            <h5>v0.21 (12/8/2020)</h5>
+            <ul class="note-list"> * added custom libraries to sample search
+                and the admin
+                interface
+            </ul>
+            <ul class="note-list"> * fixed a bug related to propagation of
+                model choice fields into
+                search results
+            </ul>
+            <ul class="note-list"> * various small bugfixes and assorted
+                cleanup changes
+            </ul>
+            <h5>v0.2 (2/7/2020)</h5>
+            <ul class="note-list"> * Changes from items discussed in 2/3
+                meeting
+            </ul>
+            <ul class="note-list"> * Added handling for uploaded files with
+                multiple reflectance
+                columns
+            </ul>
+            <ul class="note-list"> * Changed search to interpret multiple-word
+                queries more
+                loosely
+            </ul>
+            <ul class="note-list"> * For instance, the query 'basalt glass' in
+                the sample name
+                field returns all entries containing either 'basalt' OR glass
+                in their sample
+                name field UNLESS a sample exists with the exact sample name
+                basalt
+                glass'
+            </ul>
+            <ul class="note-list"> * Buggy buttons in results page fixed</ul>
+            <ul class="note-list"> * turning on simulated spectrum now
+                continues to display lab
+                spectrum by default (can still be toggled off)
+            </ul>
+            <ul class="note-list"> * Changed visual design of simulated spectra
+                for improved
+                legibility in this mode
+            </ul>
+            <ul class="note-list"> * 'Show points' mode active by default</ul>
+            <ul class="note-list"> * added tool to normalize all curves to 1 at
+                a given
+                wavelength
+            </ul>
+            <ul class="note-list"> * (workflow: switching it on reveals an 'arm
+                selection' switch,
+                which also be switched on to a normalization wavelength.
+                Without
+                this secondary mode, it becomes extremely
+                irritating to try to do calculations &c in
+                wavelength normalization mode)
+            </ul>
+            <ul class="note-list"> * All calculations are constrained to
+                operate only on a single
+                spectrum. User attempts to place calculation anchors on
+                separate spectra
+                are ignored
+            </ul>
+            <ul class="note-list"> * Simple band depth calculator rewritten.
+                Now two modes:
+            </ul>
+            <ul class="note-list"> * Automatically finds local minimum</ul>
+            <ul class="note-list"> * Calculates band depth at point selected by
+                user
+            </ul>
+            <ul class="note-list"> * filter sets added: Pathfinder IMP, MER
+                Pancam, Mastcam-Z,
+                Landsat OLI
+            </ul>
+            <ul class="note-list"> * Added functionality for dynamically
+                switching filter sets for
+                simulations
+            </ul>
+            <ul class="note-list"> * All filtersets now also save simulated
+                spectra with no
+                illumination (i.e., illumination = 1, reflectance = radiance at
+                all points)
+            </ul>
+            <ul class="note-list"> * 'Locator line’ changed to 'vertical
+                line'
+            </ul>
+            <ul class="note-list"> * Redesign of entire site in WWU identity
+                colors
+            </ul>
+            <ul class="note-list"> * the only elements drawn with colors
+                outside of the identity
+                color palette are simulated spectra
+            </ul>
+            <ul class="note-list"> * Redesigned about page</ul>
+            <h5>v0.1 (1/31/2020)</h5>
+
+            <ul class="note-list"> * First release of major application
+                redesign.
+            </ul>
+            <ul class="note-list"> * updated to python 3.x / django 3.x.
+                Backend changes related to
+                update not
+                specified here in detail.
+            </ul>
+            <ul class="note-list"> * Extensively refactored Python and JS code
+                for maintainability
+                and
+                extensibility. Individual changes too numerous to list.
+            </ul>
+            <ul class="note-list"> * Broad visual redesign.</ul>
+            <ul class="note-list"> * replaced postgreSQL with SQLite (more
+                maintainable, portable,
+                and
+                performant for small database size with few concurrent users)
+            </ul>
+            <ul class="note-list"> * Altered all existing database models;
+                changes included
+                fields
+                inappropriately referring to 'mineral' properties to 'sample'
+                or
+                'material' as appropriate
+            </ul>
+            <ul class="note-list"> * improved behavior of autocomplete
+                dialogs
+            </ul>
+            <ul class="note-list"> * mass sample type flagging actions replaced
+                with broader mass
+                editing
+                functionality
+            </ul>
+            <ul class="note-list"> * added image upload and processing
+                functionality
+            </ul>
+            <ul class="note-list"> * added associated image download and
+                display functionality
+            </ul>
+            <ul class="note-list"> * improved upload input processing and UX
+            </ul>
+            <ul class="note-list"> * added capability to insert filter sets and
+                illumination
+                conditions into
+                database
+            </ul>
+            <ul class="note-list"> * added tools for simulating spectra viewed
+                through filter sets
+                under
+                specified illumination conditions
+            </ul>
+            <ul class="note-list"> * added 'reset zoom' button in graph view
+            </ul>
+            <ul class="note-list"> * added 'shrink' button in graph view for
+                more working space
+            </ul>
+            <ul class="note-list"> * improved scrolling and zoom behavior in
+                graph view
+            </ul>
+            <ul class="note-list"> * Fixed various bugs related to widget
+                positioning in graph
+                view
+            </ul>
+            <ul class="note-list"> * Redesigned control interface and layout of
+                graph view for
+                improved
+                usability and accessibility
+            </ul>
+            <ul class="note-list"> * fixed a bug related to graph boundary
+                setting when graphing
+                multiple
+                spectra
+            </ul>
+            <ul class="note-list"> * added calculators for simple band depth,
+                ratio, and slope in
+                graph view
+            </ul>
+            <ul class="note-list"> * added option to drop multiple vertical
+                lines in graph view
+            </ul>
+            <ul class="note-list"> * added option to linearly peak-normalize
+                spectra to 1 in graph
+                view
+            </ul>
+            <ul class="note-list"> * added option to y-offset spectra in graph
+                view
+            </ul>
+            <ul class="note-list"> * added user-facing bulk-upload capability
+            </ul>
+            <ul class="note-list"> * advanced search replaced with 'any'
+                field
+            </ul>
+            <ul class="note-list"> * results view redesigned to reduce amount
+                of data presented to
+                users for
+                improved readability and navigation
+            </ul>
+        </div>
+
+    </div>
+{% endblock %}
