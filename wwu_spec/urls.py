@@ -27,12 +27,12 @@ urlpatterns = [
     path('', RedirectView.as_view(url='mars/', permanent=True)),
 ]
 
-if settings.DEBUG:
-    import debug_toolbar
-
-    urlpatterns.append(
-        path('__debug__/', include(debug_toolbar.urls))
-    )
+# if settings.DEBUG:
+#     import debug_toolbar
+#
+#     urlpatterns.append(
+#         path('__debug__/', include(debug_toolbar.urls))
+#     )
 
 from django.conf import settings
 from django.conf.urls.static import static

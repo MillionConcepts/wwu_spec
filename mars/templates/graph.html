@@ -157,7 +157,8 @@
 
                         </div>
                     </div>
-                    <div class="control-section" id="lab-inst-controls" style="flex-grow:0.6">
+                    <div class="control-section" id="lab-inst-controls"
+                         style="flex-grow:0.6">
                         <div class="control-block" id="lab-toggle-div">
                             <span class="control-header">Spectrum Display</span>
                             <div class="switch">
@@ -188,7 +189,7 @@
                                     <select id="filter-picker">
                                         {% for filterset in filtersets %}
                                             {% if 'illumination' not in filterset %}
-                                            <option value= {{ filterset }}>{{ filterset }}</option>
+                                                <option value= {{ filterset }}>{{ filterset }}</option>
                                             {% endif %}
                                         {% endfor %}
                                     </select>
@@ -303,7 +304,6 @@
                                              style="border:1px solid gray; width:15px; height:15px">
                                         </div>
                                     </td>
-
                                     <td><label class="truncate"
                                                for="option{{ result.id }}">{{ result.sample_id }}</label>
                                     </td>
@@ -320,8 +320,6 @@
                                                    value="0">
                                         </label>
                                     </td>
-
-
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -354,14 +352,14 @@
                         <input type="hidden" name="selection"
                                value="{{ id }}"/>
                     {% endfor %}
-
-
+                    <input type="hidden" id="sim-instrument-for-export"
+                           name="sim-instrument-for-export" value="MASTCAM-Z">
+                    <input type="hidden" id="do-we-export-sim"
+                           name="do-we-export-sim" value="False">
                     <!--- holding search form data --->
                     <div style="display:None">
                         {{ search_formset }}
                     </div>
-
-
                 </form>
             </div>
         </div>

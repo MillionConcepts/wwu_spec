@@ -50,8 +50,8 @@ def convolve(
 
 
 def simulate_spectrum(
-    sample: mars.models.Sample,
-    filterset: mars.models.FilterSet,
+    sample: 'mars.models.Sample',
+    filterset: 'mars.models.FilterSet',
     illuminated: bool = True,
 ) -> pd.DataFrame:
     # turn sample and illumination values into nice arrays
@@ -130,7 +130,7 @@ def simulate_spectrum(
 # noinspection PyUnresolvedReferences
 def make_filterset(
     name: str,
-    filters: dict[str, pd.Dataframe],
+    filters: dict,
     bins: np.ndarray,
     freqs: dict[str, float],
     illumination_path: str = None,
@@ -154,10 +154,10 @@ def make_filterset(
         for filt in DISTS
     }
 
-    'bins' is a reference array of frequency bins; should span range of all
-    filters in set 'freqs' gives the nominal center frequency of each filter (
+    'bins' is a reference array of wavelength bins; should span range of all
+    filters in set 'freqs' gives the nominal center wavelength of each filter (
     used only for graphing convolved spectra); this is a dict formatted like
-    {'filter_name':center_frequency,'filter_name_2'...}
+    {'filter_name':center_wavelength,'filter_name_2'...}
     """
     # 'filter' is a python builtin so not a good variable name
     for filt in filters:
