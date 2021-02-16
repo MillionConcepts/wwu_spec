@@ -186,7 +186,7 @@
                             <span class="control-header">Simulation Options</span>
                             <form>
                                 <label>
-                                    <select id="filter-picker">
+                                    <select id="filter-picker" onchange="updateDataVisibility()">
                                         {% for filterset in filtersets %}
                                             {% if 'illumination' not in filterset %}
                                                 <option value= {{ filterset }}>{{ filterset }}</option>
