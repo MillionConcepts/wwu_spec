@@ -21,13 +21,13 @@
 <body>
 <!-- Navbar -->
 <nav class="nav">
-    <div class="container">
-        <ul id="nav-mobile" class="left">
+    <div class="container" style="display: flex">
+        <ul id="nav-mobile" class="left" style="list-style-type: none">
             <li class="left"><a href="/">Search</a></li>
             <li class="left"><a href="/mars/status">Status</a></li>
             <li class="left"><a href="/mars/about">About</a></li>
         </ul>
-        <ul id="nav-mobile" class="right hide-on-small-and-down">
+        <ul id="nav-mobile" class="right hide-on-small-and-down" style="list-style-type: none">
             {% if user.is_authenticated %}
                 <li><a href="/mars/upload">Upload</a></li>
                 <li><a href="/admin/login">Admin</a></li>
