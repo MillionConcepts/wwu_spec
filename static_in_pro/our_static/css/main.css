@@ -1,6 +1,53 @@
+@font-face {
+    font-family: "Share Tech Mono";
+    src: url("../fonts/Share_Tech_Mono/ShareTechMono-Regular.ttf") format("truetype");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Regular.ttf") format("truetype");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Medium.ttf") format("truetype");
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Bold.ttf") format("truetype");
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/Material Icons/material_icons_67.woff2') format('woff2')
+}
+
+html {
+    font-family: "Fira Mono", sans-serif;
+    background: #003f87;
+    color: #1c2023;
+}
+
+ul:not(.browser-default) {
+  padding-left: inherit;
+  list-style-type: inherit;
+}
+
+ul:not(.browser-default) li {
+  list-style-type: inherit;
+}
+
 ul.note-list {
-    list-style-type: circle;
-    line-height: 1.1rem
+    line-height: 1.4rem;
+    margin-left: 1rem;
+    padding-left: 1rem
 }
 
 label {
@@ -11,6 +58,11 @@ label {
 a {
     color: #007ac8;
     opacity: 1;
+}
+
+code {
+    font-family: "Share Tech Mono", monospace;
+    background: rgba(0, 0, 0, 0.08)
 }
 
 .warm-content {
@@ -30,12 +82,6 @@ a {
     line-height: 1em;
 }
 
-@font-face {
-    font-family: 'Material Icons';
-    font-style: normal;
-    font-weight: 400;
-    src: url('../fonts/Material Icons/material_icons_67.woff2') format('woff2')
-}
 
 .material-icons {
     font-family: 'Material Icons', fantasy;
@@ -51,30 +97,6 @@ a {
     direction: ltr;
     -moz-font-feature-settings: 'liga';
     -moz-osx-font-smoothing: grayscale;
-}
-
-html {
-    font-family: "Fira Mono", sans-serif;
-    background: #003f87;
-    color: #1c2023;
-}
-
-@font-face {
-    font-family: "Fira Mono";
-    src: url("../fonts/Fira Mono/FiraMono-Regular.ttf") format("truetype");
-    font-weight: 400;
-}
-
-@font-face {
-    font-family: "Fira Mono";
-    src: url("../fonts/Fira Mono/FiraMono-Medium.ttf") format("truetype");
-    font-weight: 500;
-}
-
-@font-face {
-    font-family: "Fira Mono";
-    src: url("../fonts/Fira Mono/FiraMono-Bold.ttf") format("truetype");
-    font-weight: 700;
 }
 
 .container {
@@ -303,8 +325,8 @@ th {
     justify-content: flex-end;
     flex-direction: column;
     flex-wrap: wrap;
-    height:100%;
-    width:100%;
+    height: 100%;
+    width: 100%;
 }
 
 .svg-text-content {
@@ -321,23 +343,23 @@ th {
 .graph-legend {
     width: 100%;
     border: 0;
-    overflow:visible;
+    overflow: visible;
     border-collapse: collapse;
     white-space: normal;
     word-wrap: break-word;
 }
 
 table.graph-legend {
-    max-width:80vw;
+    max-width: 80vw;
     display: flex;
     flex-direction: column;
     align-items: center;
-    height:fit-content;
+    height: fit-content;
 }
 
 .graph-legend tr {
     display: flex;
-    align-items:center;
+    align-items: center;
 }
 
 .graph-legend td, th {
@@ -346,8 +368,8 @@ table.graph-legend {
     display: block;
     width: auto;
     max-width: 160px;
-    padding-top:5px;
-    padding-bottom:5px
+    padding-top: 5px;
+    padding-bottom: 5px
 }
 
 /*.graph-legend td {*/
@@ -356,7 +378,7 @@ table.graph-legend {
 /*}*/
 
 .graph-legend thead, tbody {
-    width:100%;
+    width: 100%;
 }
 
 .graph-legend tbody {
@@ -369,11 +391,11 @@ table.graph-legend {
 }
 
 .graph-column div {
-    position:relative
+    position: relative
 }
 
 td.graph-column, th.graph-column {
-    padding-right:2rem
+    padding-right: 2rem
 }
 
 .imgContainer {
@@ -383,9 +405,9 @@ td.graph-column, th.graph-column {
 }
 
 .flex-buffer {
-    display:flex;
-    flex-shrink:1;
-    flex-grow:0
+    display: flex;
+    flex-shrink: 1;
+    flex-grow: 0
 }
 
 .controls {
@@ -396,40 +418,40 @@ td.graph-column, th.graph-column {
 }
 
 .control-section {
-    display:flex;
-    flex-grow:1;
-    flex-direction:column;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
     justify-content: space-evenly;
 }
 
 .control-block {
-    display:flex;
+    display: flex;
     flex-direction: column;
-    text-align:center;
+    text-align: center;
     align-items: baseline;
-    justify-content:center;
-    margin-bottom:2rem;
+    justify-content: center;
+    margin-bottom: 2rem;
 
 }
 
 .control-block form,
 .control-block select {
-    display:flex
+    display: flex
 }
 
 .control-block input[type="radio"] + label,
 .control-block .switch {
-    height:fit-content;
-    min-height:1.9rem
+    height: fit-content;
+    min-height: 1.9rem
 }
 
 .control-header {
     font-size: 12pt;
     font-weight: bold;
     align-self: center;
-    margin-bottom:0.8rem
+    margin-bottom: 0.8rem
 }
 
 .control-block .switch {
-    display:flex
+    display: flex
 }
