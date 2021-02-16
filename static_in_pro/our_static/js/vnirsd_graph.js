@@ -737,6 +737,14 @@ const updateDataVisibility = function () {
     if (gid('calc-all-switch').checked) {
         updateMaxCalc()
     }
+    // set hidden inputs used to control which simulated values are included in exported csv
+    if (instrumentPointsVisible || instrumentLinesVisible) {
+        gid('do-we-export-sim').value = 'True'
+    }
+    else {
+        gid('do-we-export-sim').value = 'False'
+    }
+    gid('sim-instrument-for-export').value = filterPicker.value
     redraw();
 }
 

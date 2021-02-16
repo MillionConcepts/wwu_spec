@@ -79,18 +79,18 @@ class SearchForm(forms.Form):
     )
     wavelength_range = forms.MultipleChoiceField(
         required=False,
+        label="require values from specific wavelength ranges:",
         widget=SelectMultipleHide(
-            attrs={"id": "wavelength-range", "value": "", "placeholder": ""},
-            label="require values from specific wavelength ranges:",
-            choices=[
-                ("", ""),
-                ("UVB", "UVB (<315 nm)"),
-                ("UVA", "UVA (315-400 nm)"),
-                ("VIS", "VIS (400-750 nm)"),
-                ("NIR", "NIR  (750-2500 nm)"),
-                ("MIR", "MIR (>2500 nm)"),
-            ],
+            attrs={"id": "wavelength-range", "value": "", "placeholder": ""}
         ),
+        choices=[
+            ("", ""),
+            ("UVB", "UVB (<315 nm)"),
+            ("UVA", "UVA (315-400 nm)"),
+            ("VIS", "VIS (400-750 nm)"),
+            ("NIR", "NIR  (750-2500 nm)"),
+            ("MIR", "MIR (>2500 nm)"),
+        ],
     )
 
 

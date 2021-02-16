@@ -8,13 +8,13 @@ from functools import reduce
 from itertools import chain
 from operator import or_
 
+import pandas as pd
 import PIL
 from PIL import Image
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.template import context
 
 from mars.dj_utils import (
     search_all_samples,
@@ -29,7 +29,7 @@ from mars.forms import (
 from mars.models import Database, Sample, FilterSet
 
 
-def search(request: context) -> HttpResponse:
+def search(request) -> HttpResponse:
     """
     render the search page with an empty search form.
     presently doesn't do any other manipulation (some former
@@ -39,7 +39,7 @@ def search(request: context) -> HttpResponse:
     return render(request, "search.html", page_params)
 
 
-def results(request: context) -> HttpResponse:
+def results(request) -> HttpResponse:
     search_results_id_list = []
     search_results = Sample.objects.none()
     # selected_spectra = Sample.objects.none() # TODO: missing functionality?
@@ -110,10 +110,10 @@ def results(request: context) -> HttpResponse:
             form_results = reduce(or_, filters)
 
     # NOTE: this function assumes that there are no large gaps in
-    # frequency coverage within a given lab spectrum; i.e., that if a
+    # wavelength coverage within a given lab spectrum; i.e., that if a
     # spectrum has both UVA and NIR, it also has VIS. if this becomes a bad
     # assumption, we will need to modify it.
-    frequency_ranges = {
+    wavelength_ranges = {
         "UVB": [0, 314],
         "UVA": [315, 399],
         "VIS": [400, 749],
@@ -121,13 +121,13 @@ def results(request: context) -> HttpResponse:
         "MIR": [2501, 10000000],
     }
 
-    frequency_query = search_form.cleaned_data.get("frequency_range")
-    if frequency_query:
+    wavelength_query = search_form.cleaned_data.get("wavelength_range")
+    if wavelength_query:
         requested_range = list(
             chain.from_iterable(
                 [
-                    frequency_ranges[range_name]
-                    for range_name in frequency_query
+                    wavelength_ranges[range_name]
+                    for range_name in wavelength_query
                 ]
             )
         )
@@ -185,7 +185,7 @@ def results(request: context) -> HttpResponse:
     )
 
 
-def graph(request: context, template="graph.html") -> HttpResponse:
+def graph(request, template="graph.html") -> HttpResponse:
     if not request.method == "GET":
         return HttpResponse(status=204)
     if "graphForm" not in request.GET:
@@ -230,7 +230,7 @@ def graph_future(request):
     return graph(request, "graph_future.html")
 
 
-def meta(request: context) -> HttpResponse:
+def meta(request) -> HttpResponse:
     if request.method == "GET":
         if "meta" not in request.GET:  # something's busted, just ignore it
             return HttpResponse(status=204)
@@ -251,13 +251,24 @@ def meta(request: context) -> HttpResponse:
         )
 
 
-def export(request: context) -> HttpResponse:
-    selections = request.GET.getlist("selection")
+def write_sample_csv(field_list, sample):
+    text_buffer = io.StringIO()
+    writer = csv.writer(text_buffer)
+    for field in field_list:
+        if field[1] not in [
+            "image",
+            "id",
+            "reflectance",
+            "filename",
+            "import_notes",
+            "flagged",
+            "simulated_spectra"
+        ]:
+            writer.writerow([field[0], getattr(sample, field[1])])
+    return writer, text_buffer
 
-    # TODO: is this actually desired?
-    # prev_selected_list = request.POST.getlist("prev_selected")
 
-    selections = list(selections)
+def construct_export_zipfile(selections, export_sim, simulated_instrument):
     samples = Sample.objects.filter(id__in=selections)
     zip_buffer = io.BytesIO()
     field_list = [
@@ -266,38 +277,39 @@ def export(request: context) -> HttpResponse:
     field_list.sort()
 
     with zipfile.ZipFile(zip_buffer, "w") as output:
-
         # write each sample line-by-line into text buffer,
         # also splitting reflectance dictionary into lines
-
         for sample in samples:
-            text_buffer = io.StringIO()
-            writer = csv.writer(text_buffer)
-            for field in field_list:
-                if field[1] not in [
-                    "image",
-                    "id",
-                    "reflectance",
-                    "filename",
-                    "import_notes",
-                    "simulated_spectra",
-                    "flagged",
-                ]:
-                    writer.writerow([field[0], getattr(sample, field[1])])
-            writer.writerow(["Wavelength"])
+            writer, text_buffer = write_sample_csv(field_list, sample)
+            writer.writerow(["Wavelength", "Response"])
             for row in literal_eval(sample.reflectance):
                 writer.writerow([row[0], row[1]])
-            writer.writerow(["Simulated Spectra"])
-            sim_spectra = sample.write_sims()
-            writer.writerow(sim_spectra)
             text_buffer.seek(0)
-
-            # write csv into zip buffer
-
-            output.writestr(sample.sample_id + ".csv", text_buffer.read())
-
+            # write sample into zip buffer
+            output.writestr(
+                sample.sample_id.replace("/", "_") + ".csv", text_buffer.read()
+            )
+            if export_sim:
+                writer, text_buffer = write_sample_csv(field_list, sample)
+                sims = sample.get_simulated_spectra()
+                illuminated_df = pd.DataFrame(sims[simulated_instrument])
+                dark_series = sims[simulated_instrument + "_no_illumination"][
+                    "response"
+                ].values()
+                illuminated_df['unilluminated_response'] = dark_series
+                illuminated_df.columns = ['filter', 'wavelength',
+                                          'solar_illuminated_response',
+                                          'response']
+                illuminated_df.to_csv(text_buffer, index=False)
+                text_buffer.seek(0)
+                output.writestr(
+                    sample.sample_id.replace("/", "_")
+                    + "_simulated_"
+                    + simulated_instrument
+                    + ".csv",
+                    text_buffer.read(),
+                )
             # write image into zip buffer
-
             if sample.image:
                 filename = settings.SAMPLE_IMAGE_PATH + "/" + sample.image
                 output.write(filename, arcname=sample.image)
@@ -308,13 +320,70 @@ def export(request: context) -> HttpResponse:
     date = dt.datetime.today().strftime("%y-%m-%d")
     response = HttpResponse(zip_buffer, content_type="application/zip")
     response["Content-Disposition"] = (
-        "attachment; filename=spectra-%s.zip;" % date
+            "attachment; filename=spectra-%s.zip;" % date
     )
-
     return response
 
 
-def upload(request: context) -> HttpResponse:
+def export(request) -> HttpResponse:
+    selections = request.GET.getlist("selection")
+    export_sim = False
+    if 'do-we-export-sim' in request.GET:
+        if request.GET["do-we-export-sim"] == "True":
+            export_sim = True
+    if export_sim:
+        simulated_instrument = request.GET["sim-instrument-for-export"]
+    else:
+        simulated_instrument = ""
+    # TODO: is this actually desired?
+    # prev_selected_list = request.POST.getlist("prev_selected")
+    selections = list(selections)
+    return construct_export_zipfile(selections, export_sim, simulated_instrument)
+
+
+def bulk_export(request) -> HttpResponse:
+    print(request.GET)
+
+    bulk_results = Sample.objects.only('sample_name')
+    if not request.user.is_superuser:
+        bulk_results = bulk_results.filter(released=True)
+    for field in ['sample_name']:
+        if field not in request.GET:
+            continue
+        entry = request.GET[field]
+        if not entry:
+            continue
+        # "Any" entries do not restrict the search
+        if entry == "Any":
+            continue
+        query = field + "__iexact"
+        if Sample.objects.filter(**{query: entry}):
+            bulk_results = bulk_results.filter(**{query: entry})
+        # otherwise treat multiple words as an 'or' search
+        else:
+            query = field + "__icontains"
+            filters = [
+                bulk_results.filter(**{query: word})
+                for word in entry.split(" ")
+            ]
+            bulk_results = reduce(or_, filters)
+    if bulk_results:
+        # 'search all fields' function
+        if 'any_field' in request.GET:
+            bulk_results = bulk_results & search_all_samples(entry)
+    search_results_id_list = [
+        result.id for result in bulk_results
+    ]
+    if "simulate" in request.GET:
+        simulated_instrument = request.GET["simulate"]
+        simulate = True
+    else:
+        simulated_instrument = ""
+        simulate = False
+    return construct_export_zipfile(search_results_id_list, simulate, simulated_instrument)
+
+
+def upload(request) -> HttpResponse:
     if not request.method == "POST":
         # ignore it!
         return HttpResponse(status=204)
@@ -424,7 +493,7 @@ def upload(request: context) -> HttpResponse:
     )
 
 
-def admin_upload_image(request: context, ids: str) -> HttpResponse:
+def admin_upload_image(request, ids: str) -> HttpResponse:
     ids = literal_eval(ids)
     if len(ids) > 1:
         warn_multiple = True
@@ -455,7 +524,7 @@ def admin_upload_image(request: context, ids: str) -> HttpResponse:
     )
 
 
-def about(request: context) -> HttpResponse:
+def about(request) -> HttpResponse:
     databases = Database.objects.all()
     filtersets = FilterSet.objects.all().order_by("display_order")
     return render(
@@ -465,5 +534,5 @@ def about(request: context) -> HttpResponse:
     )
 
 
-def status(request: context) -> HttpResponse:
+def status(request) -> HttpResponse:
     return render(request, "status.html")

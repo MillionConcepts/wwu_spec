@@ -10,6 +10,7 @@ urlpatterns = [
     re_path(r'^graph_future/$', views.graph_future, name='graph_future'),
     re_path(r'^results/$', views.results, name='results'),
     re_path(r'^export/$', views.export, name='export'),
+    re_path(r'^bulk_export/$', views.bulk_export, name='bulk_export'),
     re_path(r'^meta/$', views.meta, name='meta'),
     path('admin_upload_image/<str:ids>', views.admin_upload_image,
          name="admin_upload_image"),
