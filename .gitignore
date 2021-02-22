@@ -7,3 +7,5 @@ settings.py
 *.log
 ubuntu@*
 /staticfiles**
+/.ipynb_checkpoints/
+/.git/

@@ -16,9 +16,6 @@ from toolz import valmap
 from mars.spectral import simulate_spectrum
 
 
-# http://spectro.geol.wwu.edu/media/documents/Spectroscopy_Database_Sample_Upload_File_Format_xutE8kN.pdf
-
-
 class FilterSet(models.Model):
     short_name = models.CharField(max_length=45, unique=True, blank=False,
                                   db_index=True)
@@ -232,16 +229,16 @@ class Sample(models.Model):
                 )
             else:
 
-                nonzeros = (self.reflectance != 0).all(0)
-                if False in nonzeros:
+                positives = (self.reflectance > 0).all(0)
+                if False in positives:
                     warnings.append(
-                        "Warning: there are zero- or negative-valued items "
+                        "Warning: there are negative-valued items "
                         "in the reflectance data for "
                         + self.sample_id
                         + ". These have been deleted."
                     )
-                    first = self.reflectance[0][nonzeros]
-                    second = self.reflectance[1][nonzeros]
+                    first = self.reflectance[0][positives]
+                    second = self.reflectance[1][positives]
                     self.reflectance = np.vstack([first, second])
 
                 # switch to 2-column matrix, sort, check for correct shape,
@@ -329,7 +326,8 @@ class Sample(models.Model):
                         + " for a distinct sample. It has been renamed to "
                         + self.sample_id
                     )
-
+        image = ""
+        thumb_path = ""
         if self.image:
             if isinstance(self.image, PIL.ImageFile.ImageFile):
                 filename = self.sample_id + ".jpg"
@@ -354,14 +352,15 @@ class Sample(models.Model):
 
             thumb_path = image_path + self.image[:-4] + "_thumb.jpg"
 
+        if isinstance(self.image, PIL.ImageFile.ImageFile):
             if not os.path.exists(thumb_path):
                 image.thumbnail((256, 256))
                 image.save(thumb_path, "JPEG")
 
         sims = {}
         for filterset in FilterSet.objects.all():
-            sims[filterset.name] = simulate_spectrum(self, filterset)
-            sims[filterset.name + '_no_illumination'] = simulate_spectrum(
+            sims[filterset.short_name] = simulate_spectrum(self, filterset)
+            sims[filterset.short_name + '_no_illumination'] = simulate_spectrum(
                 self,
                 filterset,
                 illuminated=False
@@ -374,8 +373,8 @@ class Sample(models.Model):
 
     def __str__(self):
         if self.origin.short_name is not None:
-            return self.sample_id + "_" + self.origin.short_name
-        return self.sample_id + "_" + self.origin.name.split()[0]
+            return self.sample_name + "_" + self.sample_id + "_" + self.origin.short_name
+        return self.sample_name + "_" + self.sample_id + "_" + self.origin.name.split()[0]
 
     def as_dict(self):
         self_dict = {}
