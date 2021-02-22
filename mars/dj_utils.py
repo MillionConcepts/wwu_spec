@@ -1,12 +1,13 @@
 import zipfile
-from functools import reduce
-from typing import TYPE_CHECKING, Union, Any, IO
+from functools import reduce, wraps, partial
+from operator import and_, contains
+from typing import Union, Any, IO, Iterable, Callable
 
-from django.db import models
-import pandas as pd
 import PIL
-from PIL import Image
 import numpy as np
+import pandas as pd
+from PIL import Image
+from django.db import models
 
 # queryset constructors
 from mars.models import Sample, SampleType, Database
@@ -16,8 +17,9 @@ def qlist(queryset: models.QuerySet, attribute: str):
     return list(queryset.values_list(attribute, flat=True))
 
 
+# PyTypeChecker can't identify model subclasses
 def djget(
-        model: models.Model,
+        model,
         value: str,
         field: str = "name",
         method_name: str = "filter",
@@ -42,7 +44,8 @@ def unique_values(queryset: models.QuerySet, field: str) -> set:
     return set([entry[field] for entry in list(queryset.values(field))])
 
 
-def fields(model: models.Model) -> list[str]:
+# PyTypeChecker can't identify model subclasses
+def fields(model) -> list[str]:
     return [field.name for field in model._meta.fields]
 
 
@@ -96,10 +99,9 @@ def make_autocomplete_list(autocomplete_fields: dict):
         model = autocomplete_fields[autocomplete_category][0]
         field = autocomplete_fields[autocomplete_category][1]
         autocomplete_data[autocomplete_category] = [
-            name
-            for name in model.objects.values_list(field, flat=True)
-                .order_by(field)
-                .distinct()
+            name for name in model.objects.values_list(field, flat=True)
+            .order_by(field)
+            .distinct()
             if name != ""
         ]
     return autocomplete_data
@@ -548,3 +550,71 @@ def handle_zipped_upload(zipped_file: IO):
     if erroneous_samples:
         return [2, successful_samples, erroneous_samples]
     return [3, successful_samples]
+
+
+# generic
+
+
+def eta(input_function, *args, kwarg_list=()):
+    """
+    create an eta abstraction g of input function with arbitrary argument
+    ordering. positional arguments to g _after_ the arguments defined in
+    kwarg_list are mapped to positional arguments of input_function; all
+    keyword arguments to g are mapped to keyword arguments of input_function.
+    positional arguments to g matching keywords in kwarg_list override keyword
+    arguments to g.
+
+    can be used to make short forms of functions. also useful along with
+    partial to create partially applied versions of functions free from
+    argument collision.
+
+    passing eta a function with no further arguments simply produces an alias.
+
+    note that because keyword mapping incurs some (very small) performance
+    cost at runtime, it may be inadvisable to use this on a function that is
+    to be called many times.
+    """
+    if not (args or kwarg_list):
+        # with no arguments, just alias input_function. the remainder of the
+        # function accomplishes basically this, but just passing the function
+        # is cheaper
+        return input_function
+    kwarg_list = args + tuple(kwarg_list)
+
+    @wraps(input_function)
+    def do_it(*do_args, **do_kwargs):
+        output_kwargs = {}
+        positionals = []
+        # are there more args than the eta-defined argument list? pass them to
+        # input_function.
+        if len(do_args) > len(kwarg_list):
+            positionals = do_args[len(kwarg_list):]
+        # do we have an argument list? then zip it with args up to its
+        # length.
+        if kwarg_list:
+            output_kwargs = dict(
+                zip(kwarg_list[: len(kwarg_list)], do_args[: len(kwarg_list)])
+            )
+        # do we have kwargs? merge them with the keyword dictionary generated
+        # from do_it's args.
+        if do_kwargs:
+            output_kwargs = do_kwargs | output_kwargs
+        if not output_kwargs:
+            return input_function(*positionals)
+        return input_function(*positionals, **output_kwargs)
+
+    return do_it
+
+
+def are_in(items: Iterable, oper: Callable = and_) -> Callable:
+    """
+    iterable -> function
+    returns function that checks if its single argument contains all
+    (or by changing oper, perhaps any) items
+    """
+
+    def in_it(container: Iterable) -> bool:
+        inclusion = partial(contains, container)
+        return reduce(oper, map(inclusion, items))
+
+    return in_it
