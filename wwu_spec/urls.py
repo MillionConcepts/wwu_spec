@@ -19,12 +19,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 
-# redirect base URL to Mars, given that currently we only serve Mars data
+# redirect base URL to VNIRSD
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('mars/', include('mars.urls')),
-    path('', RedirectView.as_view(url='mars/', permanent=True)),
+    path('vnirsd/', include('vnirsd.urls')),
+    path('', RedirectView.as_view(url='vnirsd/', permanent=True)),
 ]
 
 # if settings.DEBUG:

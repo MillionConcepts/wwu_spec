@@ -1,0 +1,83 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block content %}
+    <title>Search - WWU VNIRSD</title>
+    <div class="container section" id="content"
+         style="width: 70%; max-width:1000px">
+        <form method="GET" class="warm-content" action="/vnirsd/results/">
+            {{ search_formset.management_form }}
+            {% for search_form in search_formset.forms %}
+                <div class="center warm-content form-header search-form-section">
+                <span class="head">
+                  Western Washington University Vis-NIR Spectroscopy Database <a
+                        href="/vnirsd/status">(BETA STATUS)</a>
+                </span>
+                </div>
+                <div class="warm-content search-form-section">
+                <div class="container">
+                <div class="row" style="padding: 20px">
+                    <div class="col s6">
+                        {% if search_form.sample_name.errors %}
+                            {{ search_form.sample_name.errors }}
+                        {% endif %}
+                        {{ search_form.sample_name.label_tag }}
+                        {{ search_form.sample_name }}</div>
+                    <div class="col s12 m6">
+                        {% if search_form.library__name.errors %}
+                            {{ search_form.library__name.errors }}
+                        {% endif %}
+                        {{ search_form.library__name.label_tag }}
+                        {{ search_form.library__name }}</div>
+                    <div class="col s12 m6">
+                        {% if search_form.sample_type__name.errors %}
+                            {{ search_form.sample_type__name.errors }}
+                        {% endif %}
+                        {{ search_form.sample_type__name.label_tag }}
+                        {{ search_form.sample_type__name }}</div>
+                    <div class="col s12 m6">
+                        {% if search_form.origin__name.errors %}
+                            {{ search_form.origin__name.errors }}
+                        {% endif %}
+                        {{ search_form.origin__name.label_tag }}
+                        {{ search_form.origin__name }}</div>
+                    <div class="col s6">
+                        {% if search_form.any_field.errors %}
+                            {{ search_form.any_field.errors }}
+                        {% endif %}
+                        {{ search_form.any_field.label_tag }}
+                        {{ search_form.any_field }}</div>
+                <div class="col s6">
+                        {% if search_form.wavelength_range.errors %}
+                            {{ search_form.wavelength_range.errors }}
+                        {% endif %}
+                        {{ search_form.wavelength_range.label_tag }}
+                        {{ search_form.wavelength_range }}
+                </div>
+            </div>
+
+            {% endfor %}
+            </div>
+            </div>
+            <div class="warm-content">
+                <div class="center-align" style="padding:20px">
+                    <button type="submit" name="action" value="search"
+                            class="btn">
+                        Search
+                    </button>
+                </div>
+            </div>
+        </form>
+
+
+        <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
+        <script src="{% static 'js/materialize.min.js' %}"></script>
+
+        <script>
+            $(document).ready(function () {
+                {#TODO: see if the need to handle this with jquery can be implemented directly in ChoiceFields#}
+                $('select').material_select();
+            });
+
+        </script>
+
+{% endblock %}
