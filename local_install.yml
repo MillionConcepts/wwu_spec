@@ -1,0 +1,16 @@
+name: vnirsd
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pillow
+  - scipy
+  - python=3.9
+  - django
+  - django-extensions
+  - git
+  - toolz
+  - pandas
+  - numpy
+  - jupyter
+  - pip
