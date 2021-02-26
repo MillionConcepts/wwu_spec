@@ -8,7 +8,7 @@ spectra, edit your copy of the database as you please, and even import your
 own spectra. This is also useful for checking spectra files you plan to submit
 to the "official" VNIRSD database.
 
-Please not use this guide to deploy the VNIRSD on a public server. The
+Please do not use this guide to deploy the VNIRSD on a public server. The
 settings here are perfectly good for running a local copy for your personal
 use, but they are both insecure and inefficient for installations facing the
 open internet.
