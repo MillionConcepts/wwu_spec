@@ -155,7 +155,7 @@ directory and running ```python manage.py runserver```. You can then navigate
 to ```127.0.0.1:8000``` in your browser of choice to use the VNIRSD. Don't
 close that terminal while you're still using the VNIRSD, or the application
 will also close. When you're ready to close or restart the VNIRSD, you can
-simply terminate that process (with CTRL+C or by closing the terminal) -- it
+simply terminate that process (with CTRL/CMD+C or by closing the terminal) -- it
 doesn't need to be closed in any especially graceful way.
 
 *Reminder: if you get error messages, make sure you have activated the 
