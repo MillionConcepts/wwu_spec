@@ -9,3 +9,4 @@ ubuntu@*
 /staticfiles**
 /.ipynb_checkpoints/
 /.git/
+notes

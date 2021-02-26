@@ -1,4 +1,4 @@
-# vnirsd local installation guide [UNFINISHED, IN PROGRESS]
+# vnirsd local installation guide v0.1
 
 ## introduction
 
@@ -122,9 +122,11 @@ directory).
 
 The VNIRSD is backed by a SQLite database. SQLite databases are contained in
 single monolithic files. The "official" VNIRSD database file is not versioned
-on GitHub because it's too large. In lieu of a better solution, we are
-currently serving it from Google Drive. Place this file (```db.sqlite3```) in
-the ```wwu_spec```  (installation root) directory. We recommend keeping a 
+on GitHub because it's too large. We are
+[currently serving it from Google Drive.](https://drive.google.com/file/d/1l7N3yEYa9pJ5Vw2HitvNULm6yLyf4IrY/)
+(This is a 'clean' version of the database with no user accounts or samples
+marked out for QA.) Unzip this and place the unzipped file (```db.sqlite3```) 
+in the ```wwu_spec```  (installation root) directory. We recommend keeping a 
 backup of this file somewhere outside the working directory, especially if 
 you plan to edit or add spectra yourself. That way, you can reverse any 
 unintended changes to the database just by copying your backup over the 

@@ -23,11 +23,11 @@
                         {{ search_form.sample_name.label_tag }}
                         {{ search_form.sample_name }}</div>
                     <div class="col s12 m6">
-                        {% if search_form.library__name.errors %}
-                            {{ search_form.library__name.errors }}
+                        {% if search_form.library.errors %}
+                            {{ search_form.library.errors }}
                         {% endif %}
-                        {{ search_form.library__name.label_tag }}
-                        {{ search_form.library__name }}</div>
+                        {{ search_form.library.label_tag }}
+                        {{ search_form.library }}</div>
                     <div class="col s12 m6">
                         {% if search_form.sample_type__name.errors %}
                             {{ search_form.sample_type__name.errors }}

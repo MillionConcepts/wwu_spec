@@ -48,7 +48,7 @@ class SearchForm(forms.Form):
         choice_fields = {
             "origin__name": [Database, "name"],
             "sample_type__name": [SampleType, "name"],
-            "library__name": [Library, "name"],
+            "library": [Library, "name"],
         }
         for form_field, model_plus_field in choice_fields.items():
             self.fields[form_field].choices = make_choice_list(
@@ -70,7 +70,7 @@ class SearchForm(forms.Form):
 
     id = forms.CharField(required=False)
 
-    library__name = forms.ChoiceField(required=False, label="Library Name")
+    library = forms.ChoiceField(required=False, label="Library Name")
     origin__name = forms.ChoiceField(
         required=False, label="Database of Origin"
     )
