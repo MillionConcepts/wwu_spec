@@ -7,6 +7,7 @@ from ast import literal_eval
 from functools import reduce
 from itertools import chain
 from operator import or_
+from typing import Optional
 
 import pandas as pd
 import PIL
@@ -392,9 +393,6 @@ def bulk_export(request) -> HttpResponse:
 
 
 def upload(request) -> HttpResponse:
-    if not request.method == "POST":
-        # ignore it!
-        return HttpResponse(status=204)
 
     form = UploadForm(request.POST, request.FILES)
 
@@ -501,13 +499,12 @@ def upload(request) -> HttpResponse:
     )
 
 
-def admin_upload_image(request, ids: str) -> HttpResponse:
-    ids = literal_eval(ids)
-    if len(ids) > 1:
-        warn_multiple = True
-    else:
-        warn_multiple = False
-
+def admin_upload_image(request, ids = None) -> HttpResponse:
+    warn_multiple = False
+    if ids:
+        ids = literal_eval(ids)
+        if len(ids) > 1:
+            warn_multiple = True
     if request.method == "POST":
         form = AdminUploadImageForm(request.POST, request.FILES)
         if form.is_valid():
