@@ -62,7 +62,7 @@ skip this step.*
 
 The official method of installing the VNIRSD uses the Python package manager
 ```conda``` to handle dependencies.
-[You can get it here as part of the Miniconda distribution of Python.](https://docs.conda.io/projects/continuumio-conda/en/latest/user-guide/install/index.html).
+[You can get it here as part of the Miniconda distribution of Python](https://docs.conda.io/projects/continuumio-conda/en/latest/user-guide/install/index.html).
 Download the 64-bit version of the installer for your operating system and
 follow the instructions on that website to set up your environment. Make sure
 you download Miniconda3, not Miniconda2. The VNIRSD is not compatible with
