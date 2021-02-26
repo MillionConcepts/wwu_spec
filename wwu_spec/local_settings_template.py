@@ -127,7 +127,7 @@ USE_TZ = False
 STATIC_URL = "/static/"
 
 # TODO: nomenclature here is not entirely solid --michael
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static_dev", "our_static")]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static_dev")]
 
 SAMPLE_IMAGE_PATH = os.path.join(
     BASE_DIR, "static_in_pro/our_static/sample_images"
