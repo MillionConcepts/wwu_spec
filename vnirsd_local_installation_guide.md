@@ -71,52 +71,71 @@ Python 2.
 ## step 2: create conda environment
 
 Now that you have ```conda``` installed, you can set up a Python environment
-to run the VNIRSD. First, download the [local_install.yml](local_install.yml)
-file from this repository. Next, open up a terminal: Anaconda Prompt on
-Windows, Terminal on MacOS, or your console emulator of choice on Linux.
-Navigate to the directory where you downloaded local_install.yml and run the
-command:
+to run the VNIRSD. First, download the 
+[local_install.yml](https://drive.google.com/file/d/1wy2OOlYAcEokpaxB07epKvEl1-AhW8SH)
+file. Next, open up a terminal: Anaconda Prompt on Windows, Terminal on MacOS,
+or your console emulator of choice on Linux. Navigate to the directory where
+you put local_install.yml and run the command:
+
 ```conda env create -f local_install.yml```
 
- The run:
+Say yes at the prompts and let the installation finish. Then run:
+
 ```conda env list```
 
-You should see ```vnirsd``` in the list of environments.
+You should see ```vnirsd``` in the list of environments. Now run:
+
+```conda activate vnirsd```
+
+and you will be in a Python environment that contains all of the packages
+VNIRSD needs to run. Well, *almost* all. There's one more step -- a helper
+package that isn't distributed through ```conda```. Now that you've activated
+the environment, run:
+
+```pip install django-mass-edit``` 
+
+Say yes at any prompts and let the installation finish. Now your environment
+is fully ready to run the VNIRSD. 
 
 **Important:** now that you've created this this environment, you should 
 always have it active whenever you work with the VNIRSD from the command line.
 In particular, anything you try to do with the ```manage.py``` application 
 without first running ```conda activate vnirsd``` will probably fail.
 
-## step 3: download the VNIRSD software
+## step 3: download the vnirsd software
 
-Now navigate in the terminal to the location on your system you would like
-to install the VNIRSD. Run:
-```conda activate vnirsd```
-Then run:
-```git clone https://github.com/MillionConcepts/wwu_spec.git```
-to download the VNIRSD software to your computer.
+Navigate to wherever on your computer you'd like to install the VNIRSD and run
+```git clone https://github.com/MillionConcepts/wwu_spec.git```. This will
+make a directory named ```wwu_spec``` with subdirectories containing other
+parts of the application. For the remainder of the guide, ```wwu_spec``` will
+just refer to that installation root directory, which will be wherever on your
+system you installed it at this step.
 
-## step 4: generate settings file
+## step 4: create settings file
 
 Make a copy of the file
-```wwu_spec/vnirsd/wwu_spec/local_settings_template.py```. Rename it to
-```settings.py``` (make sure it's still in the ```wwu_spec/vnirsd/wwu_spec/``` 
+```wwu_spec/wwu_spec/local_settings_template.py```. Rename it to
+```settings.py``` (make sure it's still in the ```wwu_spec/wwu_spec/``` 
 directory).
 
 ## step 5: get database file
 
-The VNIRSD is backed by a SQLite database. SQLite databases are structured as
+The VNIRSD is backed by a SQLite database. SQLite databases are contained in
 single monolithic files. The "official" VNIRSD database file is not versioned
-on GitHub because it's too large. In lieu of a better solution, we are currently
-serving it from Google Drive. Place this file (```db.sqlite3```) in the 
-```wwu_spec/vnirsd``` directory.
+on GitHub because it's too large. In lieu of a better solution, we are
+currently serving it from Google Drive. Place this file (```db.sqlite3```) in
+the ```wwu_spec```  (installation root) directory. We recommend keeping a 
+backup of this file somewhere outside the working directory, especially if 
+you plan to edit or add spectra yourself. That way, you can reverse any 
+unintended changes to the database just by copying your backup over the 
+```db.sqlite3``` file in the installation root directory -- even while the
+application is running.
 
 ### alternative: make an empty database
 If you **only** want to use spectra you import yourself and aren't interested
 in the lab spectra in the official database, you can skip grabbing this file.
-Instead, go to the ```wwu_spec/vnirsd/``` directory and run:
-```python manage.py makemigrations```
+Instead, go to the ```wwu_spec``` (installation root) directory and run:
+
 ```python manage.py migrate```
 
 This will create a ```db.sqlite3``` file structured correctly for the VNIRSD
@@ -125,11 +144,19 @@ but containing no spectra or other information.
 ## step 6: make an admin user
 
 This will allow you to upload your own spectra and use the admin console to
-edit the database. Navigate to the ```wwu_spec/vnirsd/``` directory and run
-```python manage.py createsuperuser```. Enter your username and password at
-the prompts (the other information is optional).
+edit the database. Navigate to the ```wwu_spec``` (installation root) 
+directory and run ```python manage.py createsuperuser```. Enter your username 
+and password at the prompts (the other information is optional).
 
 ## step 7: launch the server
+
+Run the server by navigating to the ```wwu_spec``` (installation root) 
+directory and running ```python manage.py runserver```. You can then navigate
+to ```127.0.0.1:8000``` in your browser of choice to use the VNIRSD. Don't
+close that terminal while you're still using the VNIRSD, or the application
+will also close. When you're ready to close or restart the VNIRSD, you can
+simply terminate that process (with CTRL+C or by closing the terminal) -- it
+doesn't need to be closed in any especially graceful way.
 
 *Reminder: if you get error messages, make sure you have activated the 
 ```conda``` environment by running ```conda activate vnirsd```.*
