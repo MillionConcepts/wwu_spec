@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,"Calcium and Magnesium Sulfate Mixtures, laboratory resolution"
+Date Added,2017-11-11 06:54:43.053933
+
+Data ID,WWU_Sulf_83         
+Sample ID,Mg_Sulf_MCZ_23
+Mineral Name,80% Hexahydrite-20% Epsomite MCZ
+Locality,Synthetic
+Grain Size,500 - 1000 um
+Viewing Geometry,35 degrees
+Resolution,3nm/30nm
+Composition,synthetic magnesium sulfate
+
+Wavelength
+495.0,0.689138
+527.0,0.689469
+554.0,0.689935
+600.0,0.689685
+640.0,0.688959
+676.0,0.688255
+751.0,0.687338
+805.0,0.690573
+867.0,0.690125
+908.0,0.682797
+937.0,0.671703
+975.0,0.62897
+1012.0,0.639886

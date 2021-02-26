@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,Magnesium sulfates Grain Size Series
+Date Added,2017-11-11 07:23:41.047210
+
+Data ID,WWU_Sulf_141        
+Sample ID,Mg_GS_MCZ_05
+Mineral Name,Epsomite
+Locality,Synthetic
+Grain Size,125-250um
+Viewing Geometry,39 degrees
+Resolution,3nm/30nm
+Composition,Synthetic magnesium sulfate
+
+Wavelength
+495.0,0.800845
+527.0,0.803416
+554.0,0.804627
+600.0,0.805944
+640.0,0.804417
+676.0,0.802858
+751.0,0.799713
+805.0,0.799307
+867.0,0.797208
+908.0,0.790544
+937.0,0.782312
+975.0,0.738867
+1012.0,0.738737

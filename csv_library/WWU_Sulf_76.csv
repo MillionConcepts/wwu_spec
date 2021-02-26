@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,"Calcium and Magnesium Sulfate Mixtures, laboratory resolution"
+Date Added,2017-11-11 06:54:42.986404
+
+Data ID,WWU_Sulf_76         
+Sample ID,Mg_Sulf_MCZ_16
+Mineral Name,50% Kieserite-50% Hexahydrite MCZ
+Locality,Synthetic
+Grain Size,500 - 1000 um
+Viewing Geometry,35 degrees
+Resolution,3nm/30nm
+Composition,synthetic magnesium sulfate
+
+Wavelength
+495.0,0.919871
+527.0,0.917806
+554.0,0.91801
+600.0,0.916976
+640.0,0.915068
+676.0,0.913131
+751.0,0.905186
+805.0,0.903817
+867.0,0.899445
+908.0,0.89204
+937.0,0.881573
+975.0,0.849363
+1012.0,0.855799

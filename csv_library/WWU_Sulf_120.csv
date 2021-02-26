@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,"Calcium and Magnesium Sulfate Mixtures, Mastcam-Z resolution"
+Date Added,2017-11-11 07:12:54.803054
+
+Data ID,WWU_Sulf_120        
+Sample ID,Mg_Sulf_MCZ_30
+Mineral Name,10% Bassanite-90% Gypsum MCZ
+Locality,Synthetic
+Grain Size,500 - 1000 um
+Viewing Geometry,35 degrees
+Resolution,3nm/30nm
+Composition,synthetic calcium sulfate
+
+Wavelength
+495.0,0.686288
+527.0,0.693375
+554.0,0.695812
+600.0,0.701622
+640.0,0.70454
+676.0,0.707813
+751.0,0.718182
+805.0,0.724323
+867.0,0.732298
+908.0,0.737678
+937.0,0.740785
+975.0,0.737435
+1012.0,0.741965

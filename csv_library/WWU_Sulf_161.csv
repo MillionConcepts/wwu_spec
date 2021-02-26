@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,"Magnesium sulfates dust contaminated mixtures, Mastcam-Z resolution"
+Date Added,2017-11-11 18:57:08.665466
+
+Data ID,WWU_Sulf_161        
+Sample ID,Mg_Dust_MCZ_05
+Mineral Name,80% Epsomite-20% Kieserite 5% Mars JSC-1A MCZ
+Locality,Synthetic
+Grain Size,500-1000um
+Viewing Geometry,35 degrees
+Resolution,3nm/30nm
+Composition,Synthetic magnesium sulfate
+
+Wavelength
+495.0,0.504077
+527.0,0.512841
+554.0,0.519709
+600.0,0.533454
+640.0,0.542915
+676.0,0.553555
+751.0,0.580986
+805.0,0.590887
+867.0,0.594301
+908.0,0.594363
+937.0,0.593029
+975.0,0.581343
+1012.0,0.583198

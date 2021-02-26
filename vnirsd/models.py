@@ -17,8 +17,9 @@ from vnirsd.spectral import simulate_spectrum
 
 
 class FilterSet(models.Model):
-    short_name = models.CharField(max_length=45, unique=True, blank=False,
-                                  db_index=True)
+    short_name = models.CharField(
+        max_length=45, unique=True, blank=False, db_index=True
+    )
     name = models.CharField(max_length=120, blank=True, db_index=True)
 
     # stringified array of wavelength bins, must be shared by all filters
@@ -41,14 +42,15 @@ class FilterSet(models.Model):
     filter_wavelengths = models.TextField(blank=False, db_index=True)
 
     # TODO: it would be useful to have a reasonable cleaning function at
-    #  some point
+    # some point
 
     url = models.TextField(blank=True, db_index=True)
     description = models.TextField(blank=True, db_index=True)
 
     # display order in simulation dropdown
-    display_order = models.IntegerField(blank=True, default=10000,
-                                        db_index=True)
+    display_order = models.IntegerField(
+        blank=True, default=10000, db_index=True
+    )
 
     def __str__(self):
         return self.name
@@ -58,13 +60,14 @@ class Library(models.Model):
     """
     table holding spectra assignments to custom libraries
     """
-    name = models.CharField(max_length=100, unique=True, blank=False,
-                            db_index=True)
+
+    name = models.CharField(
+        max_length=100, unique=True, blank=False, db_index=True
+    )
     description = models.TextField(blank=True, db_index=True)
 
     def clean(self, *args, **kwargs):
         self.name = str(self.name).strip()
-        self.name = self.name.upper()
 
     def __str__(self):
         return self.name
@@ -79,12 +82,15 @@ class Database(models.Model):
     table holding information on source databases such as the
     USGS spectral database.
     """
-    name = models.CharField(max_length=100, unique=True, blank=False,
-                            db_index=True)
+
+    name = models.CharField(
+        max_length=100, unique=True, blank=False, db_index=True
+    )
     url = models.TextField(blank=True, db_index=True)
     description = models.TextField(blank=True, db_index=True)
-    short_name = models.CharField(max_length=20, blank=True, null=True,
-                                  db_index=True)
+    short_name = models.CharField(
+        max_length=20, blank=True, null=True, db_index=True
+    )
     citation = models.TextField(blank=True, db_index=True)
     released = models.BooleanField(
         "Released to Public", default=False, blank=False
@@ -127,28 +133,38 @@ class SampleType(models.Model):
 
 class Sample(models.Model):
     actions = ["mass_change_selected"]
-    composition = models.CharField("Composition", blank=True, max_length=40,
-                                   db_index=True)
-    date_added = models.DateTimeField("Date Added", auto_now=True,
-                                      db_index=True)
-    filename = models.CharField("Name of Uploaded File", blank=True,
-                                max_length=80)
-    formula = models.CharField("Formula", blank=True, max_length=40,
-                               db_index=True)
-    grain_size = models.CharField("Grain Size", blank=True, max_length=40,
-                                  db_index=True)
-    image = models.CharField("Path to Image", blank=True, max_length=100,
-                             db_index=True)
-    import_notes = models.TextField("File import notes", blank=True,
-                                    db_index=True)
+    composition = models.CharField(
+        "Composition", blank=True, max_length=40, db_index=True
+    )
+    date_added = models.DateTimeField(
+        "Date Added", auto_now=True, db_index=True
+    )
+    filename = models.CharField(
+        "Name of Uploaded File", blank=True, max_length=80
+    )
+    formula = models.CharField(
+        "Formula", blank=True, max_length=40, db_index=True
+    )
+    grain_size = models.CharField(
+        "Grain Size", blank=True, max_length=40, db_index=True
+    )
+    image = models.CharField(
+        "Path to Image", blank=True, max_length=100, db_index=True
+    )
+    import_notes = models.TextField(
+        "File import notes", blank=True, null=True, db_index=True
+    )
     locality = models.TextField("Locality", blank=True, db_index=True)
-    library = models.ManyToManyField(Library, blank=True, db_index=True)
-    min_reflectance = models.FloatField("Minimum Reflectance", blank=True,
-                                        db_index=True)
-    sample_name = models.CharField("Sample Name", blank=True, max_length=40,
-                                   db_index=True)
-    max_reflectance = models.FloatField("Maximum Reflectance", blank=True,
-                                        db_index=True)
+    libraries = models.ManyToManyField(Library, blank=True, db_index=True)
+    min_reflectance = models.FloatField(
+        "Minimum Reflectance", blank=True, db_index=True
+    )
+    sample_name = models.CharField(
+        "Sample Name", blank=True, max_length=40, db_index=True
+    )
+    max_reflectance = models.FloatField(
+        "Maximum Reflectance", blank=True, db_index=True
+    )
     origin = models.ForeignKey(
         Database,
         on_delete=models.PROTECT,
@@ -162,25 +178,33 @@ class Sample(models.Model):
     )
 
     # stringified array
-    reflectance = models.TextField("Reflectance", default="[0,0]",
-                                   db_index=True)
-    resolution = models.CharField("Resolution", blank=True, max_length=40,
-                                  db_index=True)
-    material_class = models.CharField("Material Class", blank=True,
-                                      max_length=40)
-    sample_desc = models.TextField("Sample Description", blank=True,
-                                   db_index=True)
+    reflectance = models.TextField(
+        "Reflectance", default="[0,0]", db_index=True
+    )
+    resolution = models.CharField(
+        "Resolution", blank=True, max_length=40, db_index=True
+    )
+    material_class = models.CharField(
+        "Material Class", blank=True, max_length=40
+    )
+    sample_desc = models.TextField(
+        "Sample Description", blank=True, db_index=True
+    )
     sample_id = models.CharField("Sample ID", max_length=40, db_index=True)
     sample_type = models.ForeignKey(
-        SampleType, on_delete=models.PROTECT, null=True,
-        verbose_name="Sample Type"
+        SampleType,
+        on_delete=models.PROTECT,
+        null=True,
+        verbose_name="Sample Type",
     )
 
     # dictionary of pandas dataframes stored as json string
-    simulated_spectra = models.TextField("Simulated Spectra", default="{}",
-                                         db_index=True)
-    view_geom = models.CharField("Viewing Geometry", blank=True, max_length=40,
-                                 db_index=True)
+    simulated_spectra = models.TextField(
+        "Simulated Spectra", default="{}", db_index=True
+    )
+    view_geom = models.CharField(
+        "Viewing Geometry", blank=True, max_length=40, db_index=True
+    )
 
     def clean(self, *args, **kwargs):
         errors = []
@@ -249,7 +273,8 @@ class Sample(models.Model):
                 # sorts by returning indices that would sort the wavelength
                 # column
                 self.reflectance = self.reflectance[
-                    self.reflectance[:, 0].argsort()]
+                    self.reflectance[:, 0].argsort()
+                ]
 
                 if self.reflectance.shape[1] != 2:
                     errors.append(
@@ -276,7 +301,7 @@ class Sample(models.Model):
         ]:
             return
         for refl_array in Sample.objects.filter(
-                sample_id__icontains=self.sample_id
+            sample_id__icontains=self.sample_id
         ).values("reflectance"):
             if self.reflectance == refl_array["reflectance"]:
                 raise ValueError(
@@ -298,9 +323,10 @@ class Sample(models.Model):
                 under_search = re.search(r"_[0-9]+$", self.sample_id)
                 if under_search:
                     self.sample_id = self.sample_id[
-                                     : under_search.start() + 1
-                                     ] + str(int(
-                        self.sample_id[under_search.start() + 1:]) + 1)
+                        : under_search.start() + 1
+                    ] + str(
+                        int(self.sample_id[under_search.start() + 1 :]) + 1
+                    )
                 else:
                     self.sample_id = self.sample_id + "_1"
             warnings.append(
@@ -315,7 +341,10 @@ class Sample(models.Model):
     def save(self, *args, **kwargs):
         errors = []
         if self.import_notes:
-            warnings = literal_eval(self.import_notes)
+            if isinstance(self.import_notes, str):
+                warnings = literal_eval(self.import_notes)
+            else:
+                warnings = self.import_notes
         else:
             warnings = []
         if "errors" in kwargs:
@@ -356,7 +385,9 @@ class Sample(models.Model):
                     self.image.save(image_path + filename, "JPEG")
                     # make thumbnail
                     self.image.thumbnail((256, 256))
-                    self.image.save(filename[:-4] + "_thumb.jpg", "JPEG")
+                    self.image.save(
+                        image_path + filename[:-4] + "_thumb.jpg", "JPEG"
+                    )
                     # set sample's image field to a link to that image
                     self.image = filename
                 else:
@@ -373,12 +404,8 @@ class Sample(models.Model):
             for filterset in FilterSet.objects.all():
                 sims[filterset.short_name] = simulate_spectrum(self, filterset)
                 sims[
-                    filterset.short_name + '_no_illumination'] = \
-                    simulate_spectrum(
-                    self,
-                    filterset,
-                    illuminated=False
-                )
+                    filterset.short_name + "_no_illumination"
+                ] = simulate_spectrum(self, filterset, illuminated=False)
             for sim in sims:
                 sims[sim] = sims[sim].reset_index(drop=True).to_json()
             self.simulated_spectra = json.dumps(sims)
@@ -387,10 +414,20 @@ class Sample(models.Model):
 
     def __str__(self):
         if self.origin.short_name is not None:
-            return self.sample_name + "_" + self.sample_id + "_" + \
-                   self.origin.short_name
-        return self.sample_name + "_" + self.sample_id + "_" + \
-               self.origin.name.split()[0]
+            return (
+                self.sample_name
+                + "_"
+                + self.sample_id
+                + "_"
+                + self.origin.short_name
+            )
+        return (
+            self.sample_name
+            + "_"
+            + self.sample_id
+            + "_"
+            + self.origin.name.split()[0]
+        )
 
     def as_dict(self):
         self_dict = {}
@@ -400,9 +437,12 @@ class Sample(models.Model):
 
     def write_sims(self):
         sims = dict(json.loads(self.simulated_spectra))
-        frames = [pd.read_json(sims[key]).reindex(
-            columns=[key + ' filter', 'wavelength', 'response']) for key in
-            sims]
+        frames = [
+            pd.read_json(sims[key]).reindex(
+                columns=[key + " filter", "wavelength", "response"]
+            )
+            for key in sims
+        ]
         return [frame.to_csv() for frame in frames]
 
     def as_json(self):
@@ -412,7 +452,8 @@ class Sample(models.Model):
                 continue
             if field.name == "reflectance":
                 json_dict |= {
-                    "reflectance": dict(literal_eval(self.reflectance))}
+                    "reflectance": dict(literal_eval(self.reflectance))
+                }
             elif field.name == "date_added":
                 json_dict |= {"date_added": str(self.date_added)}
             elif isinstance(field, models.ForeignKey):
@@ -426,8 +467,11 @@ class Sample(models.Model):
                     # treatment of numpy.float64, which causes problems
                     # for samples that have reflectance ranges that lie
                     # totally outside of a filterset's range
-                    spectrum = dict(pd.read_json(sims[filterset]).drop(
-                        columns="filter").values.astype(float))
+                    spectrum = dict(
+                        pd.read_json(sims[filterset])
+                        .drop(columns="filter")
+                        .values.astype(float)
+                    )
                     json_dict |= {name: spectrum}
             else:
                 json_dict |= {field.name: getattr(self, field.name)}
@@ -435,14 +479,12 @@ class Sample(models.Model):
 
     def get_simulated_spectra(self):
         return valmap(
-            literal_eval, literal_eval(self.as_dict()['simulated_spectra'])
+            literal_eval, literal_eval(self.as_dict()["simulated_spectra"])
         )
 
     def get_image(self):
         if isinstance(self.image, str):
-            return Image.open(
-                settings.SAMPLE_IMAGE_PATH + "/" + self.image
-            )
+            return Image.open(settings.SAMPLE_IMAGE_PATH + "/" + self.image)
         else:
             raise ValueError(
                 "this sample doesn't have an image,  or it's not currently "

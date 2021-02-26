@@ -26,7 +26,7 @@ from vnirsd.forms import (
     AdminUploadImageForm,
     concealed_search_factory,
 )
-from vnirsd.models import Database, Sample, FilterSet
+from vnirsd.models import Database, Sample, FilterSet, Library
 
 
 def search(request) -> HttpResponse:
@@ -70,8 +70,9 @@ def results(request) -> HttpResponse:
     # access the ForeignKey object fields
 
     phrase_fields = ["sample_name"]
-    choice_fields = ["origin__name", "sample_type__name", "library__name"]
+    choice_fields = ["origin__name", "sample_type__name"]
     numeric_fields = ["min_reflectance", "max_reflectance"]
+    m2m_managers = ["library"]
     searchable_fields = phrase_fields + choice_fields + numeric_fields
     form_results = Sample.objects.only(*searchable_fields)
 
@@ -80,12 +81,18 @@ def results(request) -> HttpResponse:
 
     form_results = form_results.order_by(*sort_params)
 
-    for field in phrase_fields + choice_fields:
+    for field in phrase_fields + choice_fields + m2m_managers:
         entry = search_form.cleaned_data.get(field, None)
         if not entry:
             continue
         # "Any" entries do not restrict the search
         if entry == "Any":
+            continue
+        # library is handled differently because it is a many-to-many
+        # relation.
+        if field == "library":
+            library = Library.objects.get(name__exact=entry)
+            form_results = form_results & library.sample_set.all()
             continue
         # require exact phrase searches for choice fields,
         # don't waste time checking any other possibilities

@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,"Calcium and Magnesium Sulfate Mixtures, Mastcam-Z resolution"
+Date Added,2017-11-11 07:12:54.679660
+
+Data ID,WWU_Sulf_107        
+Sample ID,Mg_Sulf_MCZ_17
+Mineral Name,40% Anhydrite-60% Gypsum MCZ
+Locality,Synthetic
+Grain Size,500 - 1000 um
+Viewing Geometry,35 degrees
+Resolution,3nm/30nm
+Composition,synthetic calcium sulfate
+
+Wavelength
+495.0,0.950435789
+527.0,0.957605512
+554.0,0.961851031
+600.0,0.971151909
+640.0,0.975352222
+676.0,0.979991682
+751.0,0.992779905
+805.0,0.01
+867.0,0.01008742903
+908.0,0.0101464039
+937.0,0.01016779295
+975.0,0.01009268588
+1012.0,0.01016513223

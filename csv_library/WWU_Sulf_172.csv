@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,"Magnesium sulfates dust contaminated mixtures, Mastcam-Z resolution"
+Date Added,2017-11-11 19:02:15.427748
+
+Data ID,WWU_Sulf_172        
+Sample ID,Ca_Dust_MCZ_04
+Mineral Name,60% Gypsum-40% Anhydrite 5% Mars JSC-1A MCZ
+Locality,Synthetic
+Grain Size,500-1000um
+Viewing Geometry,35 degrees
+Resolution,3nm/30nm
+Composition,Synthetic calcium sulfate
+
+Wavelength
+495.0,0.588557
+527.0,0.600181
+554.0,0.609134
+600.0,0.627797
+640.0,0.640422
+676.0,0.654445
+751.0,0.684887
+805.0,0.697192
+867.0,0.704963
+908.0,0.709368
+937.0,0.711773
+975.0,0.714354
+1012.0,0.718456

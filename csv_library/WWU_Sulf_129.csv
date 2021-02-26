@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,Calcium sulfates Grain Size Series
+Date Added,2017-11-11 07:18:46.064785
+
+Data ID,WWU_Sulf_129        
+Sample ID,Ca_GS_MCZ_01
+Mineral Name,Whole Selenite
+Locality,Synthetic
+Grain Size,Whole
+Viewing Geometry,35 degrees
+Resolution,3nm/30nm
+Composition,Synthetic calcium sulfate
+
+Wavelength
+495.0,0.67515
+527.0,0.669885
+554.0,0.668324
+600.0,0.665036
+640.0,0.65647
+676.0,0.646617
+751.0,0.632008
+805.0,0.630684
+867.0,0.618968
+908.0,0.606619
+937.0,0.596032
+975.0,0.545422
+1012.0,0.550366

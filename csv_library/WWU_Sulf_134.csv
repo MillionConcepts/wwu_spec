@@ -1,0 +1,27 @@
+Database of Origin,Western Washington University
+Sample Description,Calcium sulfates Grain Size Series
+Date Added,2017-11-11 07:18:46.117858
+
+Data ID,WWU_Sulf_134        
+Sample ID,Ca_GS_MCZ_06
+Mineral Name,Gypsum
+Locality,Synthetic
+Grain Size,125-250um
+Viewing Geometry,40 degrees
+Resolution,3nm/30nm
+Composition,Synthetic calcium sulfate
+
+Wavelength
+495.0,0.0100749
+527.0,0.0101035
+554.0,0.0101148
+600.0,0.0101206
+640.0,0.0101062
+676.0,0.0100895
+751.0,0.0100132
+805.0,0.999913
+867.0,0.995472
+908.0,0.991933
+937.0,0.989055
+975.0,0.972035
+1012.0,0.973212

@@ -19,11 +19,11 @@ def qlist(queryset: models.QuerySet, attribute: str):
 
 # PyTypeChecker can't identify model subclasses
 def djget(
-        model,
-        value: str,
-        field: str = "name",
-        method_name: str = "filter",
-        querytype: str = "iexact",
+    model,
+    value: str,
+    field: str = "name",
+    method_name: str = "filter",
+    querytype: str = "iexact",
 ) -> models.QuerySet:
     """flexible interface to queryset methods"""
     # get the requested queryset-generating method of model.objects
@@ -50,7 +50,7 @@ def fields(model) -> list[str]:
 
 
 def or_query(
-        first_query: models.QuerySet, second_query: models.QuerySet
+    first_query: models.QuerySet, second_query: models.QuerySet
 ) -> models.QuerySet:
     return first_query | second_query
 
@@ -73,7 +73,7 @@ def search_all_samples(entry: str) -> models.QuerySet:
 
 
 def make_choice_list(
-        model: models.Model, field: str, conceal_unreleased=False
+    model: models.Model, field: str, conceal_unreleased=False
 ) -> list[tuple]:
     """
     format data to feed to html selection fields.
@@ -99,7 +99,8 @@ def make_autocomplete_list(autocomplete_fields: dict):
         model = autocomplete_fields[autocomplete_category][0]
         field = autocomplete_fields[autocomplete_category][1]
         autocomplete_data[autocomplete_category] = [
-            name for name in model.objects.values_list(field, flat=True)
+            name
+            for name in model.objects.values_list(field, flat=True)
             .order_by(field)
             .distinct()
             if name != ""
@@ -134,21 +135,21 @@ def parse_sample_csv(meta_array: np.ndarray, warnings: list, errors: list):
                 warnings.append(
                     "Warning: a row in the input was interpreted as NaN."
                     + "This is generally harmless and caused by "
-                      "idiosyncracies "
+                    "idiosyncracies "
                     + " in how pandas.read_csv handles stray separators."
                 )
             elif input_field == "data id":
                 warnings.append(
                     "Warning: the Data ID field is recognized for legacy "
-                    "purposes but is not used by the "
+                    "purposes but is not used by the"
                     + " database unless you have not provided a Sample ID."
                 )
                 field_dict["sample_id"] = column[1]
             elif input_field == "mineral name" or input_field == "sample name":
                 warnings.append(
-                    'Warning: the "'
+                    "Warning: the "
                     + column[0]
-                    + '" field is interpreted as "Sample Name."'
+                    + " field is interpreted as sample name."
                 )
                 field_dict["sample_name"] = column[1]
             # and raise an error for extraneous fields
@@ -176,7 +177,7 @@ def parse_sample_csv(meta_array: np.ndarray, warnings: list, errors: list):
 
 
 def check_sample_csv(
-        field_dict: dict, warnings: list, errors: list
+    field_dict: dict, warnings: list, errors: list
 ) -> (dict, list, list):
     # maps upload text to the ForeignKey fields
     # creates database entries if not present
@@ -201,7 +202,7 @@ def check_sample_csv(
             warnings.append(
                 active_database
                 + " was not previously listed among our affiliate databases "
-                  "and has been added as a database of origin. "
+                "and has been added as a database of origin. "
             )
             new_database = Database(name=active_database)
             new_database.save()
@@ -212,7 +213,7 @@ def check_sample_csv(
             "No name was provided for the sample in"
             + field_dict["filename"]
             + ".it has been"
-              "assigned the placeholder identifier "
+            "assigned the placeholder identifier "
             + field_dict["sample_id"]
             + "."
         )
@@ -277,7 +278,7 @@ def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
 
     refl_start = refl_search[0]
     meta_array = np.array(csv_in[0:, 0:refl_start])
-    refl_array = np.array(csv_in[0:, refl_start + 1:])
+    refl_array = np.array(csv_in[0:, refl_start + 1 :])
     try:
         refl_array = refl_array.astype(np.float64)
     except ValueError:
@@ -285,9 +286,9 @@ def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
             "Error: some fields in the reflectance data can't be interpreted "
             "as numbers. "
             + "It's possible that you haven't placed the reflectance data "
-              "after all of the "
-              "metadata, or that there are some non-numeric characters in the "
-              "reflectance data. "
+            "after all of the "
+            "metadata, or that there are some non-numeric characters in the "
+            "reflectance data. "
         )
 
     # check for and handle multicolumn reflectance data
@@ -307,21 +308,27 @@ def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
     warnings = parsed_csv[1]
     errors = parsed_csv[2]
     field_dict |= {"filename": filename}
-    field_dict, warnings, errors = check_sample_csv(field_dict, warnings, errors)
+    field_dict, warnings, errors = check_sample_csv(
+        field_dict, warnings, errors
+    )
     field_dict |= {"import_notes": str(warnings)}
     # split multicolumn data into multiple Sample objects
 
     if sample_split:
         sample_out = [
             Sample(
-                **(field_dict | {"reflectance": sample, "sample_id": field_dict['sample_id'] + '_' + str(ix)})
+                **(
+                    field_dict
+                    | {
+                        "reflectance": sample,
+                        "sample_id": field_dict["sample_id"] + "_" + str(ix),
+                    }
+                )
             )
             for ix, sample in enumerate(split_refl)
         ]
     else:
-        sample_out = Sample(
-           **(field_dict | {"reflectance": refl_array})
-        )
+        sample_out = Sample(**(field_dict | {"reflectance": refl_array}))
 
     if errors:
         return {
@@ -382,7 +389,7 @@ suggests to me that I should refactor this code.
 
 
 def check_zip_structure(
-        zipped_file: zipfile.ZipFile, upload_errors: list
+    zipped_file: zipfile.ZipFile, upload_errors: list
 ) -> Union[
     list[Union[int, list]], dict[str, Union[list, list[str], dict[str, Any]]]
 ]:
@@ -430,7 +437,7 @@ def check_zip_structure(
             upload_errors.append(
                 jpg_file[:-4]
                 + "Has the same name as a csv file but doesn't appear to be "
-                  "a JPEG"
+                "a JPEG"
                 + " image. Please remove it from the zip file and reload."
             )
         else:
@@ -586,7 +593,7 @@ def eta(input_function, *args, kwarg_list=()):
         # are there more args than the eta-defined argument list? pass them to
         # input_function.
         if len(do_args) > len(kwarg_list):
-            positionals = do_args[len(kwarg_list):]
+            positionals = do_args[len(kwarg_list) :]
         # do we have an argument list? then zip it with args up to its
         # length.
         if kwarg_list:
