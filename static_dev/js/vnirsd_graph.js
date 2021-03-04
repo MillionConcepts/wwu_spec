@@ -20,7 +20,10 @@ let linePalette = [
     '#00e102',
     '#FF00FF',
     '#1DCEA8',
-    '#d2aa00'
+    '#7847e7',
+    '#ffb600',
+    '#a54262',
+    '#4df8ce',
 ];
 
 let lineColors = {};
