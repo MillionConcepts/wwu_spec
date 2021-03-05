@@ -7,7 +7,6 @@ from ast import literal_eval
 from functools import reduce
 from itertools import chain
 from operator import or_
-from typing import Optional
 
 import pandas as pd
 import PIL
@@ -41,6 +40,9 @@ def search(request) -> HttpResponse:
 
 
 def results(request) -> HttpResponse:
+    print(request)
+    if ('jump-button' in request.GET) and (request.GET['jump-to-page'] == ""):
+        return HttpResponse(status=204)
     search_results_id_list = []
     search_results = Sample.objects.none()
     # selected_spectra = Sample.objects.none() # TODO: missing functionality?
@@ -167,11 +169,15 @@ def results(request) -> HttpResponse:
         search_results_id_list.append(result.id)
 
     paginator = Paginator(search_results, 10)
-    page_selected = int(request.GET.get("page_selected", 1))
+    if "jump-button" in request.GET:
+        page_selected = max(1, int(request.GET.get("jump-to-page")))
+        page_selected = min(paginator.num_pages, page_selected)
+    else:
+        page_selected = int(request.GET.get("page_selected", 1))
     page_results = paginator.page(page_selected)
     page_choices = range(
-        max(1, page_selected - 3),
-        min(page_selected + 4, paginator.num_pages + 1),
+        max(1, page_selected - 6),
+        min(page_selected + 6, paginator.num_pages),
     )
 
     page_ids = []
@@ -347,7 +353,8 @@ def export(request) -> HttpResponse:
     # TODO: is this actually desired?
     # prev_selected_list = request.POST.getlist("prev_selected")
     selections = list(selections)
-    return construct_export_zipfile(selections, export_sim, simulated_instrument)
+    return construct_export_zipfile(selections, export_sim,
+                                    simulated_instrument)
 
 
 def bulk_export(request) -> HttpResponse:
@@ -389,11 +396,11 @@ def bulk_export(request) -> HttpResponse:
     else:
         simulated_instrument = ""
         simulate = False
-    return construct_export_zipfile(search_results_id_list, simulate, simulated_instrument)
+    return construct_export_zipfile(search_results_id_list, simulate,
+                                    simulated_instrument)
 
 
 def upload(request) -> HttpResponse:
-
     form = UploadForm(request.POST, request.FILES)
 
     upload_errors = []
@@ -468,7 +475,8 @@ def upload(request) -> HttpResponse:
     else:
         if upload_results[0]["errors"] is not None:
             headline = (
-                upload_results[0]["filename"] + " did not upload successfully."
+                    upload_results[0][
+                        "filename"] + " did not upload successfully."
             )
             unsuccessful = [
                 {
@@ -499,7 +507,7 @@ def upload(request) -> HttpResponse:
     )
 
 
-def admin_upload_image(request, ids = None) -> HttpResponse:
+def admin_upload_image(request, ids=None) -> HttpResponse:
     warn_multiple = False
     if ids:
         ids = literal_eval(ids)
