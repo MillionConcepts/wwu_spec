@@ -31,7 +31,7 @@
                             </label>
                         </div>
                         <input id="selectAllBox" type="checkbox"
-                               name="selectall" onClick="toggle(this)"/>
+                               name="selectall" onClick="toggle(this)">
                         <label id="selectAllLabel" for="selectAllBox"> Select
                             All</label>
                     </div>
@@ -201,17 +201,18 @@
                     <input id="page_selected" type="hidden"
                            name="page_selected"
                            value="{{ page_results.number }}"/>
-                    <ul class="pagination center-align">
+                <div id="pagination-container" style="display: flex; align-items:baseline">
+                    <div id="pagination-padding" style="width: 10rem"></div>
+
+                    <ul class="pagination center-align" style="flex: 1">
                         {% if page_results.has_previous %}
                             <li class="waves-effect">
                                 <a onclick="selectPage({{ page_results.previous_page_number }});"
-                                   name="action" value="results"/>
-                                <i class="material-icons">chevron_left</i>
-                                </a>
+                                   name="action" value="results"><i class="material-icons">chevron_left</i></a>
                             </li>
                         {% else %}
                             <li class="disabled">
-                                <a name="action" value="results"/>
+                                <a name="action" value="results">
                                 <i class="material-icons">chevron_left</i>
                                 </a>
                             </li>
@@ -221,7 +222,7 @@
 
                             {% if page_results.number == page %}
                                 <li class="active">
-                                    <a name="action" value="results"/>
+                                    <a name="action" value="results">
                                     {{ page_results.number }}
                                     </a>
                                 </li>
@@ -250,10 +251,17 @@
                                 </a>
                             </li>
                         {% endif %}
-                    </ul>
-                </form>
 
-            </div>
+                    </ul>
+
+                    <input id="jump-to-page" name = "jump-to-page" value="" type="number" style="width: 5rem">
+                    <button type="submit" name="jump-button"
+                                formaction="/vnirsd/results/jump"
+                            style="margin-left:1rem; margin-right: 3rem"
+                            class="btn btn-success">Jump</button>
+                        <label for="jump-to-page"></label>
+                </div>
+            </form>
         </div>
     {% else %}
         <div id="meta" class="container section">
