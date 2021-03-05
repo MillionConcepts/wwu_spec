@@ -40,7 +40,6 @@ def search(request) -> HttpResponse:
 
 
 def results(request) -> HttpResponse:
-    print(request)
     if ('jump-button' in request.GET) and (request.GET['jump-to-page'] == ""):
         return HttpResponse(status=204)
     search_results_id_list = []
