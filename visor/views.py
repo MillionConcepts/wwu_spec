@@ -16,17 +16,17 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from vnirsd.dj_utils import (
+from visor.dj_utils import (
     search_all_samples,
     handle_csv_upload,
     handle_zipped_upload,
 )
-from vnirsd.forms import (
+from visor.forms import (
     UploadForm,
     AdminUploadImageForm,
     concealed_search_factory,
 )
-from vnirsd.models import Database, Sample, FilterSet, Library
+from visor.models import Database, Sample, FilterSet, Library
 
 
 def search(request) -> HttpResponse:

@@ -13,7 +13,7 @@ from PIL import Image
 import PIL.ImageFile
 from toolz import valmap
 
-from vnirsd.spectral import simulate_spectrum
+from visor.spectral import simulate_spectrum
 
 
 class FilterSet(models.Model):
@@ -439,7 +439,7 @@ class Sample(models.Model):
         sims = dict(json.loads(self.simulated_spectra))
         frames = [
             pd.read_json(sims[key]).reindex(
-                columns=[key + " filter", "wavelength", "response"]
+                columns=[key + " filter", "Wavelength", "Response"]
             )
             for key in sims
         ]

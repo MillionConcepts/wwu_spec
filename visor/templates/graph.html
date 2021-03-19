@@ -20,7 +20,7 @@
 {% load static %}
 
 {% block content %}
-    <title>Graph - WWU VNIRSD</title>
+    <title>Graph - VISOR</title>
 
     <link rel="stylesheet" href="{% static 'css/nouislider.css' %}">
 
@@ -335,15 +335,15 @@
                                 class="btn btn-success">Back to Search
                         </button>
                         <button type="submit" name="resultsform"
-                                formaction="/vnirsd/results/"
+                                formaction="/visor/results/"
                                 class="btn btn-success">Results
                         </button>
                         <button type="submit" name="export"
-                                formaction="/vnirsd/export/"
+                                formaction="/visor/export/"
                                 class="btn btn-success">Export
                         </button>
                         <button type="submit" name="meta"
-                                formaction="/vnirsd/meta/"
+                                formaction="/visor/meta/"
                                 class="btn btn-success">View Metadata
                         </button>
                         <br>
@@ -388,7 +388,7 @@
             const graph = JSON.parse('{{graphJSON|safe | escapejs}}');
         </script>
         <script src="{% static 'js/wNumb.js' %}"></script>
-        <script src="{% static 'js/vnirsd_graph.js' %}"></script>
+        <script src="{% static 'js/visor_graph.js' %}"></script>
 
     {% else %}
         <div id="meta" class="container section">
@@ -397,7 +397,7 @@
                 <form id="resultsForm" method="GET" name="resultsform">
                     <div class="section center-align">
                         <button type="submit" name="resultsForm"
-                                formaction="/vnirsd/results/"
+                                formaction="/visor/results/"
                                 class="btn btn-success">Back to Results
                         </button>
                     </div>

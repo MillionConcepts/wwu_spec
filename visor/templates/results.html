@@ -1,7 +1,7 @@
 {% extends "layouts/base.html" %}
 {% load static %}
 {% block content %}
-    <title>Results - WWU VNIRSD</title>
+    <title>Results - VISOR</title>
 
     {% if search_results %}
         <div class="container section">
@@ -9,15 +9,15 @@
                 <form id="resultsForm" method="GET" name="resultsForm">
                     <div class="section center-align">
                         <button type="submit" name="graphForm"
-                                formaction="/vnirsd/graph/"
+                                formaction="/visor/graph/"
                                 class="btn btn-success">Graph
                         </button>
                         <button type="submit" name="export"
-                                formaction="/vnirsd/export/"
+                                formaction="/visor/export/"
                                 class="btn btn-success">Export
                         </button>
                         <button type="submit" name="meta"
-                                formaction="/vnirsd/meta/"
+                                formaction="/visor/meta/"
                                 class="btn btn-success">View Metadata
                         </button>
                         <br>
@@ -150,15 +150,15 @@
                         </table>
                         <div class="section center-align">
                             <button type="submit" name="graphForm"
-                                    formaction="/vnirsd/graph/"
+                                    formaction="/visor/graph/"
                                     class="btn btn-success">Graph
                             </button>
                             <button type="submit" name="export"
-                                    formaction="/vnirsd/export/"
+                                    formaction="/visor/export/"
                                     class="btn btn-success">Export
                             </button>
                             <button type="submit" name="meta"
-                                    formaction="/vnirsd/meta/"
+                                    formaction="/visor/meta/"
                                     class="btn btn-success">View Metadata
                             </button>
                             <br>
@@ -256,7 +256,7 @@
 
                     <input id="jump-to-page" name = "jump-to-page" value="" type="number" style="width: 5rem">
                     <button type="submit" name="jump-button"
-                                formaction="/vnirsd/results/jump"
+                                formaction="/visor/results/jump"
                             style="margin-left:1rem; margin-right: 3rem"
                             class="btn btn-success">Jump</button>
                         <label for="jump-to-page"></label>

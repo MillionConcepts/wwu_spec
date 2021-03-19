@@ -1,4 +1,4 @@
-# Western Washington University Vis-NIR Spectroscopy Database
+# Western Washington University Visible-Infrared Spectral Browser (VISOR)
 
 This repository is currently in the process of being staged for 
 open beta release. Patch notes, which may pend environment-specific

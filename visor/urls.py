@@ -1,6 +1,6 @@
 from django.urls import include, path, re_path
 
-from vnirsd import views
+from visor import views
 
 urlpatterns = [
     path('', views.search, name='search'),

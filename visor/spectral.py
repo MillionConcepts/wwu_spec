@@ -8,7 +8,7 @@ from scipy import integrate
 import pandas as pd
 import numpy as np
 
-import vnirsd.models
+import visor.models
 
 
 def interpolate_spectrum(
@@ -50,8 +50,8 @@ def convolve(
 
 
 def simulate_spectrum(
-    sample: 'vnirsd.models.Sample',
-    filterset: 'vnirsd.models.FilterSet',
+    sample: 'visor.models.Sample',
+    filterset: 'visor.models.FilterSet',
     illuminated: bool = True,
 ) -> pd.DataFrame:
     # turn sample and illumination values into nice arrays
@@ -133,7 +133,7 @@ def make_filterset(
     filters: dict,
     bins: np.ndarray,
     waves: dict[str, float],
-    illumination_path: str,
+    illumination_path: str
 ):
     """
     make_filterset below is a convenience function for generating filtersets.
@@ -188,4 +188,4 @@ def make_filterset(
     }
     if illumination_path:
         filterset |= {"illumination": illumination}
-    return vnirsd.models.FilterSet(**filterset)
+    return visor.models.FilterSet(**filterset)

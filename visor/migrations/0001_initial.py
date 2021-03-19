@@ -89,9 +89,9 @@ class Migration(migrations.Migration):
                 ('sample_id', models.CharField(db_index=True, max_length=40, verbose_name='Sample ID')),
                 ('simulated_spectra', models.TextField(db_index=True, default='{}', verbose_name='Simulated Spectra')),
                 ('view_geom', models.CharField(blank=True, db_index=True, max_length=40, verbose_name='Viewing Geometry')),
-                ('libraries', models.ManyToManyField(blank=True, db_index=True, to='vnirsd.Library')),
-                ('origin', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='vnirsd.database', verbose_name='Database of Origin')),
-                ('sample_type', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='vnirsd.sampletype', verbose_name='Sample Type')),
+                ('libraries', models.ManyToManyField(blank=True, db_index=True, to='visor.Library')),
+                ('origin', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='visor.database', verbose_name='Database of Origin')),
+                ('sample_type', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='visor.sampletype', verbose_name='Sample Type')),
             ],
             options={
                 'ordering': ['sample_id'],

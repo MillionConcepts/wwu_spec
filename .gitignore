@@ -10,3 +10,4 @@ ubuntu@*
 /.ipynb_checkpoints/
 /.git/
 notes
+/wwu_spec/.secretkey.py

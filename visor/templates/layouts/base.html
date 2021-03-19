@@ -24,12 +24,12 @@
     <div class="container" style="display: flex">
         <ul id="nav-mobile" class="left" style="list-style-type: none">
             <li class="left"><a href="/">Search</a></li>
-            <li class="left"><a href="/vnirsd/status">Status</a></li>
-            <li class="left"><a href="/vnirsd/about">About</a></li>
+            <li class="left"><a href="/visor/status">Status</a></li>
+            <li class="left"><a href="/visor/about">About</a></li>
         </ul>
         <ul id="nav-mobile" class="right hide-on-small-and-down" style="list-style-type: none">
             {% if user.is_authenticated %}
-                <li><a href="/vnirsd/upload">Upload</a></li>
+                <li><a href="/visor/upload">Upload</a></li>
                 <li><a href="/admin/login">Admin</a></li>
                 <!-- <li><a href="/logout">Log Out</a> -->
             {% else %}

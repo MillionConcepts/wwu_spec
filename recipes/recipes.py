@@ -1,11 +1,11 @@
 """
-precooked versions of functions in the VNIRSD programming manual
+precooked versions of functions in the VISOR programming manual
 """
 
 from functools import partial
 
-from vnirsd.dj_utils import djget, eta
-from vnirsd.models import Sample
+from visor.dj_utils import djget, eta, fields
+from visor.models import Sample
 
 # define partially-evaluated convenience function
 get_contains = partial(

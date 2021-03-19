@@ -19,12 +19,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 
-# redirect base URL to VNIRSD
+# redirect base URL to VISOR
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('vnirsd/', include('vnirsd.urls')),
-    path('', RedirectView.as_view(url='vnirsd/', permanent=True)),
+    path('visor/', include('visor.urls')),
+    path('', RedirectView.as_view(url='visor/', permanent=True)),
 ]
 
 # if settings.DEBUG:

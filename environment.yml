@@ -1,3 +1,4 @@
+name: visor
 channels:
   - conda-forge
   - defaults
