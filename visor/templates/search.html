@@ -1,16 +1,15 @@
 {% extends "layouts/base.html" %}
 {% load static %}
 {% block content %}
-    <title>Search - WWU VNIRSD</title>
+    <title>Search - VISOR</title>
     <div class="container section" id="content"
          style="width: 70%; max-width:1000px">
-        <form method="GET" class="warm-content" action="/vnirsd/results/">
+        <form method="GET" class="warm-content" action="/visor/results/">
             {{ search_formset.management_form }}
             {% for search_form in search_formset.forms %}
                 <div class="center warm-content form-header search-form-section">
                 <span class="head">
-                  Western Washington University Vis-NIR Spectroscopy Database <a
-                        href="/vnirsd/status">(BETA STATUS)</a>
+                  Western Washington University Visible-Infrared Spectral Browser
                 </span>
                 </div>
                 <div class="warm-content search-form-section">

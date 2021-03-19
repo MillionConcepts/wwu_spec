@@ -10,7 +10,7 @@ from PIL import Image
 from django.db import models
 
 # queryset constructors
-from vnirsd.models import Sample, SampleType, Database
+from visor.models import Sample, SampleType, Database
 
 
 def qlist(queryset: models.QuerySet, attribute: str):

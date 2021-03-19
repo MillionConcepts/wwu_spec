@@ -5,12 +5,12 @@
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 
-from vnirsd.models import Database, SampleType, Sample, FilterSet, Library
+from visor.models import Database, SampleType, Sample, FilterSet, Library
 
 
 def upload_sample_image(model_admin, request, queryset):
     samples = [sample.id for sample in queryset]
-    return HttpResponseRedirect('/vnirsd/admin_upload_image/' + str(samples))
+    return HttpResponseRedirect('/visor/admin_upload_image/' + str(samples))
 
 
 upload_sample_image.short_description = "Upload Image"

@@ -3,8 +3,8 @@ from functools import partial
 from django import forms
 from django.forms import formset_factory
 
-from vnirsd.models import Database, SampleType, Library
-from vnirsd.dj_utils import make_choice_list
+from visor.models import Database, SampleType, Library
+from visor.dj_utils import make_choice_list
 
 
 class SelectMultipleHide(forms.SelectMultiple):

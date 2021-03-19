@@ -1,24 +1,35 @@
 {% extends "layouts/base.html" %}
 {% load static %}
 {% block content %}
-  <title>Status - WWU VNIRSD</title>
+  <title>Status - VISOR</title>
   <div class="container section">
     <div class="col warm-content body-text-holder">
-      <h4 style="margin-top: 0">WWU VNISRD Release Status</h4>
-      <p>The VNISRD is in an early beta state. Please do not
-      distribute links to the test server outside of your working
-      group. Bug reports, feature requests, and instrument filter
-      set submissions are all very welcome. Please send them
-      directly by email to mstclair@millionconcepts.com.</p>
+      <h4 style="margin-top: 0">WWU VISOR Status & Changelist</h4>
+      <p>
+          VISOR is now in open beta. We would very much like
+          bug reports and instrument feature set submissions.
+          Please send them directly by email to mstclair@millionconcepts.com.
+          We are currently focusing on data ingest and QA rather than
+          new feature implementation, but are also happy to receive feature
+          requests.
+      </p>
       <h4>near-term feature implementation plans</h4>
       <ul class="note-list">
-        <li>none at present. Send feature requests!</li>
+        <li>support display of spectra in wavenumber as well as wavelength</li>
+          <li></li>
       </ul>
       <h4>known issues</h4>
       <ul class="note-list">
         <li>none at present. Send bug reports!</li>
       </ul>
       <h4>patch notes</h4>
+      <h5>v0.5 (2020-03-19) -- first open beta release</h5>
+      <ul class="note-list">
+          <li>enhanced pagination and page control in results</li>
+          <li>numerous small backend changes for deployment</li>
+          <li>added HiRISE filter set</li>
+          <li>increased cap of simultaneously graphed spectra to 10</li>
+      </ul>
       <h5>v0.34 (2020-02-16)</h5>
       <ul class="note-list">
         <li>improved format of export spectra</li>
@@ -28,7 +39,7 @@
         selected, and only if you have the 'show lines' or 'show
         points' options toggled on for simulated spectra.</li>
         <li>new bulk / non-interactive export feature. You can send
-        GET requests to /vnirsd/bulk_export and get zip files
+        GET requests to /visor/bulk_export and get zip files
         containing CSV in return. The request parser currently
         understands only three parameters: 'sample_name',
         'all_fields', and 'simulate'.
@@ -45,7 +56,7 @@
           </ul>These parameters should just be passed as query
           strings in the GET request. For example, running:
           <code>curl
-          "35.153.144.188:8000/vnirsd/bulk_export/?sample_name=smectite&amp;simulate=Mastcam-Z"
+          "35.153.144.188:8000/visor/bulk_export/?sample_name=smectite&amp;simulate=Mastcam-Z"
           &gt; smectite.zip</code> should cause curl to write lab
           spectra for all smectites in the database + simulated
           versions of those spectra as viewed by Mastcam-Z to

@@ -1,4 +1,4 @@
-name: vnirsd
+name: visor
 channels:
   - conda-forge
   - defaults
@@ -14,3 +14,5 @@ dependencies:
   - numpy
   - jupyter
   - pip
+  - pip:
+      - django-mass-edit
