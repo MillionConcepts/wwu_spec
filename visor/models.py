@@ -149,7 +149,7 @@ class Sample(models.Model):
         "Grain Size", blank=True, max_length=40, db_index=True
     )
     image = models.CharField(
-        "Path to Image", blank=True, max_length=100, db_index=True
+        "Path to Image", blank=True, null = True, max_length=100, db_index=True
     )
     import_notes = models.TextField(
         "File import notes", blank=True, null=True, db_index=True
