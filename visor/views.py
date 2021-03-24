@@ -276,7 +276,8 @@ def write_sample_csv(field_list, sample):
             "filename",
             "import_notes",
             "flagged",
-            "simulated_spectra"
+            "simulated_spectra",
+            'released'
         ]:
             writer.writerow([field[0], getattr(sample, field[1])])
     return writer, text_buffer
@@ -306,24 +307,32 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
             if export_sim:
                 writer, text_buffer = write_sample_csv(field_list, sample)
                 sims = sample.get_simulated_spectra()
-                illuminated_df = pd.DataFrame(sims[simulated_instrument])
-                dark_series = sims[simulated_instrument + "_no_illumination"][
-                    "response"
-                ].values()
-                illuminated_df['unilluminated_response'] = dark_series
-                illuminated_df.columns = ['filter', 'wavelength',
-                                          'solar_illuminated_response',
-                                          'response']
-                illuminated_df.to_csv(text_buffer, index=False)
-                text_buffer.seek(0)
-                output.writestr(
-                    sample.sample_id.replace("/", "_")
-                    + "_simulated_"
-                    + simulated_instrument
-                    + ".csv",
-                    text_buffer.read(),
-                )
-            # write image into zip buffer
+                if simulated_instrument == 'all':
+                    simulated_instruments = [
+                        instrument for instrument in sims.keys()
+                        if not instrument.endswith('illumination')
+                    ]
+                else:
+                    simulated_instruments = [simulated_instrument]
+                for instrument in simulated_instruments:
+                    illuminated_df = pd.DataFrame(sims[instrument])
+                    dark_series = sims[instrument + "_no_illumination"][
+                        "response"
+                    ].values()
+                    illuminated_df['unilluminated_response'] = dark_series
+                    illuminated_df.columns = ['filter', 'wavelength',
+                                              'solar_illuminated_response',
+                                              'response']
+                    illuminated_df.to_csv(text_buffer, index=False)
+                    text_buffer.seek(0)
+                    output.writestr(
+                        sample.sample_id.replace("/", "_")
+                        + "_simulated_"
+                        + instrument
+                        + ".csv",
+                        text_buffer.read(),
+                    )
+                # write image into zip buffer
             if sample.image:
                 filename = settings.SAMPLE_IMAGE_PATH + "/" + sample.image
                 output.write(filename, arcname=sample.image)
