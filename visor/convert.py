@@ -125,4 +125,4 @@ def ingest_xcam_roi_file(filename: str) -> None:
             .dropna()
             .to_dict()
         )
-        roi_to_sample(instrument, metadata, spectrum, database, filename)
+        roi_to_sample(instrument, database, metadata, spectrum, filename)

@@ -130,5 +130,5 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static_dev")]
 
 SAMPLE_IMAGE_PATH = os.path.join(
-    BASE_DIR, "static_in_pro/our_static/sample_images"
+    BASE_DIR, "static_dev/sample_images"
 )

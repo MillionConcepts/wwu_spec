@@ -149,7 +149,7 @@ class Sample(models.Model):
         "Grain Size", blank=True, max_length=40, db_index=True
     )
     image = models.CharField(
-        "Path to Image", blank=True, null = True, max_length=100, db_index=True
+        "Path to Image", blank=True, null=True, max_length=100, db_index=True
     )
     import_notes = models.TextField(
         "File import notes", blank=True, null=True, db_index=True
@@ -352,7 +352,7 @@ class Sample(models.Model):
         if "warnings" in kwargs:
             warnings.append(kwargs["warnings"])
 
-        image_path = settings.SAMPLE_IMAGE_PATH + "/"
+        image_path = settings.SAMPLE_IMAGE_PATH
 
         # check to see if this appears to be in the database
         # but don't do this check if it's from the admin console
@@ -366,27 +366,33 @@ class Sample(models.Model):
         if self.image:
             has_existing_image = False
             if isinstance(self.image, str):
-                if os.path.exists(image_path + self.image):
+                if os.path.exists(os.path.join(image_path, self.image)):
                     # don't open and re-save existing images
                     has_existing_image = True
                 else:
                     try:
-                        self.image = Image.open(self.image)
+                        raster = Image.open(self.image)
+                        if raster.mode != 'RGB':
+                            raster = raster.convert('RGB')
+                        self.image = raster
                     except (FileNotFoundError, PIL.UnidentifiedImageError):
                         raise ValueError(
                             "The image associated with "
                             + self.sample_id
-                            + " is damaged or missing."
+                            + " is missing or can't be read."
                         )
             if not has_existing_image:
-                if isinstance(self.image, PIL.ImageFile.ImageFile):
+                if isinstance(self.image, PIL.Image.Image):
                     filename = self.sample_id + ".jpg"
                     # save image into application image directory
-                    self.image.save(image_path + filename, "JPEG")
+                    os.makedirs(image_path, exist_ok=True)
+                    self.image.save(os.path.join(image_path, filename))
                     # make thumbnail
                     self.image.thumbnail((256, 256))
                     self.image.save(
-                        image_path + filename[:-4] + "_thumb.jpg", "JPEG"
+                        os.path.join(
+                            image_path, filename[:-4] + "_thumb.jpg"
+                        )
                     )
                     # set sample's image field to a link to that image
                     self.image = filename
@@ -394,7 +400,7 @@ class Sample(models.Model):
                     raise ValueError(
                         "Associated image field must be a "
                         "PIL.ImageFile.ImageFile"
-                        + " object or a pathname to an image."
+                        + " object or a path to an image."
                     )
 
         convolve = kwargs.pop("convolve", True)

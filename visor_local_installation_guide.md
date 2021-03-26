@@ -58,7 +58,7 @@ manipulating or viewing CSV files will also work.
 ## step 1: install conda
 
 *If you already have Anaconda or Miniconda installed on your computer, you can
-skip this step.*
+skip this step. We don't recommend installing multiple versions of conda.*
 
 The official method of installing VISOR uses the Python package manager
 ```conda``` to handle dependencies.
@@ -94,6 +94,9 @@ VISOR needs to run.
 always have it active whenever you work with VISOR from the command line.
 In particular, anything you try to do with the ```manage.py``` application 
 without first running ```conda activate visor``` will probably fail.
+
+If you can't activate the environment, see 'common gotchas' below.
+
 
 ## step 3: download the VISOR software
 
@@ -153,5 +156,14 @@ will also close. When you're ready to close or restart VISOR, you can
 simply terminate that process (with CTRL/CMD+C or by closing the terminal) -- it
 doesn't need to be closed in any especially graceful way.
 
-*Reminder: if you get error messages, make sure you have activated the 
-```conda``` environment by running ```conda activate visor```.*
+# common gotchas
+
+* If you get error messages when running the server, make sure you have activated 
+the```conda``` environment by running ```conda activate visor```.
+* If you use multiple shells on macOS or Linux, ```conda``` will only 
+automatically set up the one it detects as your system default. If you can't
+activate the environment, check a different shell.
+* If you've already got an installed version of ```conda``` on your system, installing
+an additional version without uninstalling the old one may make environment setup very
+challenging. We do not recommend installing multiple versions of ```conda``` at once
+unless you really need to.
