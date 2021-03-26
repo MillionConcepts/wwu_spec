@@ -1,6 +1,13 @@
+import os
+
 from clize import run
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wwu_spec.settings")
+django.setup()
 
 from visor.convert import ingest_xcam_roi_file
+
 
 
 def ingest_xcam(path_to_file: str) -> None:

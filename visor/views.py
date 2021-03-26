@@ -239,11 +239,6 @@ def graph(request, template="graph.html") -> HttpResponse:
     )
 
 
-# debug
-def graph_future(request):
-    return graph(request, "graph_future.html")
-
-
 def meta(request) -> HttpResponse:
     if request.method == "GET":
         if "meta" not in request.GET:  # something's busted, just ignore it
@@ -366,8 +361,6 @@ def export(request) -> HttpResponse:
 
 
 def bulk_export(request) -> HttpResponse:
-    print(request.GET)
-
     bulk_results = Sample.objects.only('sample_name')
     if not request.user.is_superuser:
         bulk_results = bulk_results.filter(released=True)
@@ -394,7 +387,9 @@ def bulk_export(request) -> HttpResponse:
     if bulk_results:
         # 'search all fields' function
         if 'any_field' in request.GET:
-            bulk_results = bulk_results & search_all_samples(entry)
+            bulk_results = bulk_results & search_all_samples(
+                request.GET['any_field']
+            )
     search_results_id_list = [
         result.id for result in bulk_results
     ]
