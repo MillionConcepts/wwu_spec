@@ -300,7 +300,6 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
                 sample.sample_id.replace("/", "_") + ".csv", text_buffer.read()
             )
             if export_sim:
-                writer, text_buffer = write_sample_csv(field_list, sample)
                 sims = sample.get_simulated_spectra()
                 if simulated_instrument == 'all':
                     simulated_instruments = [
@@ -310,6 +309,7 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
                 else:
                     simulated_instruments = [simulated_instrument]
                 for instrument in simulated_instruments:
+                    writer, text_buffer = write_sample_csv(field_list, sample)
                     illuminated_df = pd.DataFrame(sims[instrument])
                     dark_series = sims[instrument + "_no_illumination"][
                         "response"
