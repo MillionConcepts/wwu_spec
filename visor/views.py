@@ -40,7 +40,7 @@ def search(request) -> HttpResponse:
 
 
 def results(request) -> HttpResponse:
-    if ('jump-button' in request.GET) and (request.GET['jump-to-page'] == ""):
+    if ("jump-button" in request.GET) and (request.GET["jump-to-page"] == ""):
         return HttpResponse(status=204)
     search_results_id_list = []
     search_results = Sample.objects.none()
@@ -272,7 +272,7 @@ def write_sample_csv(field_list, sample):
             "import_notes",
             "flagged",
             "simulated_spectra",
-            'released'
+            "released",
         ]:
             writer.writerow([field[0], getattr(sample, field[1])])
     return writer, text_buffer
@@ -297,14 +297,16 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
             text_buffer.seek(0)
             # write sample into zip buffer
             output.writestr(
-                sample.sample_id.replace("/", "_") + ".csv", text_buffer.read()
+                sample.sample_id.replace("/", "_") + "_" + sample.id + ".csv",
+                text_buffer.read(),
             )
             if export_sim:
                 sims = sample.get_simulated_spectra()
-                if simulated_instrument == 'all':
+                if simulated_instrument == "all":
                     simulated_instruments = [
-                        instrument for instrument in sims.keys()
-                        if not instrument.endswith('illumination')
+                        instrument
+                        for instrument in sims.keys()
+                        if not instrument.endswith("illumination")
                     ]
                 else:
                     simulated_instruments = [simulated_instrument]
@@ -314,16 +316,21 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
                     dark_series = sims[instrument + "_no_illumination"][
                         "response"
                     ].values()
-                    illuminated_df['unilluminated_response'] = dark_series
-                    illuminated_df.columns = ['filter', 'wavelength',
-                                              'solar_illuminated_response',
-                                              'response']
+                    illuminated_df["unilluminated_response"] = dark_series
+                    illuminated_df.columns = [
+                        "filter",
+                        "wavelength",
+                        "solar_illuminated_response",
+                        "response",
+                    ]
                     illuminated_df.to_csv(text_buffer, index=False)
                     text_buffer.seek(0)
                     output.writestr(
                         sample.sample_id.replace("/", "_")
                         + "_simulated_"
                         + instrument
+                        + "_"
+                        + sample.id
                         + ".csv",
                         text_buffer.read(),
                     )
@@ -338,7 +345,7 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
     date = dt.datetime.today().strftime("%y-%m-%d")
     response = HttpResponse(zip_buffer, content_type="application/zip")
     response["Content-Disposition"] = (
-            "attachment; filename=spectra-%s.zip;" % date
+        "attachment; filename=spectra-%s.zip;" % date
     )
     return response
 
@@ -346,7 +353,7 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
 def export(request) -> HttpResponse:
     selections = request.GET.getlist("selection")
     export_sim = False
-    if 'do-we-export-sim' in request.GET:
+    if "do-we-export-sim" in request.GET:
         if request.GET["do-we-export-sim"] == "True":
             export_sim = True
     if export_sim:
@@ -356,15 +363,16 @@ def export(request) -> HttpResponse:
     # TODO: is this actually desired?
     # prev_selected_list = request.POST.getlist("prev_selected")
     selections = list(selections)
-    return construct_export_zipfile(selections, export_sim,
-                                    simulated_instrument)
+    return construct_export_zipfile(
+        selections, export_sim, simulated_instrument
+    )
 
 
 def bulk_export(request) -> HttpResponse:
-    bulk_results = Sample.objects.only('sample_name')
+    bulk_results = Sample.objects.only("sample_name")
     if not request.user.is_superuser:
         bulk_results = bulk_results.filter(released=True)
-    for field in ['sample_name']:
+    for field in ["sample_name"]:
         if field not in request.GET:
             continue
         entry = request.GET[field]
@@ -386,21 +394,20 @@ def bulk_export(request) -> HttpResponse:
             bulk_results = reduce(or_, filters)
     if bulk_results:
         # 'search all fields' function
-        if 'any_field' in request.GET:
+        if "any_field" in request.GET:
             bulk_results = bulk_results & search_all_samples(
-                request.GET['any_field']
+                request.GET["any_field"]
             )
-    search_results_id_list = [
-        result.id for result in bulk_results
-    ]
+    search_results_id_list = [result.id for result in bulk_results]
     if "simulate" in request.GET:
         simulated_instrument = request.GET["simulate"].replace("_", " ")
         simulate = True
     else:
         simulated_instrument = ""
         simulate = False
-    return construct_export_zipfile(search_results_id_list, simulate,
-                                    simulated_instrument)
+    return construct_export_zipfile(
+        search_results_id_list, simulate, simulated_instrument
+    )
 
 
 def upload(request) -> HttpResponse:
@@ -478,8 +485,7 @@ def upload(request) -> HttpResponse:
     else:
         if upload_results[0]["errors"] is not None:
             headline = (
-                    upload_results[0][
-                        "filename"] + " did not upload successfully."
+                upload_results[0]["filename"] + " did not upload successfully."
             )
             unsuccessful = [
                 {
