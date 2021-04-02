@@ -58,11 +58,11 @@ manipulating or viewing CSV files will also work.
 ## step 1: install conda
 
 *If you already have Anaconda or Miniconda installed on your computer, you can
-skip this step. We don't recommend installing multiple versions of conda.*
+skip this step. If it's very old and not working well, you should uninstall it first.
+We **definitely** don't recommend installing multiple versions of ```conda```
+unless you have a really strong need to do so.*
 
-The official method of installing VISOR uses the Python package manager
-```conda``` to handle dependencies.
-[You can get it here as part of the Miniconda distribution of Python](https://docs.conda.io/projects/continuumio-conda/en/latest/user-guide/install/index.html).
+[You can get ```conda``` here as part of the Miniconda distribution of Python](https://docs.conda.io/projects/continuumio-conda/en/latest/user-guide/install/index.html).
 Download the 64-bit version of the installer for your operating system and
 follow the instructions on that website to set up your environment. Make sure
 you download Miniconda3, not Miniconda2. VISOR is not compatible with
@@ -165,5 +165,5 @@ automatically set up the one it detects as your system default. If you can't
 activate the environment, check a different shell.
 * If you've already got an installed version of ```conda``` on your system, installing
 an additional version without uninstalling the old one may make environment setup very
-challenging. We do not recommend installing multiple versions of ```conda``` at once
+challenging. We do not recommend installing multiple versions+ of ```conda``` at once
 unless you really need to.
