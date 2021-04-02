@@ -297,7 +297,10 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
             text_buffer.seek(0)
             # write sample into zip buffer
             output.writestr(
-                sample.sample_id.replace("/", "_") + "_" + sample.id + ".csv",
+                sample.sample_id.replace("/", "_")
+                + "_"
+                + str(sample.id)
+                + ".csv",
                 text_buffer.read(),
             )
             if export_sim:
@@ -330,7 +333,7 @@ def construct_export_zipfile(selections, export_sim, simulated_instrument):
                         + "_simulated_"
                         + instrument
                         + "_"
-                        + sample.id
+                        + str(sample.id)
                         + ".csv",
                         text_buffer.read(),
                     )
