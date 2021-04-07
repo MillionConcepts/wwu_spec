@@ -72,7 +72,7 @@ Python 2.
 
 Now that you have ```conda``` installed, you can set up a Python environment
 to run VISOR. First, download the 
-[local_install.yml](https://drive.google.com/file/d/1wy2OOlYAcEokpaxB07epKvEl1-AhW8SH)
+[local_install.yml](https://drive.google.com/file/d/1ptrTI_qbJdaEYLwq5bMtv-AfXdBL_1D5/)
 file. Next, open up a terminal: Anaconda Prompt on Windows, Terminal on macOS,
 or your console emulator of choice on Linux. Navigate to the directory where
 you put local_install.yml and run the command:
