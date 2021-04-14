@@ -184,7 +184,7 @@ def check_sample_csv(
     # and assigns a sample ID if not present
     if "sample_type" in field_dict.keys():
         if field_dict["sample_type"] not in [
-            sample_type.typeOfSample
+            sample_type.name
             for sample_type in SampleType.objects.all()
         ]:
             errors.append(
@@ -192,7 +192,7 @@ def check_sample_csv(
             )
         else:
             field_dict["sample_type"] = SampleType.objects.get(
-                typeOfSample=field_dict["sample_type"]
+                name=field_dict["sample_type"]
             )
     if "origin" in field_dict.keys():
         if field_dict["origin"] not in [
@@ -314,6 +314,14 @@ def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
     field_dict |= {"import_notes": str(warnings)}
     # split multicolumn data into multiple Sample objects
 
+    if errors:
+        return {
+            "sample": None,
+            "filename": filename,
+            "warnings": warnings,
+            "errors": errors,
+        }
+
     if sample_split:
         sample_out = [
             Sample(
@@ -330,13 +338,6 @@ def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
     else:
         sample_out = Sample(**(field_dict | {"reflectance": refl_array}))
 
-    if errors:
-        return {
-            "sample": None,
-            "filename": filename,
-            "warnings": warnings,
-            "errors": errors,
-        }
     return {
         "sample": sample_out,
         "filename": filename,
