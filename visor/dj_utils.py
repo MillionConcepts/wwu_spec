@@ -164,6 +164,8 @@ def parse_sample_csv(meta_array: np.ndarray, warnings: list, errors: list):
                 + " appears to be assigned more than once."
             )
         else:
+            if column[1] == "nan":
+                continue
             active_field = field_names[field_search][0][0]
             if "reflectance" in active_field:
                 warnings.append(
@@ -171,6 +173,8 @@ def parse_sample_csv(meta_array: np.ndarray, warnings: list, errors: list):
                     "recognized for legacy purposes but the database actually"
                     " computes these values from the reflectance data."
                 )
+            # elif np.isnan(column[1]):
+            #     continue
             else:
                 field_dict[active_field] = str(column[1]).strip()
     return field_dict, warnings, errors
