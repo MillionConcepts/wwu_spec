@@ -204,9 +204,6 @@ def graph(request, template="graph.html") -> HttpResponse:
     if "graphForm" not in request.GET:
         return HttpResponse(status=204)
     selections = request.GET.getlist("selection")
-    # TODO: cruft?
-    # prev_selected_list = request.GET.getlist("prev_selected")
-    # selections = list(set(selections + prev_selected_list))
     if not selections:
         return HttpResponse(status=204)
     search_formset = concealed_search_factory(request)(request.GET)
