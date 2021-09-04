@@ -38,12 +38,10 @@ def make_cam_filter_pairs(abbreviation):
 
 # at least for MASTCAM, the set of virtual filters === the set of pairs of
 # the virtual mean reflectance in an ROI for a virtual filter is the
-# arithmetic
-# mean of the mean reflectance values in that ROI for the two real filters
-# in its associated pair.
-# the nominal band center of a virtual filter is the arithmetic mean of the
-# nominal band centers of the two real filters in its associated pair.
-# TODO: is that rule about nominal band center correct?
+# arithmetic mean of the mean reflectance values in that ROI for the two
+# real filters in its associated pair. the nominal band center of a virtual
+# filter is the arithmetic mean of the nominal band centers of the two real
+# filters in its associated pair.
 
 def make_virtual_filters(abbreviation):
     """

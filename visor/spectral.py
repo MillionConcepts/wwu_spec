@@ -56,9 +56,9 @@ def simulate_spectrum(
 ) -> pd.DataFrame:
     # turn sample and illumination values into nice arrays
 
-    filter_wavelengths = np.array(literal_eval(filterset.wavelengths))
+    filter_wavelengths = np.array(json.loads(filterset.wavelengths))
 
-    sample = np.array(literal_eval(sample.reflectance))
+    sample = np.array(json.loads(sample.reflectance))
     sample_wavelengths = sample[:, 0]
     reflectance = sample[:, 1]
 
@@ -68,7 +68,7 @@ def simulate_spectrum(
 
     if filterset.illumination:
         if illuminated:
-            illumination = np.array(literal_eval(filterset.illumination))
+            illumination = np.array(json.loads(filterset.illumination))
             illumination_wavelengths = illumination[:, 0]
             illumination_intensity = illumination[:, 1]
 

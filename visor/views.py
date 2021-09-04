@@ -363,8 +363,6 @@ def export(request) -> HttpResponse:
         simulated_instrument = request.GET["sim-instrument-for-export"]
     else:
         simulated_instrument = ""
-    # TODO: is this actually desired?
-    # prev_selected_list = request.POST.getlist("prev_selected")
     selections = list(selections)
     return construct_export_zipfile(
         selections, export_sim, simulated_instrument
