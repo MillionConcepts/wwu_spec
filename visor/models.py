@@ -253,17 +253,15 @@ class Sample(models.Model):
                 )
             else:
 
-                positives = (self.reflectance > 0).all(0)
-                if False in positives:
+                positives = np.all((self.reflectance > 0), axis=1)
+                if not all(positives):
                     warnings.append(
                         "Warning: there are negative-valued items "
                         "in the reflectance data for "
                         + self.sample_id
                         + ". These have been deleted."
                     )
-                    first = self.reflectance[0][positives]
-                    second = self.reflectance[1][positives]
-                    self.reflectance = np.vstack([first, second])
+                    self.reflectance = self.reflectance[positives]
 
                 # switch to 2-column matrix, sort, check for correct shape,
                 # find min and max reflectance

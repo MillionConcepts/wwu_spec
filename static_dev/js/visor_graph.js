@@ -1068,39 +1068,6 @@ const resizeCalcText = function () {
         )
 }
 
-// const calcFocusWavelengths = function () {
-//     let minWave, maxWave
-//     let midWaves = []
-//     //TODO: add some error-checking code here.
-//     //this has the potential to create a bunch of badness
-//     //if somehow the foci have not been placed where we would like.
-//     //this may broadly also be excessively baroque,
-//     //and we should just record these values in fociWavelengths
-//     //or something.
-//     /**
-//      * @type: {}
-//      * this declaration is just to provide a type hint
-//      */
-//     let foci
-//     let waves = []
-//     for (foci of Object.values(calcFoci)) {
-//         for (const entry of Object.entries(foci)) {
-//             let focusIx = entry[0]
-//             let focus = entry[1]
-//             if (shouldNotBeCalculated(focus.coord)) {
-//                 continue
-//             }
-//             if (focusIx !== 2) {
-//                 waves.push(focus.coord[0])
-//                 continue
-//             }
-//             midWaves.push(focus.coord[0]).toFixed(0)
-//         }
-//     }
-//     minWave = Math.min(...waves).toFixed(0)
-//     maxWave = Math.max(...waves).toFixed(0)
-//     return [minWave, maxWave, midWaves]
-// }
 
 //TODO: determine what actual desired behavior for handedness is
 const renderCalcFocusText = function () {

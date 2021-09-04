@@ -151,3 +151,5 @@ SAMPLE_IMAGE_PATH = os.path.join(
 )
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
