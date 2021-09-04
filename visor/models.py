@@ -287,8 +287,6 @@ class Sample(models.Model):
                 self.max_reflectance = self.reflectance[-1][0]
                 self.reflectance = str(self.reflectance.tolist())
 
-        # TODO: remove in production
-
         self.import_notes = str(warnings)
         if errors:
             raise forms.ValidationError(errors)
