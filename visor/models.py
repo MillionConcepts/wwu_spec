@@ -17,6 +17,11 @@ from visor.spectral import simulate_spectrum
 
 
 class FilterSet(models.Model):
+    """
+    model representing a set of filters/bandpasses/etc. from a real-world
+    instrument. used for producing simulated versions of lab spectra
+    instantiated as Samples.
+    """
     short_name = models.CharField(
         max_length=45, unique=True, blank=False, db_index=True
     )
@@ -120,6 +125,10 @@ class Database(models.Model):
 
 
 class SampleType(models.Model):
+    """
+    type of sample, such as mineral, vapor, etc.
+    currently mostly not populated.
+    """
     name = models.CharField(
         verbose_name="Type Of Sample", max_length=20, unique=True, blank=False
     )
@@ -132,6 +141,9 @@ class SampleType(models.Model):
 
 
 class Sample(models.Model):
+    """
+    model whose instances each represent a distinct laboratory spectrum.
+    """
     actions = ["mass_change_selected"]
     composition = models.CharField(
         "Composition", blank=True, max_length=40, db_index=True
@@ -207,6 +219,10 @@ class Sample(models.Model):
     )
 
     def clean(self, *args, **kwargs):
+        """
+        step-1 data cleaning and validation function for Sample.
+        ideally shouldn't interact with anything in the database.
+        """
         errors = []
         if self.import_notes:
             warnings = literal_eval(self.import_notes)
@@ -292,6 +308,11 @@ class Sample(models.Model):
             raise forms.ValidationError(errors)
 
     def check_upload(self, warnings):
+        """
+        safety-feature validation step for samples uploaded by remote users.
+        also probably useful in some cases for samples not uploaded by remote
+        users.
+        """
         if self.sample_id not in [
             sample.sample_id for sample in Sample.objects.all()
         ]:
@@ -335,6 +356,11 @@ class Sample(models.Model):
         return warnings
 
     def save(self, *args, **kwargs):
+        """
+        step-2 cleaning and validation function for Sample objects. unlike
+        Sample.clean(), this function can interact with the database -- and
+        at the end, it inserts the Sample into the database.
+        """
         errors = []
         if self.import_notes:
             if isinstance(self.import_notes, str):
