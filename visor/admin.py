@@ -1,7 +1,4 @@
-# https://www.dev2qa.com/how-to-pass-parameters-to-view-via-url-in-django/
-# https://stackoverflow.com/questions/32567808/how-do-i-pass-parameters-via
-# -url-in-django https://docs.djangoproject.com/en/3.0/topics/http/urls
-# /#passing-extra-options-to-view-functions
+    
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 
