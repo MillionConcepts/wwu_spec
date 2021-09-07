@@ -22,6 +22,7 @@ class FilterSet(models.Model):
     instrument. used for producing simulated versions of lab spectra
     instantiated as Samples.
     """
+
     short_name = models.CharField(
         max_length=45, unique=True, blank=False, db_index=True
     )
@@ -129,6 +130,7 @@ class SampleType(models.Model):
     type of sample, such as mineral, vapor, etc.
     currently mostly not populated.
     """
+
     name = models.CharField(
         verbose_name="Type Of Sample", max_length=20, unique=True, blank=False
     )
@@ -144,6 +146,7 @@ class Sample(models.Model):
     """
     model whose instances each represent a distinct laboratory spectrum.
     """
+
     actions = ["mass_change_selected"]
     composition = models.CharField(
         "Composition", blank=True, max_length=40, db_index=True
@@ -216,6 +219,18 @@ class Sample(models.Model):
     )
     view_geom = models.CharField(
         "Viewing Geometry", blank=True, max_length=40, db_index=True
+    )
+
+    # fields we view as "private" or "data"
+    unprintable_fields = (
+        "image",
+        "id",
+        "reflectance",
+        "filename",
+        "import_notes",
+        "flagged",
+        "simulated_spectra",
+        "released",
     )
 
     def clean(self, *args, **kwargs):
@@ -394,8 +409,8 @@ class Sample(models.Model):
                 else:
                     try:
                         raster = Image.open(self.image)
-                        if raster.mode != 'RGB':
-                            raster = raster.convert('RGB')
+                        if raster.mode != "RGB":
+                            raster = raster.convert("RGB")
                         self.image = raster
                     except (FileNotFoundError, PIL.UnidentifiedImageError):
                         raise ValueError(
@@ -412,9 +427,7 @@ class Sample(models.Model):
                     # make thumbnail
                     self.image.thumbnail((256, 256))
                     self.image.save(
-                        os.path.join(
-                            image_path, filename[:-4] + "_thumb.jpg"
-                        )
+                        os.path.join(image_path, filename[:-4] + "_thumb.jpg")
                     )
                     # set sample's image field to a link to that image
                     self.image = filename
@@ -463,15 +476,62 @@ class Sample(models.Model):
             self_dict |= {field.name: getattr(self, field.name)}
         return self_dict
 
-    def write_sims(self):
+    def metadata_dict(self):
+        return {
+            field.verbose_name: getattr(self, field.name)
+            for field in self._meta.fields
+            if field.name not in self.unprintable_fields
+        }
+
+    def metadata_csv_block(self):
+        return "\n".join(
+            [
+                field.verbose_name
+                + ","
+                + str(getattr(self, field.name)).replace(",", "_")
+                for field in self._meta.fields
+                if field.name not in self.unprintable_fields
+            ]
+        )
+
+    def data_csv_block(self):
+        return "Wavelength,Response\n" + "\n".join(
+            [
+                f"{wavelength},{response}"
+                for wavelength, response in literal_eval(self.reflectance)
+            ]
+        )
+
+    def simulated_csv_block(self, instrument):
+        sims = self.get_simulated_spectra()
+        metadata = self.metadata_csv_block()
+        illuminated_df = pd.DataFrame(sims[instrument])
+        dark_series = sims[instrument + "_no_illumination"][
+            "response"
+        ].values()
+        illuminated_df["unilluminated_response"] = dark_series
+        illuminated_df.columns = [
+            "filter",
+            "wavelength",
+            "solar_illuminated_response",
+            "response",
+        ]
+
+    def sim_csv_blocks(self):
         sims = dict(json.loads(self.simulated_spectra))
-        frames = [
-            pd.read_json(sims[key]).reindex(
-                columns=[key + " filter", "Wavelength", "Response"]
+        frames = {
+            key: pd.read_json(sims[key]).reindex(
+                columns=["filter", "wavelength", "solar_illuminated_response"]
             )
             for key in sims
-        ]
-        return [frame.to_csv() for frame in frames]
+            if not key.endswith("_no_solar_illumination")
+        }
+        for key in sims:
+            if key.endswith("_no_solar_illumination"):
+                frames[key.replace("_no_solar_illumination", "")][
+                    "response"
+                ] = pd.read_json(sims[key]).iloc[:, 2]
+        return {key: frame.to_csv() for key, frame in frames.items()}
 
     def as_json(self):
         json_dict = {}
