@@ -16,3 +16,7 @@ notes
 /mcz_library.zip
 /static_in_pro/
 /uwinn_ingest/All_UWinn_splits_070621/
+current_ingest_errors.csv
+db.zip
+uwinn_split_ingest*csv
+some_ids_missing.csv

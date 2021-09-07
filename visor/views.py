@@ -1,26 +1,22 @@
-import csv
-import datetime as dt
-import io
-import json
-import zipfile
 from ast import literal_eval
 from functools import reduce
 from itertools import chain
+import json
 from operator import or_
+from typing import TYPE_CHECKING
 
-import pandas as pd
-import PIL
-from PIL import Image
-from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render
+import PIL
+from PIL import Image
 
 from visor.dj_utils import (
     search_all_samples,
     handle_csv_upload,
     handle_zipped_upload,
 )
+from visor.formatters import construct_export_zipfile
 from visor.forms import (
     UploadForm,
     AdminUploadImageForm,
@@ -28,8 +24,11 @@ from visor.forms import (
 )
 from visor.models import Database, Sample, FilterSet, Library
 
+if TYPE_CHECKING:
+    from django.core.handlers.wsgi import WSGIRequest
 
-def search(request) -> HttpResponse:
+
+def search(request: "WSGIRequest") -> HttpResponse:
     """
     render the search page with an empty search form.
     presently doesn't do any other manipulation (some former
@@ -39,7 +38,7 @@ def search(request) -> HttpResponse:
     return render(request, "search.html", page_params)
 
 
-def results(request) -> HttpResponse:
+def results(request: "WSGIRequest") -> HttpResponse:
     if ("jump-button" in request.GET) and (request.GET["jump-to-page"] == ""):
         return HttpResponse(status=204)
     search_results_id_list = []
@@ -102,11 +101,10 @@ def results(request) -> HttpResponse:
         if field in choice_fields:
             form_results = form_results.filter(**{query: entry})
         # use an inflexible search for other fields
-        # if an exact phrase match exists in the currently-
-        # selected corpus
+        # if an exact phrase match exists in the currently-selected corpus
         # NOTE: making this form_results.filter rather than
         # Sample.objects.filter would (1) make it slightly more permissive
-        # and (2) means that ordering of fields in this loop matters
+        # and (2) make ordering of fields in this loop matter
         elif Sample.objects.filter(**{query: entry}):
             form_results = form_results.filter(**{query: entry})
         # otherwise treat multiple words as an 'or' search
@@ -118,7 +116,7 @@ def results(request) -> HttpResponse:
             ]
             form_results = reduce(or_, filters)
 
-    # NOTE: this function assumes that there are no large gaps in
+    # NOTE: this assumes that there are no large gaps in
     # wavelength coverage within a given lab spectrum; i.e., that if a
     # spectrum has both UVA and NIR, it also has VIS. if this becomes a bad
     # assumption, we will need to modify it.
@@ -236,7 +234,7 @@ def graph(request, template="graph.html") -> HttpResponse:
     )
 
 
-def meta(request) -> HttpResponse:
+def meta(request: "WSGIRequest") -> HttpResponse:
     if request.method == "GET":
         if "meta" not in request.GET:  # something's busted, just ignore it
             return HttpResponse(status=204)
@@ -257,100 +255,7 @@ def meta(request) -> HttpResponse:
         )
 
 
-def write_sample_csv(field_list, sample):
-    text_buffer = io.StringIO()
-    writer = csv.writer(text_buffer)
-    for field in field_list:
-        if field[1] not in [
-            "image",
-            "id",
-            "reflectance",
-            "filename",
-            "import_notes",
-            "flagged",
-            "simulated_spectra",
-            "released",
-        ]:
-            writer.writerow([field[0], getattr(sample, field[1])])
-    return writer, text_buffer
-
-
-def construct_export_zipfile(selections, export_sim, simulated_instrument):
-    samples = Sample.objects.filter(id__in=selections)
-    zip_buffer = io.BytesIO()
-    field_list = [
-        [field.verbose_name, field.name] for field in Sample._meta.fields
-    ]
-    field_list.sort()
-
-    with zipfile.ZipFile(zip_buffer, "w") as output:
-        # write each sample line-by-line into text buffer,
-        # also splitting reflectance dictionary into lines
-        for sample in samples:
-            writer, text_buffer = write_sample_csv(field_list, sample)
-            writer.writerow(["Wavelength", "Response"])
-            for row in literal_eval(sample.reflectance):
-                writer.writerow([row[0], row[1]])
-            text_buffer.seek(0)
-            # write sample into zip buffer
-            output.writestr(
-                sample.sample_id.replace("/", "_")
-                + "_"
-                + str(sample.id)
-                + ".csv",
-                text_buffer.read(),
-            )
-            if export_sim:
-                sims = sample.get_simulated_spectra()
-                if simulated_instrument == "all":
-                    simulated_instruments = [
-                        instrument
-                        for instrument in sims.keys()
-                        if not instrument.endswith("illumination")
-                    ]
-                else:
-                    simulated_instruments = [simulated_instrument]
-                for instrument in simulated_instruments:
-                    writer, text_buffer = write_sample_csv(field_list, sample)
-                    illuminated_df = pd.DataFrame(sims[instrument])
-                    dark_series = sims[instrument + "_no_illumination"][
-                        "response"
-                    ].values()
-                    illuminated_df["unilluminated_response"] = dark_series
-                    illuminated_df.columns = [
-                        "filter",
-                        "wavelength",
-                        "solar_illuminated_response",
-                        "response",
-                    ]
-                    illuminated_df.to_csv(text_buffer, index=False)
-                    text_buffer.seek(0)
-                    output.writestr(
-                        sample.sample_id.replace("/", "_")
-                        + "_simulated_"
-                        + instrument
-                        + "_"
-                        + str(sample.id)
-                        + ".csv",
-                        text_buffer.read(),
-                    )
-                # write image into zip buffer
-            if sample.image:
-                filename = settings.SAMPLE_IMAGE_PATH + "/" + sample.image
-                output.write(filename, arcname=sample.image)
-    zip_buffer.seek(0)
-
-    # name the zip file and send it as http
-
-    date = dt.datetime.today().strftime("%y-%m-%d")
-    response = HttpResponse(zip_buffer, content_type="application/zip")
-    response["Content-Disposition"] = (
-        "attachment; filename=spectra-%s.zip;" % date
-    )
-    return response
-
-
-def export(request) -> HttpResponse:
+def export(request: "WSGIRequest") -> HttpResponse:
     selections = request.GET.getlist("selection")
     export_sim = False
     if "do-we-export-sim" in request.GET:
@@ -366,7 +271,7 @@ def export(request) -> HttpResponse:
     )
 
 
-def bulk_export(request) -> HttpResponse:
+def bulk_export(request: "WSGIRequest") -> HttpResponse:
     bulk_results = Sample.objects.only("sample_name")
     if not request.user.is_superuser:
         bulk_results = bulk_results.filter(released=True)
@@ -408,7 +313,7 @@ def bulk_export(request) -> HttpResponse:
     )
 
 
-def upload(request) -> HttpResponse:
+def upload(request: "WSGIRequest") -> HttpResponse:
     form = UploadForm(request.POST, request.FILES)
 
     upload_errors = []
@@ -544,7 +449,7 @@ def admin_upload_image(request, ids=None) -> HttpResponse:
     )
 
 
-def about(request) -> HttpResponse:
+def about(request: "WSGIRequest") -> HttpResponse:
     databases = Database.objects.all()
     filtersets = FilterSet.objects.all().order_by("display_order")
     return render(
@@ -554,5 +459,5 @@ def about(request) -> HttpResponse:
     )
 
 
-def status(request) -> HttpResponse:
+def status(request: "WSGIRequest") -> HttpResponse:
     return render(request, "status.html")
