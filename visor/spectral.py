@@ -28,10 +28,7 @@ def interpolate_spectrum(
 
 
 # noinspection PyTypeChecker
-def normalize_power(
-    spectrum: pd.Series,
-    bins: np.ndarray
-) -> pd.Series:
+def normalize_power(spectrum: pd.Series, bins: np.ndarray) -> pd.Series:
     return spectrum / integrate.trapz(spectrum.values, bins)
 
 
@@ -50,8 +47,8 @@ def convolve(
 
 
 def simulate_spectrum(
-    sample: 'visor.models.Sample',
-    filterset: 'visor.models.FilterSet',
+    sample: "visor.models.Sample",
+    filterset: "visor.models.FilterSet",
     illuminated: bool = True,
 ) -> pd.DataFrame:
     # turn sample and illumination values into nice arrays
@@ -102,28 +99,22 @@ def simulate_spectrum(
         filters[filt] = np.array(filters[filt])
 
     # if we hadn't already power-normalized the filters, we would normalize
-    # them here but our filtersets should all be power-normalized at upload
+    # them here, but our filtersets should all be power-normalized at upload
 
     # create blank spectral response dataframe
-
-    simulated_spectrum = (
-        pd.DataFrame(
-            np.vstack(literal_eval(filterset.filter_wavelengths)),
-            columns=["filter", "wavelength"],
-        )
-        .astype({"wavelength": "float"})
-        .sort_values(["wavelength"])
-    )
-    simulated_spectrum["response"] = 0
+    simulated_spectrum = pd.DataFrame(
+        literal_eval(filterset.filter_wavelengths),
+        columns=["filter", "wavelength"]
+    ).sort_values(["wavelength"])
 
     # convolve reflectance with each of the filters (dividing illumination
-    # back out) and stick it in the spectral response dataframe and toss out
-    # irradiance if we don't want it
-
-    for filt in filters:
-        simulated_spectrum.loc[
-            simulated_spectrum["filter"] == filt, "response"
-        ] = convolve(radiance, filters[filt], filter_wavelengths, irradiance)
+    # back out) and stick it in the spectral response dataframe.
+    response = []
+    for filt in simulated_spectrum["filter"]:
+        response.append(
+            convolve(radiance, filters[filt], filter_wavelengths, irradiance)
+        )
+    simulated_spectrum["response"] = response
     return simulated_spectrum
 
 
@@ -133,7 +124,7 @@ def make_filterset(
     filters: dict,
     bins: np.ndarray,
     waves: dict[str, float],
-    illumination_path: str
+    illumination_path: str,
 ):
     """
     make_filterset below is a convenience function for generating filtersets.
