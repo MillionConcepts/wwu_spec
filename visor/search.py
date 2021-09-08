@@ -92,11 +92,11 @@ def paginate_results(request, search_results):
 
 def perform_search_from_form(search_form, search_results):
     for field in (
-            Sample.phrase_fields + Sample.choice_fields + Sample.m2m_managers
+        Sample.phrase_fields + Sample.choice_fields + Sample.m2m_managers
     ):
         entry = search_form.cleaned_data.get(field, None)
         # "Any" entries do not restrict the search, nor do empty form fields
-        if entry in [None, "Any"]:
+        if entry in [None, "Any", '']:
             continue
         search_results = qual_field_filter(field, entry, search_results)
     wavelength_query = search_form.cleaned_data.get("wavelength_range")

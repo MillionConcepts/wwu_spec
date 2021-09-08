@@ -492,13 +492,13 @@ class Sample(models.Model):
             self._warn_and_raise()
 
     def _eliminate_negativity(self):
-        positives = np.all((self.reflectance >= 0), axis=1)
+        positives = np.all((self.reflectance >= 0), axis=0)
         if not all(positives):
             self._warnings.append(
                 f"Warning: there are negative reflectance values in "
                 f"{self.sample_id}. These have been deleted."
             )
-            self.reflectance = self.reflectance[positives]
+            self.reflectance = self.reflectance[:, positives]
 
     def _check_for_numeracy(self):
         try:
