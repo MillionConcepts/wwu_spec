@@ -34,9 +34,9 @@ def write_sample_csv(field_list, sample):
 
 def construct_export_zipfile(selections, export_sim, simulated_instrument):
     zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w") as zip_buffer:
-        zip_buffer = write_samples_into_buffer(
-            export_sim, zip_buffer, selections, simulated_instrument
+    with zipfile.ZipFile(zip_buffer, "w") as buffer:
+        write_samples_into_buffer(
+            export_sim, buffer, selections, simulated_instrument
         )
     zip_buffer.seek(0)
     # name the zip file and send it as http

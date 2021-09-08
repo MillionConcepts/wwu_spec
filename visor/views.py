@@ -302,7 +302,6 @@ def bulk_export(request: "WSGIRequest") -> HttpResponse:
 
 def upload(request: "WSGIRequest") -> HttpResponse:
     form = UploadForm(request.POST, request.FILES)
-
     upload_errors = []
     if not form.is_valid():
         form = UploadForm()

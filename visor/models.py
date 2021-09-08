@@ -233,137 +233,25 @@ class Sample(models.Model):
         "released",
     )
 
+    # private attributes used during creation process
+    _warnings = []
+    _errors = []
+
     def clean(self, *args, **kwargs):
         """
         step-1 data cleaning and validation function for Sample.
         ideally shouldn't interact with anything in the database.
         """
-        errors = []
         if self.import_notes:
-            warnings = literal_eval(self.import_notes)
-        else:
-            warnings = []
-        if "errors" in kwargs:
-            errors.append(kwargs["errors"])
-        if "warnings" in kwargs:
-            warnings.append(kwargs["warnings"])
-
-        # regularize whitespace padding and capitalization
-        # don't mess with arrays or pathnames
-
-        for field in self._meta.fields:
-            if field.name not in ["reflectance", "image"]:
-                value = getattr(self, field.name)
-                if value:
-                    if field.name not in ["origin", "sample_type"]:
-                        value = str(value).strip()
-                        value = value[:1].upper() + value[1:]
-                        setattr(self, field.name, value)
-        try:
-            if isinstance(self.reflectance, str):
-                self.reflectance = literal_eval(self.reflectance)
-            self.reflectance = np.array(self.reflectance)
-        except ValueError:
-            # this should only happen if someone's made typos in the admin
-            # console, not with uploaded CSV
-            errors.append(
-                "Error: the reflectance values don't appear to be formatted "
-                "as an array. "
-            )
-
-        else:
-            try:
-                self.reflectance = self.reflectance.astype(np.float64)
-            except ValueError:
-                errors.append(
-                    "Error: some fields in the reflectance data can't be "
-                    "interpreted as numbers. It's possible that you haven't "
-                    "placed the reflectance data after all of the metadata, "
-                    "or that there are some non-numeric characters in the "
-                    "reflectance data."
-                )
-            else:
-
-                positives = np.all((self.reflectance > 0), axis=1)
-                if not all(positives):
-                    warnings.append(
-                        "Warning: there are negative-valued items "
-                        "in the reflectance data for "
-                        + self.sample_id
-                        + ". These have been deleted."
-                    )
-                    self.reflectance = self.reflectance[positives]
-
-                # switch to 2-column matrix, sort, check for correct shape,
-                # find min and max reflectance
-                if self.reflectance.shape[1] != 2:
-                    self.reflectance = self.reflectance.T
-
-                # sorts by returning indices that would sort the wavelength
-                # column
-                self.reflectance = self.reflectance[
-                    self.reflectance[:, 0].argsort()
-                ]
-
-                if self.reflectance.shape[1] != 2:
-                    errors.append(
-                        "Error: the reflectance data doesn't appear to be "
-                        "properly organized into two columns. "
-                    )
-
-                # after I ingest all this switch this back to an error
-                # or maybe we keep zero-valued stuff?
-
-                self.min_reflectance = self.reflectance[0][0]
-                self.max_reflectance = self.reflectance[-1][0]
-                self.reflectance = str(self.reflectance.tolist())
-
-        self.import_notes = str(warnings)
-        if errors:
-            raise forms.ValidationError(errors)
-
-    def _raise_for_duplicates(self):
-        for refl_array in Sample.objects.filter(
-            sample_id__icontains=self.sample_id
-        ).values("reflectance"):
-            if self.reflectance == refl_array["reflectance"]:
-                raise ValueError(
-                    f"The sample {self.sample_id} appears to already be in "
-                    f"the database. If you're sure this is a unique sample, "
-                    f"please give it a new ID. If you're trying to correct a "
-                    f"previously uploaded sample, please contact the site "
-                    f"administrator to delete your previous uploads."
-                )
-
-    def _handle_duplicate_sample_ids(self, warnings):
-        """
-        safety-feature validation step to prevent duplicate sample_id +
-        reflectance.
-        """
-        if self.sample_id not in Sample.objects.values_list("sample_id"):
-            return
-        self._raise_for_duplicates()
-        old_id = self.sample_id
-        # just add incrementing numbers after an underscore
-        # TODO: this is dumb and should be replaced with something less so
-        while self.sample_id in [
-            sample.sample_id for sample in Sample.objects.all()
-        ]:
-            under_search = re.search(r"_[0-9]+$", self.sample_id)
-            if under_search:
-                self.sample_id = self.sample_id[
-                    : under_search.start() + 1
-                ] + str(
-                    int(self.sample_id[under_search.start() + 1 :]) + 1
-                )
-            else:
-                self.sample_id = self.sample_id + "_1"
-        warnings.append(
-            f"The sample name {old_id} was already in the database, but it "
-            f"appears to be for a distinct sample. It has been renamed to "
-            f"{self.sample_id}."
-        )
-        return warnings
+            self._warnings += literal_eval(self.import_notes)
+        # TODO: do I really like this IDL-esque list of procedures?
+        self._regularize_metadata_strings()
+        self._transform_reflectance_to_numpy_array()
+        self._check_for_numeracy()
+        self._eliminate_negativity()
+        self._reshape_and_sort_reflectance()
+        self._bound_and_jsonify_reflectance()
+        self._warn_and_raise()
 
     def save(self, *args, **kwargs):
         """
@@ -371,99 +259,19 @@ class Sample(models.Model):
         Sample.clean(), this function can interact with the database -- and
         at the end, it inserts the Sample into the database.
         """
-        errors = []
-        if self.import_notes:
-            if isinstance(self.import_notes, str):
-                warnings = literal_eval(self.import_notes)
-            else:
-                warnings = self.import_notes
-        else:
-            warnings = []
-        if "errors" in kwargs:
-            errors.append(kwargs["errors"])
-        if "warnings" in kwargs:
-            warnings.append(kwargs["warnings"])
-
-        image_path = settings.SAMPLE_IMAGE_PATH
-
         # check to see if this appears to be in the database
         # but don't do this check if it's from the admin console
         # i.e., allow updating
-
         uploaded = kwargs.pop("uploaded", False)
         if uploaded:
-            warnings = self._handle_duplicate_sample_ids(warnings)
-
+            self._handle_duplicate_sample_ids()
         if self.image:
-            has_existing_image = False
-            if isinstance(self.image, str):
-                if os.path.exists(os.path.join(image_path, self.image)):
-                    # don't open and re-save existing images
-                    has_existing_image = True
-                else:
-                    self._load_image()
-            if not has_existing_image:
-                self._update_image_path(image_path)
-
+            self._clean_image_field()
         convolve = kwargs.pop("convolve", True)
         if convolve:
             self._create_simulated_spectra()
-        self.import_notes = warnings
+        self._warn_and_raise()
         super(Sample, self).save(*args, **kwargs)
-
-    def _create_simulated_spectra(self):
-        sims = {}
-        for filterset in FilterSet.objects.all():
-            sims[filterset.short_name] = simulate_spectrum(self, filterset)
-            sims[
-                filterset.short_name + "_no_illumination"
-                ] = simulate_spectrum(self, filterset, illuminated=False)
-        for sim in sims:
-            sims[sim] = sims[sim].reset_index(drop=True).to_json()
-        self.simulated_spectra = json.dumps(sims)
-
-    def _update_image_path(self, image_path):
-        if isinstance(self.image, PIL.Image.Image):
-            filename = self.sample_id + ".jpg"
-            # save image into application image directory
-            os.makedirs(image_path, exist_ok=True)
-            self.image.save(os.path.join(image_path, filename))
-            # make thumbnail
-            self.image.thumbnail((256, 256))
-            self.image.save(
-                os.path.join(image_path, filename[:-4] + "_thumb.jpg")
-            )
-            # set sample's image field to a link to that image
-            self.image = filename
-        else:
-            raise ValueError(
-                "Associated image field must be a "
-                "PIL.ImageFile.ImageFile"
-                + " object or a path to an image."
-            )
-
-    def _load_image(self):
-        try:
-            raster = Image.open(self.image)
-            if raster.mode != "RGB":
-                self.image = raster.convert("RGB")
-        except (FileNotFoundError, PIL.UnidentifiedImageError):
-            raise ValueError(
-                "The image associated with "
-                + self.sample_id
-                + " is missing or can't be read."
-            )
-
-    def __str__(self):
-        if self.origin.short_name is not None:
-            return (
-                f"{self.sample_name}_{self.sample_id}_"
-                f"{self.origin.short_name}"
-            )
-        return (
-            f"{self.sample_name}_{self.sample_id}_"
-            f"{self.origin.name.split()[0]}"
-        )
 
     def as_dict(self):
         self_dict = {}
@@ -474,8 +282,7 @@ class Sample(models.Model):
     def metadata_csv_block(self):
         return "\n".join(
             [
-                f"{field.verbose_name},"
-                f"{getattr(self, field.name).replace(',','_')}"
+                f"{field.verbose_name}," f"{getattr(self, field.name)}"
                 for field in self._meta.fields
                 if field.name not in self.unprintable_fields
             ]
@@ -491,20 +298,23 @@ class Sample(models.Model):
 
     def sim_csv_blocks(self):
         sims = dict(json.loads(self.simulated_spectra))
-        frames = {
-            key: pd.read_json(sims[key]).reindex(
-                columns=["filter", "wavelength", "solar_illuminated_response"]
-            )
-            for key in sims
-            if not key.endswith("_no_solar_illumination")
-        }
-        for key in sims:
-            if key.endswith("_no_solar_illumination"):
-                frames[key.replace("_no_solar_illumination", "")][
-                    "response"
-                ] = pd.read_json(sims[key]).iloc[:, 2]
-        return {key: frame.to_csv() for key, frame in frames.items()}
+        instruments = [
+            key for key in sims if key.endswith("_no_illumination")
+        ]
+        frames = {}
+        for instrument in instruments:
+            frame = pd.read_json(sims[instrument])
+            base_name = instrument.strip("_no_illumination")
+            if base_name in sims.keys():
+                frame["solar_illuminated_response"] = pd.read_json(
+                    sims[base_name]
+                )["response"]
+            frames[base_name] = frame.to_csv(index=None)
+        return frames
 
+    # TODO: is this really appropriate? it's very specifically intended to get
+    #  it into a format the graph js likes. do I want this to perhaps not even
+    #  live on the model? I don't like it, in any case.
     def as_json(self):
         json_dict = {}
         for field in self._meta.fields:
@@ -539,6 +349,186 @@ class Sample(models.Model):
 
     def get_simulated_spectra(self):
         return valmap(literal_eval, literal_eval(self.simulated_spectra))
+
+    def _raise_for_duplicates(self):
+        for refl_array in Sample.objects.filter(
+            sample_id__icontains=self.sample_id
+        ).values("reflectance"):
+            if self.reflectance == refl_array["reflectance"]:
+                raise ValueError(
+                    f"The sample {self.sample_id} appears to already be in "
+                    f"the database. If you're sure this is a unique sample, "
+                    f"please give it a new ID. If you're trying to correct a "
+                    f"previously uploaded sample, please contact the site "
+                    f"administrator to delete your previous uploads."
+                )
+
+    def _handle_duplicate_sample_ids(self):
+        """
+        safety-feature validation step to prevent duplicate sample_id +
+        reflectance.
+        """
+        if self.sample_id not in Sample.objects.values_list("sample_id"):
+            return
+        self._raise_for_duplicates()
+        old_id = self.sample_id
+        # just add incrementing numbers after an underscore
+        # TODO: this is dumb and should be replaced with something less so
+        while self.sample_id in Sample.objects.values_list("sample_id"):
+            under_search = re.search(r"_[0-9]+$", self.sample_id)
+            if under_search:
+                self.sample_id = self.sample_id[
+                    : under_search.start() + 1
+                ] + str(int(self.sample_id[under_search.start() + 1 :]) + 1)
+            else:
+                self.sample_id = self.sample_id + "_1"
+        self._warnings.append(
+            f"The sample name {old_id} was already in the database, but it "
+            f"appears to be for a distinct sample. It has been renamed to "
+            f"{self.sample_id}."
+        )
+
+    def _clean_image_field(self):
+        image_path = settings.SAMPLE_IMAGE_PATH
+        # this Sample may have been initialized either with an
+        # in-memory raster (as with an upload) or with a string representing
+        # a path to an image file (as in most local sample creation)
+        if isinstance(self.image, str):
+            if os.path.exists(os.path.join(image_path, self.image)):
+                # don't open and re-save existing images
+                return
+            else:
+                self._load_image()
+        self._update_image_path(image_path)
+
+    def _create_simulated_spectra(self):
+        sims = {}
+        for filterset in FilterSet.objects.all():
+            sims[filterset.short_name] = simulate_spectrum(self, filterset)
+            sims[
+                filterset.short_name + "_no_illumination"
+            ] = simulate_spectrum(self, filterset, illuminated=False)
+        for sim in sims:
+            sims[sim] = sims[sim].reset_index(drop=True).to_json()
+        self.simulated_spectra = json.dumps(sims)
+
+    def _update_image_path(self, image_path):
+        if isinstance(self.image, PIL.Image.Image):
+            filename = self.sample_id + ".jpg"
+            # save image into application image directory
+            os.makedirs(image_path, exist_ok=True)
+            self.image.save(os.path.join(image_path, filename))
+            # make thumbnail
+            self.image.thumbnail((256, 256))
+            self.image.save(
+                os.path.join(image_path, filename[:-4] + "_thumb.jpg")
+            )
+            # set sample's image field to a link to that image
+            self.image = filename
+        else:
+            raise ValueError(
+                "Associated image field must be a "
+                "PIL.ImageFile.ImageFile" + " object or a path to an image."
+            )
+
+    def _regularize_metadata_strings(self):
+        """
+        regularize whitespace padding and capitalization; get rid of commas.
+        don't mess with arrays or pathnames.
+        """
+        for field in self._meta.fields:
+            if field.name in ["reflectance", "image"]:
+                continue
+            value = getattr(self, field.name)
+            if not value:
+                continue
+            if field.name not in ["origin", "sample_type"]:
+                value = str(value).strip().replace(",", "_")
+                value = value[:1].upper() + value[1:]
+                setattr(self, field.name, value)
+
+    def _load_image(self):
+        try:
+            raster = Image.open(self.image)
+            if raster.mode != "RGB":
+                self.image = raster.convert("RGB")
+        except (FileNotFoundError, PIL.UnidentifiedImageError):
+            raise ValueError(
+                "The image associated with "
+                + self.sample_id
+                + " is missing or can't be read."
+            )
+
+    def _warn_and_raise(self):
+        self.import_notes = str(self._warnings)
+        if len(self._errors) > 0:
+            raise forms.ValidationError(self._errors)
+
+    def _bound_and_jsonify_reflectance(self):
+        self.min_reflectance = self.reflectance[0][0]
+        self.max_reflectance = self.reflectance[-1][0]
+        self.reflectance = json.dumps(self.reflectance.tolist())
+
+    def _reshape_and_sort_reflectance(self):
+        # switch to 2-column matrix, sort, check for correct shape,
+        # find min and max reflectance
+        if self.reflectance.shape[1] != 2:
+            self.reflectance = self.reflectance.T
+        # sorts by returning indices that would sort the wavelength
+        # column
+        self.reflectance = self.reflectance[self.reflectance[:, 0].argsort()]
+        if self.reflectance.shape[1] != 2:
+            self._errors.append(
+                "Error: the reflectance data doesn't appear to be "
+                "properly organized into two columns. "
+            )
+
+    def _eliminate_negativity(self):
+        positives = np.all((self.reflectance > 0), axis=1)
+        if not all(positives):
+            self._warnings.append(
+                f"Warning: there are negative reflectance values in "
+                f"{self.sample_id}. These have been deleted."
+            )
+            self.reflectance = self.reflectance[positives]
+
+    def _check_for_numeracy(self):
+        try:
+            self.reflectance = self.reflectance.astype(np.float64)
+        except ValueError:
+            self._errors.append(
+                "Error: some fields in the reflectance data can't be "
+                "interpreted as numbers. It's possible that you haven't "
+                "placed the reflectance data after all of the metadata, "
+                "or that there are some non-numeric characters in the "
+                "reflectance data."
+            )
+            self._warn_and_raise()
+
+    def _transform_reflectance_to_numpy_array(self):
+        try:
+            if isinstance(self.reflectance, str):
+                self.reflectance = json.loads(self.reflectance)
+            self.reflectance = np.array(self.reflectance)
+        except ValueError:
+            # this should only happen if someone's made typos in the admin
+            # console, not with uploaded CSV
+            self._errors.append(
+                "Error: the reflectance values don't appear to be formatted "
+                "as an array. "
+            )
+            self._warn_and_raise()
+
+    def __str__(self):
+        if self.origin.short_name is not None:
+            return (
+                f"{self.sample_name}_{self.sample_id}_"
+                f"{self.origin.short_name}"
+            )
+        return (
+            f"{self.sample_name}_{self.sample_id}_"
+            f"{self.origin.name.split()[0]}"
+        )
 
     class Meta:
         ordering = ["sample_id"]
