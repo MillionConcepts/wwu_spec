@@ -55,23 +55,7 @@ def or_query(
     return first_query | second_query
 
 
-def search_all_samples(entry: str) -> models.QuerySet:
-    queries = [
-        {field.name + "__icontains": entry}
-        for field in Sample._meta.fields
-        if field.name not in ["origin", "sample_type", "id"]
-    ]
-    queries += [
-        {field + "__name__icontains": entry}
-        for field in ["origin", "sample_type"]
-    ]
-    filter_list = [Sample.objects.filter(**query) for query in queries]
-    return reduce(or_query, filter_list)
-
-
 # utilities for making lists to render in html
-
-
 def make_choice_list(
     model: models.Model, field: str, conceal_unreleased=False
 ) -> list[tuple]:
