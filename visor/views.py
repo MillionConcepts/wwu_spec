@@ -4,25 +4,27 @@ import json
 from operator import or_
 from typing import TYPE_CHECKING
 
-from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render
 import PIL
 from PIL import Image
 
-from visor.dj_utils import (
+from visor.visor_io import (
     handle_csv_upload,
     handle_zipped_upload,
+    construct_export_zipfile,
 )
-from visor.search import search_all_samples, \
-    filter_results_for_wavelength_ranges
-from visor.formatters import construct_export_zipfile
+from visor.search import (
+    search_all_samples,
+    paginate_results,
+    perform_search_from_form,
+)
 from visor.forms import (
     UploadForm,
     AdminUploadImageForm,
     concealed_search_factory,
 )
-from visor.models import Database, Sample, FilterSet, Library
+from visor.models import Database, Sample, FilterSet
 
 if TYPE_CHECKING:
     from django.core.handlers.wsgi import WSGIRequest
@@ -31,18 +33,34 @@ if TYPE_CHECKING:
 def search(request: "WSGIRequest") -> HttpResponse:
     """
     render the search page with an empty search form.
-    presently doesn't do any other manipulation (some former
-    features determined crufty and cut)
     """
     page_params = {"search_formset": concealed_search_factory(request)}
     return render(request, "search.html", page_params)
 
 
+def no_results(request: "WSGIRequest") -> HttpResponse:
+    return render(
+        request,
+        "results.html",
+        {
+            "page_ids": None,
+            "selected_ids": None,
+            "page_choices": None,
+            "page_results": None,
+            "search_results": None,
+            "search_formset": None,
+        },
+    )
+
+
 def results(request: "WSGIRequest") -> HttpResponse:
+    """
+    view function used to render the results of searches, including page flips
+    and sorts on columns.
+    """
     if ("jump-button" in request.GET) and (request.GET["jump-to-page"] == ""):
         return HttpResponse(status=204)
-    search_results_id_list = []
-    search_results = Sample.objects.none()
+
     # selected_spectra = Sample.objects.none() # TODO: missing functionality?
     # deliver an empty page for malformed requests.
     # also deliver clean data for each form while we're at it.
@@ -52,122 +70,31 @@ def results(request: "WSGIRequest") -> HttpResponse:
         search_form = search_formset.forms[0]
         assert search_form.is_valid()
     except AssertionError:
-        return render(
-            request,
-            "results.html",
-            {
-                "page_ids": None,
-                "selected_ids": None,
-                "page_choices": None,
-                "page_results": None,
-                "search_results": None,
-                "search_formset": None,
-            },
-        )
+        return no_results(request)
 
     sort_params = request.GET.getlist("sort_params", ["sample_id"])
-
-    # double underscore in these field names is an ugly but compact way to
-    # access the ForeignKey object fields
-
-    phrase_fields = ["sample_name"]
-    choice_fields = ["origin__name", "sample_type__name"]
-    numeric_fields = ["min_reflectance", "max_reflectance"]
-    m2m_managers = ["library"]
-    searchable_fields = phrase_fields + choice_fields + numeric_fields
-    form_results = Sample.objects.only(*searchable_fields)
-
+    search_results = Sample.objects.only(*Sample.searchable_fields)
+    # hide unreleased samples from non-superusers
     if not request.user.is_superuser:
-        form_results = form_results.filter(released=True)
-
-    form_results = form_results.order_by(*sort_params)
-
-    for field in phrase_fields + choice_fields + m2m_managers:
-        entry = search_form.cleaned_data.get(field, None)
-        if not entry:
-            continue
-        # "Any" entries do not restrict the search
-        if entry == "Any":
-            continue
-        # library is handled differently because it is a many-to-many
-        # relation.
-        if field == "library":
-            library = Library.objects.get(name__exact=entry)
-            form_results = form_results & library.sample_set.all()
-            continue
-        # require exact phrase searches for choice fields,
-        # don't waste time checking any other possibilities
-        query = field + "__iexact"
-        if field in choice_fields:
-            form_results = form_results.filter(**{query: entry})
-        # use an inflexible search for other fields
-        # if an exact phrase match exists in the currently-selected corpus
-        # NOTE: making this form_results.filter rather than
-        # Sample.objects.filter would (1) make it slightly more permissive
-        # and (2) make ordering of fields in this loop matter
-        elif Sample.objects.filter(**{query: entry}):
-            form_results = form_results.filter(**{query: entry})
-        # otherwise treat multiple words as an 'or' search
-        else:
-            query = field + "__icontains"
-            filters = [
-                form_results.filter(**{query: word})
-                for word in entry.split(" ")
-            ]
-            form_results = reduce(or_, filters)
-
-    # NOTE: this assumes that there are no large gaps in
-    # wavelength coverage within a given lab spectrum; i.e., that if a
-    # spectrum has both UVA and NIR, it also has VIS. if this becomes a bad
-    # assumption, we will need to modify it.
-    wavelength_ranges = {
-        "UVB": [0, 314],
-        "UVA": [315, 399],
-        "VIS": [400, 749],
-        "NIR": [750, 2500],
-        "MIR": [2501, 10000000],
-    }
-
-    wavelength_query = search_form.cleaned_data.get("wavelength_range")
-    if wavelength_query:
-        form_results = filter_results_for_wavelength_ranges(
-            form_results, wavelength_query, wavelength_ranges
-        )
-    # don't bother continuing if we're already empty
-    if form_results:
-        # 'search all fields' function
-        entry = search_form.cleaned_data.get("any_field")
-        if entry:
-            form_results = form_results & search_all_samples(entry)
-    search_results = search_results | form_results
-
+        search_results = search_results.filter(released=True)
+    # TODO, maybe: have a cache somewhere of search result IDs? harder to
+    #  deeplink. but it could be used iff the sort button was pressed? could
+    #  it live in shared memory on the backend somewhere?
+    # sort results, if this view function got accessed via a sort button
+    search_results = search_results.order_by(*sort_params)
+    # actually perform the search
+    search_results = perform_search_from_form(search_form, search_results)
     selections = request.GET.getlist("selection")
-
     selected_spectra = Sample.objects.filter(id__in=selections)
-
     selected_list = []
     for spectra in selected_spectra:
         selected_list.append(spectra.id)
-
+    search_results_id_list = []
     for result in search_results:
         search_results_id_list.append(result.id)
-
-    paginator = Paginator(search_results, 10)
-    if "jump-button" in request.GET:
-        page_selected = max(1, int(request.GET.get("jump-to-page")))
-        page_selected = min(paginator.num_pages, page_selected)
-    else:
-        page_selected = int(request.GET.get("page_selected", 1))
-    page_results = paginator.page(page_selected)
-    page_choices = range(
-        max(1, page_selected - 6),
-        min(page_selected + 6, paginator.num_pages),
+    page_choices, page_ids, page_results = paginate_results(
+        request, search_results
     )
-
-    page_ids = []
-    for sample in page_results.object_list:
-        page_ids.append(sample.id)
-
     return render(
         request,
         "results.html",
@@ -255,48 +182,6 @@ def export(request: "WSGIRequest") -> HttpResponse:
     selections = list(selections)
     return construct_export_zipfile(
         selections, export_sim, simulated_instrument
-    )
-
-
-def bulk_export(request: "WSGIRequest") -> HttpResponse:
-    bulk_results = Sample.objects.only("sample_name")
-    if not request.user.is_superuser:
-        bulk_results = bulk_results.filter(released=True)
-    for field in ["sample_name"]:
-        if field not in request.GET:
-            continue
-        entry = request.GET[field]
-        if not entry:
-            continue
-        # "Any" entries do not restrict the search
-        if entry == "Any":
-            continue
-        query = field + "__iexact"
-        if Sample.objects.filter(**{query: entry}):
-            bulk_results = bulk_results.filter(**{query: entry})
-        # otherwise treat multiple words as an 'or' search
-        else:
-            query = field + "__icontains"
-            filters = [
-                bulk_results.filter(**{query: word})
-                for word in entry.split(" ")
-            ]
-            bulk_results = reduce(or_, filters)
-    if bulk_results:
-        # 'search all fields' function
-        if "any_field" in request.GET:
-            bulk_results = bulk_results & search_all_samples(
-                request.GET["any_field"]
-            )
-    search_results_id_list = [result.id for result in bulk_results]
-    if "simulate" in request.GET:
-        simulated_instrument = request.GET["simulate"].replace("_", " ")
-        simulate = True
-    else:
-        simulated_instrument = ""
-        simulate = False
-    return construct_export_zipfile(
-        search_results_id_list, simulate, simulated_instrument
     )
 
 
@@ -447,3 +332,49 @@ def about(request: "WSGIRequest") -> HttpResponse:
 
 def status(request: "WSGIRequest") -> HttpResponse:
     return render(request, "status.html")
+
+
+def bulk_export(request: "WSGIRequest") -> HttpResponse:
+    """
+    specialized view function for a page inaccessible through HTML links.
+    designed to be used for CLI access to the database.
+    """
+    bulk_results = Sample.objects.only("sample_name")
+    if not request.user.is_superuser:
+        bulk_results = bulk_results.filter(released=True)
+    for field in ["sample_name"]:
+        if field not in request.GET:
+            continue
+        entry = request.GET[field]
+        if not entry:
+            continue
+        # "Any" entries do not restrict the search
+        if entry == "Any":
+            continue
+        query = field + "__iexact"
+        if Sample.objects.filter(**{query: entry}):
+            bulk_results = bulk_results.filter(**{query: entry})
+        # otherwise treat multiple words as an 'or' search
+        else:
+            query = field + "__icontains"
+            filters = [
+                bulk_results.filter(**{query: word})
+                for word in entry.split(" ")
+            ]
+            bulk_results = reduce(or_, filters)
+    if bulk_results:
+        # 'search all fields' function
+        if "any_field" in request.GET:
+            bulk_results = bulk_results & search_all_samples(
+                request.GET["any_field"]
+            )
+    search_results_id_list = [result.id for result in bulk_results]
+    if "simulate" in request.GET:
+        simulated_instrument = request.GET["simulate"].replace("_", " ")
+        simulate = True
+    else:
+        simulated_instrument = ""
+        simulate = False
+    return construct_export_zipfile(
+        search_results_id_list, simulate, simulated_instrument
+    )
