@@ -1,6 +1,5 @@
 from ast import literal_eval
 from functools import reduce
-from itertools import chain
 import json
 from operator import or_
 from typing import TYPE_CHECKING
@@ -12,10 +11,11 @@ import PIL
 from PIL import Image
 
 from visor.dj_utils import (
-    search_all_samples,
     handle_csv_upload,
     handle_zipped_upload,
 )
+from visor.search import search_all_samples, \
+    filter_results_for_wavelength_ranges
 from visor.formatters import construct_export_zipfile
 from visor.forms import (
     UploadForm,
@@ -130,21 +130,8 @@ def results(request: "WSGIRequest") -> HttpResponse:
 
     wavelength_query = search_form.cleaned_data.get("wavelength_range")
     if wavelength_query:
-        requested_range = list(
-            chain.from_iterable(
-                [
-                    wavelength_ranges[range_name]
-                    for range_name in wavelength_query
-                ]
-            )
-        )
-        maximum_minimum = requested_range[1]
-        minimum_maximum = requested_range[-2]
-        form_results = form_results.filter(
-            min_reflectance__lte=maximum_minimum
-        )
-        form_results = form_results.filter(
-            max_reflectance__gte=minimum_maximum
+        form_results = filter_results_for_wavelength_ranges(
+            form_results, wavelength_query, wavelength_ranges
         )
     # don't bother continuing if we're already empty
     if form_results:
