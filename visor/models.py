@@ -232,6 +232,15 @@ class Sample(models.Model):
         "simulated_spectra",
         "released",
     )
+    # defined groups of fields we can and cannot use for various sorts of
+    # operations.
+    # note: double underscore in these field names is an ugly but compact way
+    # to access the ForeignKey object fields.
+    phrase_fields = ["sample_name"]
+    choice_fields = ["origin__name", "sample_type__name"]
+    numeric_fields = ["min_reflectance", "max_reflectance"]
+    m2m_managers = ["library"]
+    searchable_fields = phrase_fields + choice_fields + numeric_fields
 
     # private attributes used during creation process
     _warnings = []
@@ -242,6 +251,9 @@ class Sample(models.Model):
         step-1 data cleaning and validation function for Sample.
         ideally shouldn't interact with anything in the database.
         """
+        # reset warnings and errors
+        self._warnings = []
+        self._errors = []
         if self.import_notes:
             self._warnings += literal_eval(self.import_notes)
         # TODO: do I really like this IDL-esque list of procedures?
@@ -464,27 +476,23 @@ class Sample(models.Model):
         if len(self._errors) > 0:
             raise forms.ValidationError(self._errors)
 
-    def _bound_and_jsonify_reflectance(self):
-        self.min_reflectance = self.reflectance[0][0]
-        self.max_reflectance = self.reflectance[-1][0]
-        self.reflectance = json.dumps(self.reflectance.tolist())
 
-    def _reshape_and_sort_reflectance(self):
-        # switch to 2-column matrix, sort, check for correct shape,
-        # find min and max reflectance
-        if self.reflectance.shape[1] != 2:
-            self.reflectance = self.reflectance.T
-        # sorts by returning indices that would sort the wavelength
-        # column
-        self.reflectance = self.reflectance[self.reflectance[:, 0].argsort()]
-        if self.reflectance.shape[1] != 2:
+    def _transform_reflectance_to_numpy_array(self):
+        try:
+            if isinstance(self.reflectance, str):
+                self.reflectance = json.loads(self.reflectance)
+            self.reflectance = np.array(self.reflectance)
+        except ValueError:
+            # this should only happen if someone's made typos in the admin
+            # console, not with uploaded CSV
             self._errors.append(
-                "Error: the reflectance data doesn't appear to be "
-                "properly organized into two columns. "
+                "Error: the reflectance values don't appear to be formatted "
+                "as an array. "
             )
+            self._warn_and_raise()
 
     def _eliminate_negativity(self):
-        positives = np.all((self.reflectance > 0), axis=1)
+        positives = np.all((self.reflectance >= 0), axis=1)
         if not all(positives):
             self._warnings.append(
                 f"Warning: there are negative reflectance values in "
@@ -505,19 +513,25 @@ class Sample(models.Model):
             )
             self._warn_and_raise()
 
-    def _transform_reflectance_to_numpy_array(self):
-        try:
-            if isinstance(self.reflectance, str):
-                self.reflectance = json.loads(self.reflectance)
-            self.reflectance = np.array(self.reflectance)
-        except ValueError:
-            # this should only happen if someone's made typos in the admin
-            # console, not with uploaded CSV
+
+    def _bound_and_jsonify_reflectance(self):
+        self.min_reflectance = self.reflectance[0][0]
+        self.max_reflectance = self.reflectance[-1][0]
+        self.reflectance = json.dumps(self.reflectance.tolist())
+
+    def _reshape_and_sort_reflectance(self):
+        # switch to 2-column matrix, sort, check for correct shape,
+        # find min and max reflectance
+        if self.reflectance.shape[1] != 2:
+            self.reflectance = self.reflectance.T
+        # sorts by returning indices that would sort the wavelength
+        # column
+        self.reflectance = self.reflectance[self.reflectance[:, 0].argsort()]
+        if self.reflectance.shape[1] != 2:
             self._errors.append(
-                "Error: the reflectance values don't appear to be formatted "
-                "as an array. "
+                "Error: the reflectance data doesn't appear to be "
+                "properly organized into two columns. "
             )
-            self._warn_and_raise()
 
     def __str__(self):
         if self.origin.short_name is not None:
