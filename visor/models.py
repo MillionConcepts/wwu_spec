@@ -322,52 +322,47 @@ class Sample(models.Model):
         if errors:
             raise forms.ValidationError(errors)
 
-    def check_upload(self, warnings):
-        """
-        safety-feature validation step for samples uploaded by remote users.
-        also probably useful in some cases for samples not uploaded by remote
-        users.
-        """
-        if self.sample_id not in [
-            sample.sample_id for sample in Sample.objects.all()
-        ]:
-            return
+    def _raise_for_duplicates(self):
         for refl_array in Sample.objects.filter(
             sample_id__icontains=self.sample_id
         ).values("reflectance"):
             if self.reflectance == refl_array["reflectance"]:
                 raise ValueError(
-                    "The sample "
-                    + self.sample_id
-                    + " appears to already be in the database. If "
-                    + "you're sure this is a unique sample, please "
-                    + "give it a new ID. If you're trying to correct "
-                    + "a previously uploaded sample, please contact "
-                    + "the site administrator to delete your "
-                    + "previous uploads."
+                    f"The sample {self.sample_id} appears to already be in "
+                    f"the database. If you're sure this is a unique sample, "
+                    f"please give it a new ID. If you're trying to correct a "
+                    f"previously uploaded sample, please contact the site "
+                    f"administrator to delete your previous uploads."
                 )
-        else:
-            old_id = self.sample_id
-            # just add incrementing numbers after an underscore
-            while self.sample_id in [
-                sample.sample_id for sample in Sample.objects.all()
-            ]:
-                under_search = re.search(r"_[0-9]+$", self.sample_id)
-                if under_search:
-                    self.sample_id = self.sample_id[
-                        : under_search.start() + 1
-                    ] + str(
-                        int(self.sample_id[under_search.start() + 1 :]) + 1
-                    )
-                else:
-                    self.sample_id = self.sample_id + "_1"
-            warnings.append(
-                "The sample name "
-                + old_id
-                + " was already in the database, but it appears to be"
-                + " for a distinct sample. It has been renamed to "
-                + self.sample_id
-            )
+
+    def _handle_duplicate_sample_ids(self, warnings):
+        """
+        safety-feature validation step to prevent duplicate sample_id +
+        reflectance.
+        """
+        if self.sample_id not in Sample.objects.values_list("sample_id"):
+            return
+        self._raise_for_duplicates()
+        old_id = self.sample_id
+        # just add incrementing numbers after an underscore
+        # TODO: this is dumb and should be replaced with something less so
+        while self.sample_id in [
+            sample.sample_id for sample in Sample.objects.all()
+        ]:
+            under_search = re.search(r"_[0-9]+$", self.sample_id)
+            if under_search:
+                self.sample_id = self.sample_id[
+                    : under_search.start() + 1
+                ] + str(
+                    int(self.sample_id[under_search.start() + 1 :]) + 1
+                )
+            else:
+                self.sample_id = self.sample_id + "_1"
+        warnings.append(
+            f"The sample name {old_id} was already in the database, but it "
+            f"appears to be for a distinct sample. It has been renamed to "
+            f"{self.sample_id}."
+        )
         return warnings
 
     def save(self, *args, **kwargs):
@@ -397,8 +392,7 @@ class Sample(models.Model):
 
         uploaded = kwargs.pop("uploaded", False)
         if uploaded:
-            # impure function, modifies self and returns warnings
-            warnings = self.check_upload(warnings)
+            warnings = self._handle_duplicate_sample_ids(warnings)
 
         if self.image:
             has_existing_image = False
@@ -407,67 +401,68 @@ class Sample(models.Model):
                     # don't open and re-save existing images
                     has_existing_image = True
                 else:
-                    try:
-                        raster = Image.open(self.image)
-                        if raster.mode != "RGB":
-                            raster = raster.convert("RGB")
-                        self.image = raster
-                    except (FileNotFoundError, PIL.UnidentifiedImageError):
-                        raise ValueError(
-                            "The image associated with "
-                            + self.sample_id
-                            + " is missing or can't be read."
-                        )
+                    self._load_image()
             if not has_existing_image:
-                if isinstance(self.image, PIL.Image.Image):
-                    filename = self.sample_id + ".jpg"
-                    # save image into application image directory
-                    os.makedirs(image_path, exist_ok=True)
-                    self.image.save(os.path.join(image_path, filename))
-                    # make thumbnail
-                    self.image.thumbnail((256, 256))
-                    self.image.save(
-                        os.path.join(image_path, filename[:-4] + "_thumb.jpg")
-                    )
-                    # set sample's image field to a link to that image
-                    self.image = filename
-                else:
-                    raise ValueError(
-                        "Associated image field must be a "
-                        "PIL.ImageFile.ImageFile"
-                        + " object or a path to an image."
-                    )
+                self._update_image_path(image_path)
 
         convolve = kwargs.pop("convolve", True)
         if convolve:
-            # create simulated spectra
-            sims = {}
-            for filterset in FilterSet.objects.all():
-                sims[filterset.short_name] = simulate_spectrum(self, filterset)
-                sims[
-                    filterset.short_name + "_no_illumination"
-                ] = simulate_spectrum(self, filterset, illuminated=False)
-            for sim in sims:
-                sims[sim] = sims[sim].reset_index(drop=True).to_json()
-            self.simulated_spectra = json.dumps(sims)
+            self._create_simulated_spectra()
         self.import_notes = warnings
         super(Sample, self).save(*args, **kwargs)
+
+    def _create_simulated_spectra(self):
+        sims = {}
+        for filterset in FilterSet.objects.all():
+            sims[filterset.short_name] = simulate_spectrum(self, filterset)
+            sims[
+                filterset.short_name + "_no_illumination"
+                ] = simulate_spectrum(self, filterset, illuminated=False)
+        for sim in sims:
+            sims[sim] = sims[sim].reset_index(drop=True).to_json()
+        self.simulated_spectra = json.dumps(sims)
+
+    def _update_image_path(self, image_path):
+        if isinstance(self.image, PIL.Image.Image):
+            filename = self.sample_id + ".jpg"
+            # save image into application image directory
+            os.makedirs(image_path, exist_ok=True)
+            self.image.save(os.path.join(image_path, filename))
+            # make thumbnail
+            self.image.thumbnail((256, 256))
+            self.image.save(
+                os.path.join(image_path, filename[:-4] + "_thumb.jpg")
+            )
+            # set sample's image field to a link to that image
+            self.image = filename
+        else:
+            raise ValueError(
+                "Associated image field must be a "
+                "PIL.ImageFile.ImageFile"
+                + " object or a path to an image."
+            )
+
+    def _load_image(self):
+        try:
+            raster = Image.open(self.image)
+            if raster.mode != "RGB":
+                self.image = raster.convert("RGB")
+        except (FileNotFoundError, PIL.UnidentifiedImageError):
+            raise ValueError(
+                "The image associated with "
+                + self.sample_id
+                + " is missing or can't be read."
+            )
 
     def __str__(self):
         if self.origin.short_name is not None:
             return (
-                self.sample_name
-                + "_"
-                + self.sample_id
-                + "_"
-                + self.origin.short_name
+                f"{self.sample_name}_{self.sample_id}_"
+                f"{self.origin.short_name}"
             )
         return (
-            self.sample_name
-            + "_"
-            + self.sample_id
-            + "_"
-            + self.origin.name.split()[0]
+            f"{self.sample_name}_{self.sample_id}_"
+            f"{self.origin.name.split()[0]}"
         )
 
     def as_dict(self):
@@ -476,19 +471,11 @@ class Sample(models.Model):
             self_dict |= {field.name: getattr(self, field.name)}
         return self_dict
 
-    def metadata_dict(self):
-        return {
-            field.verbose_name: getattr(self, field.name)
-            for field in self._meta.fields
-            if field.name not in self.unprintable_fields
-        }
-
     def metadata_csv_block(self):
         return "\n".join(
             [
-                field.verbose_name
-                + ","
-                + str(getattr(self, field.name)).replace(",", "_")
+                f"{field.verbose_name},"
+                f"{getattr(self, field.name).replace(',','_')}"
                 for field in self._meta.fields
                 if field.name not in self.unprintable_fields
             ]
@@ -501,21 +488,6 @@ class Sample(models.Model):
                 for wavelength, response in literal_eval(self.reflectance)
             ]
         )
-
-    def simulated_csv_block(self, instrument):
-        sims = self.get_simulated_spectra()
-        metadata = self.metadata_csv_block()
-        illuminated_df = pd.DataFrame(sims[instrument])
-        dark_series = sims[instrument + "_no_illumination"][
-            "response"
-        ].values()
-        illuminated_df["unilluminated_response"] = dark_series
-        illuminated_df.columns = [
-            "filter",
-            "wavelength",
-            "solar_illuminated_response",
-            "response",
-        ]
 
     def sim_csv_blocks(self):
         sims = dict(json.loads(self.simulated_spectra))
@@ -566,19 +538,7 @@ class Sample(models.Model):
         return json_dict
 
     def get_simulated_spectra(self):
-        return valmap(
-            literal_eval, literal_eval(self.as_dict()["simulated_spectra"])
-        )
-
-    def get_image(self):
-        if isinstance(self.image, str):
-            return Image.open(settings.SAMPLE_IMAGE_PATH + "/" + self.image)
-        else:
-            raise ValueError(
-                "this sample doesn't have an image,  or it's not currently "
-                "saved in the"
-                " database. it may be an in-memory object."
-            )
+        return valmap(literal_eval, literal_eval(self.simulated_spectra))
 
     class Meta:
         ordering = ["sample_id"]
