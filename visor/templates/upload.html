@@ -28,13 +28,14 @@
 
 			    	<div style="padding-bottom: 20px">
 			    		<b>
-			    		{% if unsuccessful %}
+                        {{headline}}
+			    		{% if unsuccessful|length > 0 %}
 			    		{{unsuccessful|length}}
 			    		 sample(s) did not upload successfully.
 			    		{% endif %}
 			    		{% if successful %}
 			    		{{successful|length}}
-			    		 samples uploaded successfully.
+			    		 sample(s) uploaded successfully.
 			    		{% endif %}
 			    	</b>
 
@@ -45,7 +46,7 @@
 				        {% endfor %}
 				        {% endif %}
 
-				        {% if unsuccessful %}
+				        {% if unsuccessful|length > 0 %}
 
 				        <p><b>The following sample(s) did not upload successfully.</b></p>
 				        {% for sample in unsuccessful %}
@@ -54,7 +55,7 @@
 				        {% endfor %}
 				        {% endif %}
 
-				        {% if successful %}
+				        {% if successful|length > 0 %}
 				        <p><b>The following sample(s) uploaded successfully.</b></p>
 				        {% for sample in successful %}
 				        <ul><b>{{sample.filename}}</b> uploaded as {{sample.sample.sample_id}}</ul>
