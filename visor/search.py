@@ -6,7 +6,6 @@ from django.core.paginator import Paginator
 from django.db import models
 
 from visor.constants import WAVELENGTH_RANGES
-from visor.dj_utils import or_query
 from visor.models import Sample, Library
 
 
@@ -27,7 +26,7 @@ def search_all_samples(entry: str) -> models.QuerySet:
         for field in ["origin", "sample_type"]
     ]
     filter_list = [Sample.objects.filter(**query) for query in queries]
-    return reduce(or_query, filter_list)
+    return reduce(or_, filter_list)
 
 
 def wavelength_range_filter(form_results, wavelength_query):

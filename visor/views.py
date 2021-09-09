@@ -2,6 +2,7 @@ from ast import literal_eval
 from functools import reduce
 import json
 from operator import or_
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from django.http import HttpResponse
@@ -9,11 +10,7 @@ from django.shortcuts import render
 import PIL
 from PIL import Image
 
-from visor.visor_io import (
-    handle_csv_upload,
-    handle_zipped_upload,
-    construct_export_zipfile,
-)
+from visor.io import handlers
 from visor.search import (
     search_all_samples,
     paginate_results,
@@ -180,111 +177,59 @@ def export(request: "WSGIRequest") -> HttpResponse:
     else:
         simulated_instrument = ""
     selections = list(selections)
-    return construct_export_zipfile(
+    return handlers.construct_export_zipfile(
         selections, export_sim, simulated_instrument
     )
 
 
 def upload(request: "WSGIRequest") -> HttpResponse:
     form = UploadForm(request.POST, request.FILES)
-    upload_errors = []
     if not form.is_valid():
         form = UploadForm()
         return render(request, "upload.html", {"form": form})
     uploaded_file = request.FILES["file"]
-    if uploaded_file.name[-3:] == "csv":
-        upload_results = handle_csv_upload(uploaded_file)
-    elif uploaded_file.name[-3:] == "zip":
-        upload_results = handle_zipped_upload(uploaded_file)
+    # these are separate cases mostly because we allow people to jam images
+    # into zipped archives, which requires extra validation steps.
+    if Path(uploaded_file.name).suffix == ".csv":
+        upload_results = handlers.process_csv_file(uploaded_file)
+    elif Path(uploaded_file.name).suffix == ".zip":
+        upload_results = handlers.process_zipfile(uploaded_file)
+    # we don't mess around with files that don't have one of those extensions
     else:
-        headline = "File upload failed."
-        upload_errors.append("Please upload a csv or zip file.")
         return render(
             request,
             "upload.html",
             {
                 "form": form,
-                "headline": headline,
-                "upload_errors": upload_errors,
+                "headline": "File upload failed.",
+                "upload_errors": ["Please upload a csv or zip file."],
             },
         )
-
-    successful = []
-    unsuccessful = []
-    # we get an integer flag at the beginning from handle_zipped_upload
-    if isinstance(upload_results[0], int):
-        if upload_results[0] == 0:
-            upload_errors = upload_results[1]
-            return render(
-                request,
-                "upload.html",
-                {"form": form, "upload_errors": upload_errors},
-            )
-
-        elif upload_results[0] == 1:
-            headline = "No samples uploaded successfully."
-            unsuccessful = [
-                {
-                    "filename": upload_result["filename"],
-                    "errors": upload_result["errors"],
-                }
-                for upload_result in upload_results[1]
-            ]
-
-        else:
-            headline = "The following samples uploaded successfully."
-            successful = [
-                {
-                    "filename": file_result["filename"],
-                    "sample": file_result["sample"],
-                    "warnings": file_result["sample"].import_notes,
-                }
-                for file_result in upload_results[1]
-            ]
-
-            if upload_results[0] == 2:
-                unsuccessful = [
-                    {
-                        "filename": file_result["filename"],
-                        "sample": file_result["sample"],
-                        "errors": file_result["errors"],
-                    }
-                    for file_result in upload_results[2]
-                ]
-
-    # and here's the logic for displaying the results of a single CSV
-    # file upload it might be better to concatenate both of these into a
-    # single, distinct function now that we're handling multisamples
-
+    # this first case is mostly: we couldn't open the zip file or its contents
+    # were badly organized; we didn't even try to parse anything
+    if upload_results["status"] == "failed before ingest":
+        return render(
+            request,
+            "upload.html",
+            {
+                "form": form,
+                "upload_errors": upload_results["errors"]
+            }
+        )
+    if upload_results["status"] == "failed during ingest":
+        headline = "No samples uploaded successfully."
+    elif upload_results["status"] == "partially successful":
+        headline = "The following samples uploaded successfully:"
     else:
-        if upload_results[0]["errors"] is not None:
-            headline = (
-                upload_results[0]["filename"] + " did not upload successfully."
-            )
-            unsuccessful = [
-                {
-                    "filename": upload_results[0]["filename"],
-                    "errors": upload_results[0]["errors"],
-                }
-            ]
-        else:
-            headline = upload_results[0]["filename"] + "uploaded successfully."
-            successful = [
-                {
-                    "filename": upload_result["filename"],
-                    "sample": upload_result["sample"],
-                    "warnings": upload_result["sample"].import_notes,
-                }
-                for upload_result in upload_results
-            ]
-
+        headline = "Upload successful."
     return render(
         request,
         "upload.html",
         {
             "form": form,
-            "successful": successful,
-            "unsuccessful": unsuccessful,
+            "successful": upload_results["good"],
+            "unsuccessful": upload_results["bad"],
+            "upload_errors": upload_results["errors"],
             "headline": headline,
         },
     )

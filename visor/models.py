@@ -310,9 +310,7 @@ class Sample(models.Model):
 
     def sim_csv_blocks(self):
         sims = dict(json.loads(self.simulated_spectra))
-        instruments = [
-            key for key in sims if key.endswith("_no_illumination")
-        ]
+        instruments = [key for key in sims if key.endswith("_no_illumination")]
         frames = {}
         for instrument in instruments:
             frame = pd.read_json(sims[instrument])
@@ -391,7 +389,7 @@ class Sample(models.Model):
             if under_search:
                 self.sample_id = self.sample_id[
                     : under_search.start() + 1
-                ] + str(int(self.sample_id[under_search.start() + 1 :]) + 1)
+                ] + str(int(self.sample_id[under_search.start() + 1:]) + 1)
             else:
                 self.sample_id = self.sample_id + "_1"
         self._warnings.append(
@@ -476,7 +474,6 @@ class Sample(models.Model):
         if len(self._errors) > 0:
             raise forms.ValidationError(self._errors)
 
-
     def _transform_reflectance_to_numpy_array(self):
         try:
             if isinstance(self.reflectance, str):
@@ -512,7 +509,6 @@ class Sample(models.Model):
                 "reflectance data."
             )
             self._warn_and_raise()
-
 
     def _bound_and_jsonify_reflectance(self):
         self.min_reflectance = self.reflectance[0][0]
