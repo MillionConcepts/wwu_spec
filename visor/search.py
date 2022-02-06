@@ -16,8 +16,8 @@ def search_all_samples(entry: str) -> models.QuerySet:
         if field.name not in list(Sample.unprintable_fields) + [
             "origin",
             "sample_type",
-            "min_reflectance",
-            "max_reflectance",
+            "min_wavelength",
+            "max_wavelength",
             "date_added"
         ]
     ]
@@ -37,8 +37,8 @@ def wavelength_range_filter(form_results, wavelength_query):
     )
     maximum_minimum = requested_range[1]
     minimum_maximum = requested_range[-2]
-    form_results = form_results.filter(min_reflectance__lte=maximum_minimum)
-    form_results = form_results.filter(max_reflectance__gte=minimum_maximum)
+    form_results = form_results.filter(min_wavelength__lte=maximum_minimum)
+    form_results = form_results.filter(max_wavelength__gte=minimum_maximum)
     return form_results
 
 

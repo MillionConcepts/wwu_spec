@@ -54,9 +54,10 @@
                     <p><b> Grain size:</b>         {{ result.grain_size }} </p>
                     <p><b> Viewing geometry:</b>   {{ result.view_geom }} </p>
                     <p><b> Resolution:</b>         {{ result.resolution }} </p>
-                    <p><b> Wavelength range:</b>  {{ result.min_reflectance}} - {{result.max_reflectance}} nm </p>
+                    <p><b> Wavelength range:</b>  {{ result.min_wavelength}} - {{result.max_wavelength}} nm </p>
                     <p><b> Composition: </b>        {{ result.composition }} </p>
                     <p><b> References: </b>        {{ result.references }} </p>
+                    <p><b> Original Sample ID:</b>       {{ result.original_sample_id}} </p>
                     <p><b> Other Information: </b>        {{ result.other }} </p>
                     {% if result.image %}
                       {% with 'sample_images/'|add:result.image as sample_image %}

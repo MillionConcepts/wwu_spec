@@ -2,6 +2,7 @@
 
 import json
 from ast import literal_eval
+from functools import cache
 
 from scipy import interpolate
 from scipy import integrate
@@ -53,11 +54,11 @@ def simulate_spectrum(
 ) -> pd.DataFrame:
     # turn sample and illumination values into nice arrays
 
-    filter_wavelengths = np.array(json.loads(filterset.wavelengths))
+    filterset_wavelengths = filterset.wavelength_array
 
-    sample = np.array(json.loads(sample.reflectance))
-    sample_wavelengths = sample[:, 0]
-    reflectance = sample[:, 1]
+    sample_data = sample.data_array
+    sample_wavelengths = sample_data[:, 0]
+    reflectance = sample_data[:, 1]
 
     # then use them to get sample radiance
 
@@ -65,7 +66,7 @@ def simulate_spectrum(
 
     if filterset.illumination:
         if illuminated:
-            illumination = np.array(json.loads(filterset.illumination))
+            illumination = filterset.illumination_array
             illumination_wavelengths = illumination[:, 0]
             illumination_intensity = illumination[:, 1]
 
@@ -81,11 +82,11 @@ def simulate_spectrum(
     # trim and interpolate radiance and irradiance to the bins of the filterset
 
     radiance = interpolate_spectrum(
-        filter_wavelengths, sample_wavelengths, radiance
+        filterset_wavelengths, sample_wavelengths, radiance
     )
     if illuminated:
         irradiance = interpolate_spectrum(
-            filter_wavelengths,
+            filterset_wavelengths,
             illumination_wavelengths,
             illumination_intensity,
         )
@@ -93,10 +94,7 @@ def simulate_spectrum(
         irradiance = None
 
     # load filter bank
-
-    filters = json.loads(filterset.filters)
-    for filt in filters:
-        filters[filt] = np.array(filters[filt])
+    filters = filterset.filterbank
 
     # if we hadn't already power-normalized the filters, we would normalize
     # them here, but our filtersets should all be power-normalized at upload
@@ -104,7 +102,7 @@ def simulate_spectrum(
     # create blank spectral response dataframe
     simulated_spectrum = pd.DataFrame(
         literal_eval(filterset.filter_wavelengths),
-        columns=["filter", "wavelength"]
+        columns=["filter", "wavelength"],
     ).sort_values(["wavelength"])
 
     # convolve reflectance with each of the filters (dividing illumination
@@ -112,7 +110,9 @@ def simulate_spectrum(
     response = []
     for filt in simulated_spectrum["filter"]:
         response.append(
-            convolve(radiance, filters[filt], filter_wavelengths, irradiance)
+            convolve(
+                radiance, filters[filt], filterset_wavelengths, irradiance
+            )
         )
     simulated_spectrum["response"] = response
     return simulated_spectrum

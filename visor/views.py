@@ -320,6 +320,6 @@ def bulk_export(request: "WSGIRequest") -> HttpResponse:
     else:
         simulated_instrument = ""
         simulate = False
-    return construct_export_zipfile(
+    return handlers.construct_export_zipfile(
         search_results_id_list, simulate, simulated_instrument
     )

@@ -2,8 +2,11 @@ from ast import literal_eval
 import json
 import os
 import re
+from functools import cache, cached_property
+from itertools import accumulate, repeat, chain
+from operator import add
 
-from django.db import models
+from django.db import models, IntegrityError
 from django import forms
 from django.conf import settings
 import numpy as np
@@ -13,6 +16,7 @@ from PIL import Image
 import PIL.ImageFile
 from toolz import valmap
 
+from visor.dj_utils import model_values
 from visor.spectral import simulate_spectrum
 
 
@@ -60,6 +64,21 @@ class FilterSet(models.Model):
 
     def __str__(self):
         return self.name
+
+    @cached_property
+    def filterbank(self):
+        filters = json.loads(self.filters)
+        for filt in filters:
+            filters[filt] = np.array(filters[filt])
+        return filters
+
+    @cached_property
+    def wavelength_array(self):
+        return np.array(json.loads(self.wavelengths))
+
+    @cached_property
+    def illumination_array(self):
+        return np.array(json.loads(self.illumination))
 
 
 class Library(models.Model):
@@ -171,14 +190,14 @@ class Sample(models.Model):
     )
     locality = models.TextField("Locality", blank=True, db_index=True)
     libraries = models.ManyToManyField(Library, blank=True, db_index=True)
-    min_reflectance = models.FloatField(
-        "Minimum Reflectance", blank=True, db_index=True
+    min_wavelength = models.FloatField(
+        "Minimum Wavelength", blank=True, db_index=True
     )
     sample_name = models.CharField(
         "Sample Name", blank=True, max_length=40, db_index=True
     )
-    max_reflectance = models.FloatField(
-        "Maximum Reflectance", blank=True, db_index=True
+    max_wavelength = models.FloatField(
+        "Maximum Wavelength", blank=True, db_index=True
     )
     origin = models.ForeignKey(
         Database,
@@ -205,7 +224,12 @@ class Sample(models.Model):
     sample_desc = models.TextField(
         "Sample Description", blank=True, db_index=True
     )
-    sample_id = models.CharField("Sample ID", max_length=40, db_index=True)
+    sample_id = models.CharField(
+        "Sample ID", max_length=40, db_index=True, unique=True
+    )
+    original_sample_id = models.CharField(
+        "Original Sample ID", max_length=40, db_index=True
+    )
     sample_type = models.ForeignKey(
         SampleType,
         on_delete=models.PROTECT,
@@ -238,7 +262,7 @@ class Sample(models.Model):
     # to access the ForeignKey object fields.
     phrase_fields = ["sample_name"]
     choice_fields = ["origin__name", "sample_type__name"]
-    numeric_fields = ["min_reflectance", "max_reflectance"]
+    numeric_fields = ["min_wavelength", "max_reflectance"]
     m2m_managers = ["library"]
     searchable_fields = phrase_fields + choice_fields + numeric_fields
 
@@ -260,6 +284,7 @@ class Sample(models.Model):
         self._regularize_metadata_strings()
         self._transform_reflectance_to_numpy_array()
         self._check_for_numeracy()
+        self._check_for_absurd_values()
         self._eliminate_negativity()
         self._reshape_and_sort_reflectance()
         self._bound_and_jsonify_reflectance()
@@ -274,9 +299,8 @@ class Sample(models.Model):
         # check to see if this appears to be in the database
         # but don't do this check if it's from the admin console
         # i.e., allow updating
-        uploaded = kwargs.pop("uploaded", False)
-        if uploaded:
-            self._handle_duplicate_sample_ids()
+        # uploaded = kwargs.pop("uploaded", False)
+        self._handle_duplicate_sample_ids()
         if self.image:
             self._clean_image_field()
         convolve = kwargs.pop("convolve", True)
@@ -357,20 +381,30 @@ class Sample(models.Model):
                 json_dict |= {field.name: getattr(self, field.name)}
         return json_dict
 
+    @cached_property
+    def data_array(self):
+        return np.array(json.loads(self.reflectance))
+
     def get_simulated_spectra(self):
         return valmap(literal_eval, literal_eval(self.simulated_spectra))
 
     def _raise_for_duplicates(self):
         for refl_array in Sample.objects.filter(
-            sample_id__icontains=self.sample_id
+            sample_id__icontains=self.original_sample_id
         ).values("reflectance"):
             if self.reflectance == refl_array["reflectance"]:
-                raise ValueError(
-                    f"The sample {self.sample_id} appears to already be in "
-                    f"the database. If you're sure this is a unique sample, "
-                    f"please give it a new ID. If you're trying to correct a "
-                    f"previously uploaded sample, please contact the site "
-                    f"administrator to delete your previous uploads."
+                # TODO: make this a reporting thing instead
+                # raise ValueError(
+                #     f"The sample {self.original_sample_id} appears to "
+                #     f"already be in the database (with an identical "
+                #     f"spectrum). If you're sure this is a unique sample, "
+                #     f"please give it a new ID. If you want to correct a "
+                #     f"previously uploaded sample, please contact the site "
+                #     f"administrator to delete your previous uploads."
+                # )
+                raise IntegrityError(
+                    f"{self.original_sample_id} already in database "
+                    f"w/identical spectrum"
                 )
 
     def _handle_duplicate_sample_ids(self):
@@ -378,25 +412,20 @@ class Sample(models.Model):
         safety-feature validation step to prevent duplicate sample_id +
         reflectance.
         """
-        if self.sample_id not in Sample.objects.values_list("sample_id"):
+        ids = model_values(Sample, "sample_id")
+        if self.sample_id not in ids:
             return
         self._raise_for_duplicates()
-        old_id = self.sample_id
-        # just add incrementing numbers after an underscore
-        # TODO: this is dumb and should be replaced with something less so
-        while self.sample_id in Sample.objects.values_list("sample_id"):
-            under_search = re.search(r"_[0-9]+$", self.sample_id)
-            if under_search:
-                self.sample_id = self.sample_id[
-                    : under_search.start() + 1
-                ] + str(int(self.sample_id[under_search.start() + 1:]) + 1)
-            else:
-                self.sample_id = self.sample_id + "_1"
+        # add incrementing numbers after an underscore with an 'f'
+        naturals = accumulate(repeat(1), add)
+        while (new_id := self.sample_id + f"_f{next(naturals)}") in ids:
+            continue
         self._warnings.append(
-            f"The sample name {old_id} was already in the database, but it "
-            f"appears to be for a distinct sample. It has been renamed to "
-            f"{self.sample_id}."
+            f"A spectrum with sample ID {self.sample_id} was already in the "
+            f"database, but the spectrum is distinct. This spectrum has been "
+            f"renamed to {new_id}."
         )
+        self.sample_id = new_id
 
     def _clean_image_field(self):
         image_path = settings.SAMPLE_IMAGE_PATH
@@ -488,14 +517,24 @@ class Sample(models.Model):
             )
             self._warn_and_raise()
 
+    def _check_for_absurd_values(self):
+        max_reflectance = self.reflectance[:, 1].max()
+        try:
+            assert max_reflectance < 5
+        except AssertionError:
+            self._errors.append(
+                f"Error: max reflectance {max_reflectance} above cutoff of 5"
+            )
+            self._warn_and_raise()
+
     def _eliminate_negativity(self):
-        positives = np.all((self.reflectance >= 0), axis=0)
+        positives = np.all((self.reflectance >= 0), axis=1)
         if not all(positives):
             self._warnings.append(
                 f"Warning: there are negative reflectance values in "
                 f"{self.sample_id}. These have been deleted."
             )
-            self.reflectance = self.reflectance[:, positives]
+            self.reflectance = self.reflectance[positives]
 
     def _check_for_numeracy(self):
         try:
@@ -511,8 +550,8 @@ class Sample(models.Model):
             self._warn_and_raise()
 
     def _bound_and_jsonify_reflectance(self):
-        self.min_reflectance = self.reflectance[0][0]
-        self.max_reflectance = self.reflectance[-1][0]
+        self.min_wavelength = round(self.reflectance[0][0])
+        self.max_wavelength= round(self.reflectance[-1][0])
         self.reflectance = json.dumps(self.reflectance.tolist())
 
     def _reshape_and_sort_reflectance(self):
@@ -525,7 +564,7 @@ class Sample(models.Model):
         self.reflectance = self.reflectance[self.reflectance[:, 0].argsort()]
         if self.reflectance.shape[1] != 2:
             self._errors.append(
-                "Error: the reflectance data doesn't appear to be "
+                "Error: the reflectance values don't appear to be "
                 "properly organized into two columns. "
             )
 
@@ -542,3 +581,5 @@ class Sample(models.Model):
 
     class Meta:
         ordering = ["sample_id"]
+
+
