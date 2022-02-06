@@ -2,6 +2,7 @@
 
 import json
 from ast import literal_eval
+from functools import cache
 
 from scipy import interpolate
 from scipy import integrate
@@ -28,10 +29,7 @@ def interpolate_spectrum(
 
 
 # noinspection PyTypeChecker
-def normalize_power(
-    spectrum: pd.Series,
-    bins: np.ndarray
-) -> pd.Series:
+def normalize_power(spectrum: pd.Series, bins: np.ndarray) -> pd.Series:
     return spectrum / integrate.trapz(spectrum.values, bins)
 
 
@@ -50,17 +48,17 @@ def convolve(
 
 
 def simulate_spectrum(
-    sample: 'visor.models.Sample',
-    filterset: 'visor.models.FilterSet',
+    sample: "visor.models.Sample",
+    filterset: "visor.models.FilterSet",
     illuminated: bool = True,
 ) -> pd.DataFrame:
     # turn sample and illumination values into nice arrays
 
-    filter_wavelengths = np.array(literal_eval(filterset.wavelengths))
+    filterset_wavelengths = filterset.wavelength_array
 
-    sample = np.array(literal_eval(sample.reflectance))
-    sample_wavelengths = sample[:, 0]
-    reflectance = sample[:, 1]
+    sample_data = sample.data_array
+    sample_wavelengths = sample_data[:, 0]
+    reflectance = sample_data[:, 1]
 
     # then use them to get sample radiance
 
@@ -68,7 +66,7 @@ def simulate_spectrum(
 
     if filterset.illumination:
         if illuminated:
-            illumination = np.array(literal_eval(filterset.illumination))
+            illumination = filterset.illumination_array
             illumination_wavelengths = illumination[:, 0]
             illumination_intensity = illumination[:, 1]
 
@@ -84,11 +82,11 @@ def simulate_spectrum(
     # trim and interpolate radiance and irradiance to the bins of the filterset
 
     radiance = interpolate_spectrum(
-        filter_wavelengths, sample_wavelengths, radiance
+        filterset_wavelengths, sample_wavelengths, radiance
     )
     if illuminated:
         irradiance = interpolate_spectrum(
-            filter_wavelengths,
+            filterset_wavelengths,
             illumination_wavelengths,
             illumination_intensity,
         )
@@ -96,34 +94,27 @@ def simulate_spectrum(
         irradiance = None
 
     # load filter bank
-
-    filters = json.loads(filterset.filters)
-    for filt in filters:
-        filters[filt] = np.array(filters[filt])
+    filters = filterset.filterbank
 
     # if we hadn't already power-normalized the filters, we would normalize
-    # them here but our filtersets should all be power-normalized at upload
+    # them here, but our filtersets should all be power-normalized at upload
 
     # create blank spectral response dataframe
-
-    simulated_spectrum = (
-        pd.DataFrame(
-            np.vstack(literal_eval(filterset.filter_wavelengths)),
-            columns=["filter", "wavelength"],
-        )
-        .astype({"wavelength": "float"})
-        .sort_values(["wavelength"])
-    )
-    simulated_spectrum["response"] = 0
+    simulated_spectrum = pd.DataFrame(
+        literal_eval(filterset.filter_wavelengths),
+        columns=["filter", "wavelength"],
+    ).sort_values(["wavelength"])
 
     # convolve reflectance with each of the filters (dividing illumination
-    # back out) and stick it in the spectral response dataframe and toss out
-    # irradiance if we don't want it
-
-    for filt in filters:
-        simulated_spectrum.loc[
-            simulated_spectrum["filter"] == filt, "response"
-        ] = convolve(radiance, filters[filt], filter_wavelengths, irradiance)
+    # back out) and stick it in the spectral response dataframe.
+    response = []
+    for filt in simulated_spectrum["filter"]:
+        response.append(
+            convolve(
+                radiance, filters[filt], filterset_wavelengths, irradiance
+            )
+        )
+    simulated_spectrum["response"] = response
     return simulated_spectrum
 
 
@@ -133,7 +124,7 @@ def make_filterset(
     filters: dict,
     bins: np.ndarray,
     waves: dict[str, float],
-    illumination_path: str
+    illumination_path: str,
 ):
     """
     make_filterset below is a convenience function for generating filtersets.

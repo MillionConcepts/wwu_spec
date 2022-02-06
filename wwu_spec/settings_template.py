@@ -6,6 +6,8 @@ import os
 
 # SECURITY NOTE: you'll have to generate a new secret key file
 # on new deployments. --michael
+from pathlib import Path
+
 from .secretkey import SECRET_KEY
 
 SECRET_KEY = SECRET_KEY
@@ -73,9 +75,19 @@ WSGI_APPLICATION = "wwu_spec.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "NAME": Path(BASE_DIR, "data", "backend.sqlite3")
+    },
+    "filtersets": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": Path(BASE_DIR, "data", "filtersets.sqlite3"),
+    },
+    "spectra": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": Path(BASE_DIR, "data", "spectra.sqlite3"),
     }
 }
+
+DATABASE_ROUTERS = ['routers.VisorRouter']
 
 LOGGING = {
     "version": 1,
@@ -151,3 +163,5 @@ SAMPLE_IMAGE_PATH = os.path.join(
 )
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

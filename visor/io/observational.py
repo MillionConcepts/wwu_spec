@@ -1,6 +1,6 @@
 """
-functions to ingest data that are not in the Western Mars Lab high-resolution
-spectra format -- right now just including XCAM ROI files
+functions to ingest observational data -- right now just including
+XCAM ROI files
 """
 
 import numpy as np
