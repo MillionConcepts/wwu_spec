@@ -21,3 +21,4 @@ db.zip
 uwinn_split_ingest*csv
 some_ids_missing.csv
 /static_dev/sample_images
+/uwinn_ingest/
