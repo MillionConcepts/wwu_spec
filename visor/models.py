@@ -1,19 +1,18 @@
-from ast import literal_eval
 import json
 import os
-import re
-from functools import cache, cached_property
-from itertools import accumulate, repeat, chain
+from ast import literal_eval
+from functools import cached_property
+from itertools import accumulate, repeat
 from operator import add
 
-from django.db import models, IntegrityError
-from django import forms
-from django.conf import settings
+import PIL
+import PIL.ImageFile
 import numpy as np
 import pandas as pd
-import PIL
 from PIL import Image
-import PIL.ImageFile
+from django import forms
+from django.conf import settings
+from django.db import models, IntegrityError
 from toolz import valmap
 
 from visor.dj_utils import model_values
@@ -262,7 +261,7 @@ class Sample(models.Model):
     # to access the ForeignKey object fields.
     phrase_fields = ["sample_name"]
     choice_fields = ["origin__name", "sample_type__name"]
-    numeric_fields = ["min_wavelength", "max_reflectance"]
+    numeric_fields = ["min_wavelength", "max_wavelength"]
     m2m_managers = ["library"]
     searchable_fields = phrase_fields + choice_fields + numeric_fields
 
