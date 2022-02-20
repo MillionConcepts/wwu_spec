@@ -10,7 +10,7 @@ dependencies:
   - django
   - django-extensions
   - git
-  - toolz
+  - cytoolz
   - pandas
   - numpy
   - jupyter
