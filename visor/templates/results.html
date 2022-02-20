@@ -20,6 +20,9 @@
                                 formaction="/visor/meta/"
                                 class="btn btn-success">View Metadata
                         </button>
+                        <button type="button" class = "btn btn-success"
+                                onclick="pickUpSelected()">Pick Up
+                        </button>
                         <br>
                     </div>
                     <div class="container section">
@@ -113,7 +116,7 @@
                                                 <label for="option{{ result.id }}">
                                                 <input type="checkbox"
                                                        checked="checked"
-                                                       name="selection"
+                                                       name="main-check"
                                                        id="option{{ result.id }}"
                                                        value={{ result.id }}>
                                                 <span></span>
@@ -121,7 +124,7 @@
                                             {% else %}
                                                 <label for="option{{ result.id }}">
                                                 <input type="checkbox"
-                                                       name="selection"
+                                                       name="main-check"
                                                        id="option{{ result.id }}"
                                                        value={{ result.id }}>
                                                 <span></span>
@@ -284,8 +287,8 @@
 
     <script>
         // Select all toggle
-        function toggle(source) {
-            let checkboxes = document.getElementsByName("selection");
+        const toggle = function (source) {
+            let checkboxes = document.getElementsByName("mainSelection");
             let i = 0, n = checkboxes.length;
             for (; i < n; i++) {
                 checkboxes[i].checked = source.checked;
@@ -293,17 +296,22 @@
         }
 
         // Pagination value. Allows user to select the next page
-        function selectPage(pageNumber) {
+        const selectPage = function(pageNumber) {
             document.getElementById("page_selected").value = pageNumber;
-            document.getElementById("resultsForm").submit();
+            const form = document.forms['resultsForm']
+            let formRecord = inventoryRecordInput(form);
+            formRecord.value = inventoryPKs();
+            console.log(formRecord)
+
+            form.submit();
         }
 
-        function removeElement(element) {
+        const removeElement = function(element) {
             element.parentNode.removeChild(element);
         }
 
         // Sort results by fields. Allows user to sort the table by clicking on table header
-        function sortByField(field) {
+        const sortByField = function(field) {
             const form = document.forms['resultsForm'];
             const sortParams = document.getElementsByName("sort_params");
 
@@ -321,13 +329,14 @@
                     removeElement(sortParams[i]);
                 }
             }
-
             form.insertBefore(input, form.firstChild);
             //form.appendChild(input);
-
-
-            document.getElementById("resultsForm").submit();
+            let formRecord = inventoryRecordInput(form);
+            formRecord.value = inventoryPKs();
+            console.log(formRecord)
+            form.submit();
         }
+
 
     </script>
 

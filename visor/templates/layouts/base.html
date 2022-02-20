@@ -8,14 +8,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="description" content="">
 
-{#    <link rel="stylesheet" href="{% static 'css/normalize.css' %}">#}
     <link rel="stylesheet" href="{% static 'css/materialize.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="shortcut icon" type="image/png" href="{% static 'img/filterwheel.png' %}"/>
 
-    <style>
-
-    </style>
 
 </head>
 <body>
@@ -42,8 +38,141 @@
 <div id="title">
     {% block title %}{% endblock %}
 </div>
+<div id="inventory-container" style="position: absolute; z-index: 9999; background: aliceblue">
+    <div id="inventory-handle" style="background: #667986; color: white; height:3rem">
+    <span id="inventory-title" class="draggable-title" style="font-size: 2rem">inventory</span>
+    </div>
+    <form id="inventory-form">
+
+    <div id="inventory-content" style="display: revert; margin-left: 1rem; margin-right: 1rem; width: 45rem">
+                <div id="inventory-items">
+                    <table>
+                        <tbody id="inventory">
+
+                        </tbody>
+                    </table>
+                </div>
+            <div class="inventory-controls" style="margin-top: 0.8rem">
+                <div class="section center-align">
+                    <button type="submit" name="graphForm"
+                            formaction="/visor/graph/"
+                            class="btn inventory-action">Graph
+                    </button>
+                    <button type="submit" name="export"
+                            formaction="/visor/export/"
+                            class="btn inventory-action">Export
+                    </button>
+                    <button type="submit" name="meta"
+                            formaction="/visor/meta/"
+                            class="btn inventory-action">Metadata
+                    </button>
+                    <button id="inventory-drop-selected" onclick="dropSelected()"
+                        class="btn inventory-action" type="button">Drop Selected
+                    </button>
+                    <button id="inventory-drop-all" onclick="dropAll()"
+                            type="button" class="btn inventory-action"
+                            style="background: orangered">Drop All
+                    </button>
+
+
+                </div>
+            </div>
+    </div>
+    </form>
+</div>
 {% block content %}{% endblock %}
 
 
+<script src="{% static 'js/condragulations.js' %}"></script>
+<script>
+    // convenience shorthand functions
+    const gid = function(element) {return document.getElementById(element)}
+    const gcn = function(className) {
+        return document.getElementsByClassName(className)
+    }
+    const gen = function(name) {return document.getElementsByName(name)}
+    const gtn = function(tagName) {
+        return document.getElementsByTagName(tagName)
+    }
+    const inventory = gid("inventory")
+    const inventoryBoxes = gcn("inventory-check")
+    document.addEventListener("DOMContentLoaded", function() {
+        makeDraggable("inventory-handle", "inventory-container")
+        makeHider("inventory-handle", "inventory-content")
+    });
+    const samples = JSON.parse('{{sample_json|safe | escapejs}}')
+    const inventorySamples = JSON.parse('{{ inventory_json|safe | escapejs }}')
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        inventorySamples.forEach(sample => addInventoryRow(sample))
+    )
+    const inventoryRecordInput = function(root) {
+        let record = Array.from(root.childNodes)
+            .filter(element => element.name === "inventory-record")
+        if (record.length > 0) {return record[0]}
+        root.innerHTML += '<input name="inventory-record" type="hidden">'
+        return inventoryRecordInput(root)
+    }
+    const inventoryPKs = function() {
+        return Array.from(gen("inventory-item"))
+            .map(item => Number(item.value))
+    }
+    const mainSelections = function() {
+        return Array.from(gen("main-check"))
+            .filter(box => box.checked)
+            .map(item => Number(item.value))
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        Array.from(gtn('form')).forEach(function (form) {
+            form.addEventListener("submit", function(event) {
+                console.log('inserting pks')
+                let formRecord = inventoryRecordInput(form)
+                formRecord.value = inventoryPKs()
+                event.preventDefault()
+            })
+        })
+    })
+    const checkFactory = function(value, idPrefix="") {
+        return `<label for="${idPrefix}-check${value}">
+            <input type="checkbox"
+            name="selection"
+            class="${idPrefix}-check"
+            id="${idPrefix}-check${value}"
+            value=${value}>
+            <span></span>
+            </label>`
+    }
+    const dropSelected = function() {
+        Array.from(inventoryBoxes)
+            .filter(box => box.checked)
+            .map(box => gid(box.id.replace("check", "row"))
+            .remove()
+        )
+    }
+    const dropAll = function() {
+        Array.from(inventoryBoxes).map(
+            box => gid(box.id.replace("check", "row")).remove()
+        )
+    }
+    const addInventoryRow = function(sample) {
+        let tableRow = `<tr class="inventory-row" `
+        tableRow += `id="inventory-row${sample["id"]}">`
+        tableRow += `<td>${checkFactory(sample["id"], "inventory")}</td>`
+        let rowContent = [sample["sample_id"], sample["sample_name"]]
+        rowContent.forEach(function (field) {tableRow += `<td>${field}</td>`})
+        tableRow += `<input type="hidden" name="inventory-item" `
+        tableRow += `value="${sample["id"]}"></tr>`
+        inventory.innerHTML += tableRow
+    }
+    const pickUpSelected = function() {
+        Array.from(mainSelections()).forEach(function(id) {
+            if (inventoryPKs().includes(id)) {return}
+            let sample = samples.filter(item => item["id"] === id)[0]
+            addInventoryRow(sample)
+        })
+    }
+
+</script>
 </body>
 </html>

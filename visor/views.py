@@ -27,12 +27,23 @@ if TYPE_CHECKING:
     from django.core.handlers.wsgi import WSGIRequest
 
 
+def insert_inventory(request):
+    inventory_record = request.GET["inventory-record"]
+    if inventory_record:
+        inventory_record = list(
+            map(int, request.GET["inventory-record"].split(","))
+        )
+    return {"inventory_json": json.dumps(inventory_record)}
+
+
 def search(request: "WSGIRequest") -> HttpResponse:
     """
     render the search page with an empty search form.
     """
     page_params = {"search_formset": concealed_search_factory(request)}
-    return render(request, "search.html", page_params)
+    return render(
+        request, "search.html", page_params | insert_inventory(request)
+    )
 
 
 def no_results(request: "WSGIRequest") -> HttpResponse:
@@ -46,7 +57,8 @@ def no_results(request: "WSGIRequest") -> HttpResponse:
             "page_results": None,
             "search_results": None,
             "search_formset": None,
-        },
+        }
+        | insert_inventory(request),
     )
 
 
@@ -92,6 +104,7 @@ def results(request: "WSGIRequest") -> HttpResponse:
     page_choices, page_ids, page_results = paginate_results(
         request, search_results
     )
+    sample_json = [sample.as_json() for sample in page_results.object_list]
     return render(
         request,
         "results.html",
@@ -101,9 +114,10 @@ def results(request: "WSGIRequest") -> HttpResponse:
             "selected_ids": selected_list,
             "page_choices": page_choices,
             "page_results": page_results,
+            "sample_json": json.dumps(sample_json),
             "search_results": search_results_id_list,
             "sort_params": sort_params,
-        },
+        } | insert_inventory(request),
     )
 
 
@@ -112,7 +126,9 @@ def graph(request, template="graph.html") -> HttpResponse:
         return HttpResponse(status=204)
     if "graphForm" not in request.GET:
         return HttpResponse(status=204)
-    selections = request.GET.getlist("selection")
+    selections = request.GET.getlist("main-check")
+    if not selections:
+        selections = request.GET.getlist("inventory-check")
     if not selections:
         return HttpResponse(status=204)
     search_formset = concealed_search_factory(request)(request.GET)
@@ -211,10 +227,7 @@ def upload(request: "WSGIRequest") -> HttpResponse:
         return render(
             request,
             "upload.html",
-            {
-                "form": form,
-                "upload_errors": upload_results["errors"]
-            }
+            {"form": form, "upload_errors": upload_results["errors"]},
         )
     if upload_results["status"] == "failed during ingest":
         headline = "No samples uploaded successfully."
