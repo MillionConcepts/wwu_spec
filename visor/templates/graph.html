@@ -58,10 +58,10 @@
                         <div class="col"
                              style="width:13%; text-align:center; margin-top: 3px;">
                             <label for="max-x-input"></label>
-                            <input id="max-x-input" step="20" type="number"/>
+                            <input id="max-x-input" step="20" type="number" class="graph-number-input"/>
 
                             <label for="min-x-input"></label>
-                            <input id="min-x-input" step="20" type="number"
+                            <input id="min-x-input" step="20" type="number" class="graph-number-input"
                                    style="margin-bottom: 10px"/>
                         </div>
                         <div class="col"
@@ -71,11 +71,11 @@
                         <div class="col"
                              style="width:13%; text-align:center; padding:0; margin-top:3px; ">
                             <label for="max-y-input"></label>
-                            <input id="max-y-input" step=".01"
+                            <input id="max-y-input" step=".01" class="graph-number-input"
                                    type="number"/>
 
                             <label for="min-y-input"></label>
-                            <input id="min-y-input" step=".01" type="number"
+                            <input id="min-y-input" step=".01" type="number" class="graph-number-input"
                                    style="margin-bottom: 10px"/>
                         </div>
                         <div class="col s1" style="width: 12%">
@@ -149,7 +149,7 @@
                                     Wavelength
                                     <label>
                                         <input id="wavenormal-wavelength-input"
-                                               step="20" type="number"
+                                               step="20" type="number" class="graph-number-input"
                                                style="width:5rem">
                                     </label>
                                 </label>
@@ -228,28 +228,38 @@
                         <span class="control-header">Click to Calculate</span>
                         <div style="text-align:left">
                             <div class="control-block">
+                                <label for="no-calc">
                                 <input name="calc-mode" type="radio"
                                        id="no-calc" checked="checked"
                                        onclick="updateCalc(this)">
-                                <label for="no-calc">Nothing </label>
+                                    <span>Nothing </span>
+                                </label>
+                                <label for="slope-calc">
                                 <input name="calc-mode" type="radio"
                                        id="slope-calc"
                                        onclick="updateCalc(this)"/>
-                                <label for="slope-calc">Slope</label>
+                                <span>Slope </span>
+
+                                </label>
+                                <label for="band-min-calc">
+
                                 <input name="calc-mode" type="radio"
                                        id="band-min-calc"
                                        onclick="updateCalc(this)"/>
-                                <label for="band-min-calc">Band Depth
-                                    (minima)</label>
+                                <span>Band Depth (minima)</span>
+                                </label>
+                                <label for="band-custom-calc">
                                 <input name="calc-mode" type="radio"
                                        id="band-custom-calc"
                                        onclick="updateCalc(this)">
-                                <label for="band-custom-calc">Band Depth
-                                    (selected)</label>
+                                <span>Band Depth (selected)</span>
+                                </label>
+                                <label for="ratio-calc">
                                 <input name="calc-mode" type="radio"
                                        id="ratio-calc"
                                        onclick="updateCalc(this)">
-                                <label for="ratio-calc">Ratio</label>
+                                <span>Ratio</span>
+                                </label>
                                 <div class="switch"
                                      id="calc-all-div">
                                     <label for="calc-all-switch">
@@ -316,7 +326,7 @@
                                     <td>
                                         <label for="offset-dialog{{ result.id }}">
                                             <input id="offset-dialog{{ result.id }}"
-                                                   step=".02" type="number"
+                                                   step=".02" type="number" class = "graph-number-input"
                                                    value="0">
                                         </label>
                                     </td>
@@ -368,6 +378,7 @@
         <script src="{% static 'js/vendor/d3.min.js' %}"></script>
         <script src="{% static 'js/vendor/tinycolor.js' %}"></script>
         <script src="{% static 'js/vendor/nouislider.js' %}"></script>
+        <script src="{% static 'js/vendor/wNumb.js' %}"></script>
 
         <script>
             const toggleControls = function () {
@@ -386,7 +397,6 @@
             {# so this line of script must be in this template file #}
             const graph = JSON.parse('{{graphJSON|safe | escapejs}}');
         </script>
-        <script src="{% static 'js/wNumb.js' %}"></script>
         <script src="{% static 'js/visor_graph.js' %}"></script>
 
     {% else %}

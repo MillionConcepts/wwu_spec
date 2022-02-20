@@ -30,10 +30,12 @@
                                 of {{ page_results.paginator.count }}
                             </label>
                         </div>
+                        <label id="selectAllLabel" for="selectAllBox">
                         <input id="selectAllBox" type="checkbox"
                                name="selectall" onClick="toggle(this)">
-                        <label id="selectAllLabel" for="selectAllBox"> Select
-                            All</label>
+                        <span>Select All</span>
+                        </label>
+
                     </div>
                     <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
                         <table class="results">
@@ -108,16 +110,23 @@
                                     <td style="width:65px; flex-grow:0; flex-shrink:0">
                                         <div>
                                             {% if result.id in selected_ids %}
+                                                <label for="option{{ result.id }}">
                                                 <input type="checkbox"
                                                        checked="checked"
                                                        name="selection"
                                                        id="option{{ result.id }}"
                                                        value={{ result.id }}>
+                                                <span></span>
+                                                </label>
                                             {% else %}
+                                                <label for="option{{ result.id }}">
                                                 <input type="checkbox"
                                                        name="selection"
                                                        id="option{{ result.id }}"
                                                        value={{ result.id }}>
+                                                <span></span>
+
+                                                </label>
                                             {% endif %}
                                             <label for="option{{ result.id }}"></label>
                                         </div>
@@ -272,8 +281,6 @@
         </div>
     {% endif %}
 
-    <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
-    <script src="{% static 'js/materialize.min.js' %}"></script>
 
     <script>
         // Select all toggle

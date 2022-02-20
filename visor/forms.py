@@ -72,14 +72,14 @@ class SearchForm(forms.Form):
 
     library = forms.ChoiceField(required=False, label="Library Name")
     origin__name = forms.ChoiceField(
-        required=False, label="Database of Origin"
+        required=False, label="Database of Origin",
     )
     sample_type__name = forms.ChoiceField(
         required=False, label="Type of Sample"
     )
     wavelength_range = forms.MultipleChoiceField(
         required=False,
-        label="require values from specific wavelength ranges:",
+        label="require wavelength ranges:",
         widget=SelectMultipleHide(
             attrs={"id": "wavelength-range", "value": "", "placeholder": ""}
         ),
