@@ -62,8 +62,16 @@ WSGI_APPLICATION = "wwu_spec.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-    }
+        "NAME": os.path.join(BASE_DIR, "backend.sqlite3"),
+    },
+    "spectra": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "spectra.sqlite3"),
+    },
+    "filtersets": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "filtersets.sqlite3"),
+    },
 }
 
 LOGGING = {
