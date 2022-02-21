@@ -348,10 +348,15 @@ class Sample(models.Model):
     # TODO: is this really appropriate? it's very specifically intended to get
     #  it into a format the graph js likes. do I want this to perhaps not even
     #  live on the model? I don't like it, in any case.
-    def as_json(self):
+    def as_json(self, brief=False):
         json_dict = {}
+        brief_fields = (
+            "id", "sample_id", "sample_name", "origin", "sample_type"
+        )
         for field in self._meta.fields:
             if not getattr(self, field.name):
+                continue
+            if brief and (field.name not in brief_fields):
                 continue
             if field.name == "reflectance":
                 json_dict |= {

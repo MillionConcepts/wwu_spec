@@ -27,27 +27,38 @@ if TYPE_CHECKING:
     from django.core.handlers.wsgi import WSGIRequest
 
 
-def insert_inventory(request):
-    inventory_record = request.GET["inventory-record"]
-    if inventory_record:
-        inventory_record = list(
-            map(int, request.GET["inventory-record"].split(","))
+def get_inventory_json(request):
+    inventory_record = request.COOKIES.get('inventory', '[]')
+    try:
+        inventory_record = list(map(int, inventory_record.split(",")))
+    except ValueError:
+        return "", "[]"
+    inventory_samples = Sample.objects.filter(id__in=inventory_record)
+    return inventory_record, {
+        "inventory_json": json.dumps(
+            [sample.as_json(brief=True) for sample in inventory_samples]
         )
-    return {"inventory_json": json.dumps(inventory_record)}
+    }
 
 
 def search(request: "WSGIRequest") -> HttpResponse:
     """
     render the search page with an empty search form.
     """
-    page_params = {"search_formset": concealed_search_factory(request)}
-    return render(
-        request, "search.html", page_params | insert_inventory(request)
-    )
+    inventory_cookie, inventory_json = get_inventory_json(request)
+    page_params = {
+        "search_formset": concealed_search_factory(request),
+        "sample_json": "[]",
+        "inventory_json": inventory_json
+    }
+    response = render(request, "search.html", page_params)
+    response.set_cookie("inventory", inventory_cookie)
+    return response
 
 
 def no_results(request: "WSGIRequest") -> HttpResponse:
-    return render(
+    inventory_cookie, inventory_json = get_inventory_json(request)
+    response = render(
         request,
         "results.html",
         {
@@ -57,9 +68,12 @@ def no_results(request: "WSGIRequest") -> HttpResponse:
             "page_results": None,
             "search_results": None,
             "search_formset": None,
+            "sample_json": "[]",
+            "inventory_json": inventory_json
         }
-        | insert_inventory(request),
     )
+    response.set_cookie("inventory", inventory_cookie)
+    return response
 
 
 def results(request: "WSGIRequest") -> HttpResponse:
@@ -104,8 +118,11 @@ def results(request: "WSGIRequest") -> HttpResponse:
     page_choices, page_ids, page_results = paginate_results(
         request, search_results
     )
-    sample_json = [sample.as_json() for sample in page_results.object_list]
-    return render(
+    sample_json = json.dumps(
+        [sample.as_json(brief=True) for sample in page_results.object_list]
+    )
+    inventory_cookie, inventory_json = get_inventory_json(request)
+    response = render(
         request,
         "results.html",
         {
@@ -114,11 +131,14 @@ def results(request: "WSGIRequest") -> HttpResponse:
             "selected_ids": selected_list,
             "page_choices": page_choices,
             "page_results": page_results,
-            "sample_json": json.dumps(sample_json),
+            "sample_json": sample_json,
+            "inventory_json": inventory_json,
             "search_results": search_results_id_list,
             "sort_params": sort_params,
-        } | insert_inventory(request),
+        }
     )
+    response.set_cookie("inventory", inventory_cookie)
+    return response
 
 
 def graph(request, template="graph.html") -> HttpResponse:
@@ -126,6 +146,7 @@ def graph(request, template="graph.html") -> HttpResponse:
         return HttpResponse(status=204)
     if "graphForm" not in request.GET:
         return HttpResponse(status=204)
+    selections = request.GET.getlist("main-check")
     selections = request.GET.getlist("main-check")
     if not selections:
         selections = request.GET.getlist("inventory-check")
@@ -135,9 +156,7 @@ def graph(request, template="graph.html") -> HttpResponse:
 
     samples = Sample.objects.filter(id__in=selections)
 
-    dumplist = [obj.as_json() for obj in samples]
-
-    json_string = json.dumps(dumplist)
+    sample_json = json.dumps([sample.as_json() for sample in samples])
 
     filtersets = [
         filterset.short_name
@@ -154,10 +173,11 @@ def graph(request, template="graph.html") -> HttpResponse:
         {
             "selected_ids": selections,
             "graphResults": samples,
-            "graphJSON": json_string,
+            "sample_json": sample_json,
             "search_formset": search_formset,
             "filtersets": filtersets,
-        },
+        }
+        | get_inventory_json(request),
     )
 
 
@@ -171,15 +191,23 @@ def meta(request: "WSGIRequest") -> HttpResponse:
         selections = list(set(selections + prev_selected_list))
         samples = Sample.objects.filter(id__in=selections)
         dictionaries = [obj.as_dict() for obj in samples]
-        return render(
+        sample_json = json.dumps(
+            [sample.as_json(brief=True) for sample in samples]
+        )
+        inventory_cookie, inventory_json = get_inventory_json(request)
+        response = render(
             request,
             "meta.html",
             {
                 "search_formset": search_formset,
                 "metaResults": samples,
                 "reflectancedict": dictionaries,
-            },
+                "sample_json": sample_json,
+                "inventory_json": inventory_json
+            }
         )
+        response.set_cookie("inventory", inventory_cookie)
+        return response
 
 
 def export(request: "WSGIRequest") -> HttpResponse:

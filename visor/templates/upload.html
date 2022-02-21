@@ -16,8 +16,7 @@
 	                    <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
 	                   	<label>
 
-						{% csrf_token %}
-        	
+
 			            {{ form.file }}
 			       	</label>
                   </div>

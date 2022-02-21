@@ -25,7 +25,6 @@
     <link rel="stylesheet" href="{% static 'css/nouislider.css' %}">
 
     <body onresize="redraw();">
-    {% csrf_token %}
 
     {% if graphResults %}
         <div style="margin-left: 40px; margin-right: 40px">
@@ -371,6 +370,7 @@
                     <div style="display:None">
                         {{ search_formset }}
                     </div>
+                <input type="hidden" name="inventory-record" value="">
                 </form>
             </div>
         </div>
@@ -395,7 +395,7 @@
         <script>
             {# note that the argument of parse is filled from db by django template engine #}
             {# so this line of script must be in this template file #}
-            const graph = JSON.parse('{{graphJSON|safe | escapejs}}');
+            const graph = JSON.parse('{{sample_json|safe | escapejs}}');
         </script>
         <script src="{% static 'js/visor_graph.js' %}"></script>
 
@@ -410,7 +410,7 @@
                                 class="btn btn-success">Back to Results
                         </button>
                     </div>
-
+                <input type="hidden" name="inventory-record" value="">
                 </form>
             </div>
         </div>

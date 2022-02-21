@@ -298,12 +298,7 @@
         // Pagination value. Allows user to select the next page
         const selectPage = function(pageNumber) {
             document.getElementById("page_selected").value = pageNumber;
-            const form = document.forms['resultsForm']
-            let formRecord = inventoryRecordInput(form);
-            formRecord.value = inventoryPKs();
-            console.log(formRecord)
-
-            form.submit();
+            document.getElementById('resultsForm').submit();
         }
 
         const removeElement = function(element) {
@@ -312,7 +307,7 @@
 
         // Sort results by fields. Allows user to sort the table by clicking on table header
         const sortByField = function(field) {
-            const form = document.forms['resultsForm'];
+            const form = document.getElementById('resultsForm');
             const sortParams = document.getElementsByName("sort_params");
 
             const input = document.createElement('input');
@@ -331,10 +326,7 @@
             }
             form.insertBefore(input, form.firstChild);
             //form.appendChild(input);
-            let formRecord = inventoryRecordInput(form);
-            formRecord.value = inventoryPKs();
-            console.log(formRecord)
-            form.submit();
+            document.getElementById('resultsForm').submit();
         }
 
 
