@@ -95,7 +95,6 @@
     const inventoryBoxes = gcn("inventory-check")
     const samples = JSON.parse('{{sample_json|safe | escapejs}}')
     const inventorySamples = JSON.parse('{{ inventory_json|safe | escapejs }}')
-    {#loadListen(injectInventoryListeners())#}
     loadListen(inventorySamples.forEach(sample => addInventoryRow(sample)))
     document.addEventListener("DOMContentLoaded", function() {
         makeDraggable("inventory-handle", "inventory-container")

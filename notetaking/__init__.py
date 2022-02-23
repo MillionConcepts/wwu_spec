@@ -1,0 +1,1 @@
+from .notepad import Notepad

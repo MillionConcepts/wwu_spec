@@ -19,4 +19,5 @@ urlpatterns = [
     path('upload', views.upload, name="upload"),
     re_path(r'^about/$', views.about, name='about'),
     re_path(r'^status/$', views.status, name='status'),
+    re_path(r'^inventory/$', views.inventory, name='inventory')
 ]

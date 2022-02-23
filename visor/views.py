@@ -10,6 +10,7 @@ from django.shortcuts import render
 import PIL
 from PIL import Image
 
+from notetaking.notepad import Notepad
 from visor.io import handlers
 from visor.search import (
     search_all_samples,
@@ -27,37 +28,55 @@ if TYPE_CHECKING:
     from django.core.handlers.wsgi import WSGIRequest
 
 
-def get_inventory_json(request):
-    inventory_record = request.COOKIES.get('inventory', '[]')
+def ip(request):
+    return request.META['REMOTE_ADDR']
+
+
+def get_inventory_id_json(request) -> str:
     try:
-        inventory_record = list(map(int, inventory_record.split(",")))
-    except ValueError:
-        return "", "[]"
-    inventory_samples = Sample.objects.filter(id__in=inventory_record)
-    return inventory_record, {
-        "inventory_json": json.dumps(
+        user_notes = Notepad(ip(request))
+    except FileNotFoundError:
+        user_notes = Notepad.open(ip(request))
+        user_notes['inventory'] = "[]"
+    return user_notes['inventory']
+
+
+def set_inventory_id_json(request) -> None:
+    inventory_ids = request.GET.get("inventory")
+    try:
+        user_notes = Notepad(ip(request))
+    except FileNotFoundError:
+        user_notes = Notepad.open(ip(request))
+    user_notes['inventory'] = inventory_ids
+
+
+def load_inventory(inventory_id_json: str) -> str:
+    inventory_id_list = json.loads(inventory_id_json)
+    inventory_samples = Sample.objects.filter(id__in=inventory_id_list)
+    return json.dumps(
             [sample.as_json(brief=True) for sample in inventory_samples]
         )
-    }
+
+
+def inventory(request: "WSGIRequest") -> HttpResponse:
+    set_inventory_id_json(request)
+    return HttpResponse(status=204)
 
 
 def search(request: "WSGIRequest") -> HttpResponse:
     """
     render the search page with an empty search form.
     """
-    inventory_cookie, inventory_json = get_inventory_json(request)
     page_params = {
         "search_formset": concealed_search_factory(request),
         "sample_json": "[]",
-        "inventory_json": inventory_json
+        "inventory_json": load_inventory(get_inventory_id_json(request))
     }
     response = render(request, "search.html", page_params)
-    response.set_cookie("inventory", inventory_cookie)
     return response
 
 
 def no_results(request: "WSGIRequest") -> HttpResponse:
-    inventory_cookie, inventory_json = get_inventory_json(request)
     response = render(
         request,
         "results.html",
@@ -69,10 +88,9 @@ def no_results(request: "WSGIRequest") -> HttpResponse:
             "search_results": None,
             "search_formset": None,
             "sample_json": "[]",
-            "inventory_json": inventory_json
+            "inventory_json": load_inventory(get_inventory_id_json(request))
         }
     )
-    response.set_cookie("inventory", inventory_cookie)
     return response
 
 
@@ -121,7 +139,6 @@ def results(request: "WSGIRequest") -> HttpResponse:
     sample_json = json.dumps(
         [sample.as_json(brief=True) for sample in page_results.object_list]
     )
-    inventory_cookie, inventory_json = get_inventory_json(request)
     response = render(
         request,
         "results.html",
@@ -132,12 +149,11 @@ def results(request: "WSGIRequest") -> HttpResponse:
             "page_choices": page_choices,
             "page_results": page_results,
             "sample_json": sample_json,
-            "inventory_json": inventory_json,
+            "inventory_json": load_inventory(get_inventory_id_json(request)),
             "search_results": search_results_id_list,
             "sort_params": sort_params,
         }
     )
-    response.set_cookie("inventory", inventory_cookie)
     return response
 
 
@@ -146,7 +162,6 @@ def graph(request, template="graph.html") -> HttpResponse:
         return HttpResponse(status=204)
     if "graphForm" not in request.GET:
         return HttpResponse(status=204)
-    selections = request.GET.getlist("main-check")
     selections = request.GET.getlist("main-check")
     if not selections:
         selections = request.GET.getlist("inventory-check")
@@ -174,10 +189,10 @@ def graph(request, template="graph.html") -> HttpResponse:
             "selected_ids": selections,
             "graphResults": samples,
             "sample_json": sample_json,
+            "inventory_json": load_inventory(get_inventory_id_json(request)),
             "search_formset": search_formset,
             "filtersets": filtersets,
         }
-        | get_inventory_json(request),
     )
 
 
@@ -194,7 +209,6 @@ def meta(request: "WSGIRequest") -> HttpResponse:
         sample_json = json.dumps(
             [sample.as_json(brief=True) for sample in samples]
         )
-        inventory_cookie, inventory_json = get_inventory_json(request)
         response = render(
             request,
             "meta.html",
@@ -203,10 +217,9 @@ def meta(request: "WSGIRequest") -> HttpResponse:
                 "metaResults": samples,
                 "reflectancedict": dictionaries,
                 "sample_json": sample_json,
-                "inventory_json": inventory_json
+                "inventory_json": load_inventory(get_inventory_id_json(request)),
             }
         )
-        response.set_cookie("inventory", inventory_cookie)
         return response
 
 
@@ -302,7 +315,11 @@ def admin_upload_image(request, ids=None) -> HttpResponse:
     return render(
         request,
         "admin_upload_image.html",
-        {"ids": ids, "form": form, "warn_multiple": warn_multiple},
+        {
+            "ids": ids,
+            "form": form,
+            "warn_multiple": warn_multiple,
+        },
     )
 
 
@@ -312,12 +329,18 @@ def about(request: "WSGIRequest") -> HttpResponse:
     return render(
         request,
         "about.html",
-        {"databases": databases, "filtersets": filtersets},
+        {
+            "databases": databases,
+            "filtersets": filtersets,
+        },
     )
 
 
 def status(request: "WSGIRequest") -> HttpResponse:
-    return render(request, "status.html")
+    return render(
+        request,
+        "status.html",
+    )
 
 
 def bulk_export(request: "WSGIRequest") -> HttpResponse:
