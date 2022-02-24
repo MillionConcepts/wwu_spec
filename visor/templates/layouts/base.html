@@ -44,13 +44,15 @@
 <div id="title">
     {% block title %}{% endblock %}
 </div>
-<div id="inventory-container" style="position: absolute; z-index: 9999; background: aliceblue">
+<div id="inventory-container"
+     style="position: absolute;
+     z-index: 9999; top: 80vh; left: 0.1vw; background: aliceblue">
     <div id="inventory-handle" style="background: #667986; color: white; height:3rem">
     <span id="inventory-title" class="draggable-title" style="font-size: 2rem">inventory</span>
     </div>
     <form id="inventory-form">
 
-    <div id="inventory-content" style="display: revert; margin-left: 1rem; margin-right: 1rem; width: 45rem">
+    <div id="inventory-content" style="display: none; margin-left: 1rem; margin-right: 1rem; width: 45rem">
                 <div id="inventory-items">
                     <table>
                         <tbody id="inventory">
@@ -60,7 +62,7 @@
                 </div>
             <div class="inventory-controls" style="margin-top: 0.8rem">
                 <div class="section center-align">
-                    <button type="submit" name="graphForm"
+                    <button type="submit" name="graph"
                             formaction="/visor/graph/"
                             class="btn inventory-action">Graph
                     </button>
@@ -92,10 +94,11 @@
 <!--suppress JSVoidFunctionReturnValueUsed -->
 <script>
     const inventory = gid("inventory")
-    const inventoryBoxes = gcn("inventory-check")
+    const inventoryBoxes = gen("inventory-selection")
+    {% if sample_json %}
     const samples = JSON.parse('{{sample_json|safe | escapejs}}')
-    const inventorySamples = JSON.parse('{{ inventory_json|safe | escapejs }}')
-    loadListen(inventorySamples.forEach(sample => addInventoryRow(sample)))
+    {% endif %}
+    loadListen(checkInventory())
     document.addEventListener("DOMContentLoaded", function() {
         makeDraggable("inventory-handle", "inventory-container")
         makeHider("inventory-handle", "inventory-content")

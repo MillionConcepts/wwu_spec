@@ -6,9 +6,9 @@
     {% if search_results %}
         <div class="container section">
             <div class="card section warm-content">
-                <form id="resultsForm" method="GET" name="resultsForm">
+                <form id="resultsForm" method="GET" name="results">
                     <div class="section center-align">
-                        <button type="submit" name="graphForm"
+                        <button type="submit" name="graph"
                                 formaction="/visor/graph/"
                                 class="btn btn-success">Graph
                         </button>
@@ -34,11 +34,11 @@
                             </label>
                         </div>
                         <label id="selectAllLabel" for="selectAllBox">
-                        <input id="selectAllBox" type="checkbox"
-                               name="selectall" onClick="toggle(this)">
-                        <span>Select All</span>
+                            <input type="checkbox"
+                                   name="selectall"
+                                   onClick="toggle(this)">
+                            <span>Select All</span>
                         </label>
-
                     </div>
                     <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
                         <table class="results">
@@ -116,7 +116,7 @@
                                                 <label for="option{{ result.id }}">
                                                 <input type="checkbox"
                                                        checked="checked"
-                                                       name="main-check"
+                                                       name="main-selection"
                                                        id="option{{ result.id }}"
                                                        value={{ result.id }}>
                                                 <span></span>
@@ -124,7 +124,7 @@
                                             {% else %}
                                                 <label for="option{{ result.id }}">
                                                 <input type="checkbox"
-                                                       name="main-check"
+                                                       name="main-selection"
                                                        id="option{{ result.id }}"
                                                        value={{ result.id }}>
                                                 <span></span>
@@ -161,7 +161,7 @@
                             </tbody>
                         </table>
                         <div class="section center-align">
-                            <button type="submit" name="graphForm"
+                            <button type="submit" name="graph"
                                     formaction="/visor/graph/"
                                     class="btn btn-success">Graph
                             </button>

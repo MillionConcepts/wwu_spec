@@ -299,13 +299,15 @@
                                 <tr>
                                     <td class="graph-column">
                                         <div>
-                                            <input type="checkbox"
-                                                   checked="checked"
-                                                   name="selection"
-                                                   id="option{{ result.id }}"
-                                                   value={{ result.id }}""
-                                                   onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
-                                            <label for="option{{ result.id }}"></label>
+                                            <label for="option{{ result.id }}">
+                                                <input type="checkbox"
+                                                       checked="checked"
+                                                       name="main-selection"
+                                                       id="option{{ result.id }}"
+                                                       value={{ result.id }}
+                                                       onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
+                                                <span></span>
+                                            </label>
                                         </div>
                                     </td>
                                     <td class="graph-column">
@@ -337,13 +339,13 @@
                     <div class="col s1">
                     </div>
                 </div>
-                <form id="resultsForm" method="GET" name="resultsform">
+                <form id="resultsForm" method="GET" name="results">
                     <div class="section center-align">
                         <button type="submit" name="search"
                                 formaction="/"
                                 class="btn btn-success">Back to Search
                         </button>
-                        <button type="submit" name="resultsform"
+                        <button type="submit" name="results"
                                 formaction="/visor/results/"
                                 class="btn btn-success">Results
                         </button>
@@ -354,6 +356,9 @@
                         <button type="submit" name="meta"
                                 formaction="/visor/meta/"
                                 class="btn btn-success">View Metadata
+                        </button>
+                        <button type="button" class = "btn btn-success"
+                                onclick="pickUpSelected()">Pick Up
                         </button>
                         <br>
                     </div>
@@ -403,9 +408,9 @@
         <div id="meta" class="container section">
             <div class="card-panel center-align"
                  style="background:rgba(255,255,255,.8)">
-                <form id="resultsForm" method="GET" name="resultsform">
+                <form id="resultsForm" method="GET" name="results">
                     <div class="section center-align">
-                        <button type="submit" name="resultsForm"
+                        <button type="submit" name="results"
                                 formaction="/visor/results/"
                                 class="btn btn-success">Back to Results
                         </button>

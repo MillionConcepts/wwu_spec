@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.views.decorators.cache import never_cache
 import PIL
 from PIL import Image
 
@@ -54,15 +55,22 @@ def load_inventory(inventory_id_json: str) -> str:
     inventory_id_list = json.loads(inventory_id_json)
     inventory_samples = Sample.objects.filter(id__in=inventory_id_list)
     return json.dumps(
-            [sample.as_json(brief=True) for sample in inventory_samples]
-        )
+        [sample.as_json(brief=True) for sample in inventory_samples]
+    )
 
 
+@never_cache
+def inventory_check(request):
+    return HttpResponse(load_inventory(get_inventory_id_json(request)))
+
+
+@never_cache
 def inventory(request: "WSGIRequest") -> HttpResponse:
     set_inventory_id_json(request)
     return HttpResponse(status=204)
 
 
+@never_cache
 def search(request: "WSGIRequest") -> HttpResponse:
     """
     render the search page with an empty search form.
@@ -76,6 +84,7 @@ def search(request: "WSGIRequest") -> HttpResponse:
     return response
 
 
+@never_cache
 def no_results(request: "WSGIRequest") -> HttpResponse:
     response = render(
         request,
@@ -94,6 +103,7 @@ def no_results(request: "WSGIRequest") -> HttpResponse:
     return response
 
 
+@never_cache
 def results(request: "WSGIRequest") -> HttpResponse:
     """
     view function used to render the results of searches, including page flips
@@ -125,7 +135,8 @@ def results(request: "WSGIRequest") -> HttpResponse:
     search_results = search_results.order_by(*sort_params)
     # actually perform the search
     search_results = perform_search_from_form(search_form, search_results)
-    selections = request.GET.getlist("selection")
+    # Todo: when does this happen?
+    selections = get_selections(request)
     selected_spectra = Sample.objects.filter(id__in=selections)
     selected_list = []
     for spectra in selected_spectra:
@@ -157,22 +168,28 @@ def results(request: "WSGIRequest") -> HttpResponse:
     return response
 
 
+def get_selections(request):
+    try:
+        selection_key = next(
+            filter(lambda k: k.endswith("selection"), request.GET.keys())
+        )
+        return request.GET.getlist(selection_key)
+    except StopIteration:
+        return []
+
+
+@never_cache
 def graph(request, template="graph.html") -> HttpResponse:
     if not request.method == "GET":
         return HttpResponse(status=204)
-    if "graphForm" not in request.GET:
+    if "graph" not in request.GET:
         return HttpResponse(status=204)
-    selections = request.GET.getlist("main-check")
-    if not selections:
-        selections = request.GET.getlist("inventory-check")
-    if not selections:
+    if not (selections := get_selections(request)):
         return HttpResponse(status=204)
+
     search_formset = concealed_search_factory(request)(request.GET)
-
     samples = Sample.objects.filter(id__in=selections)
-
     sample_json = json.dumps([sample.as_json() for sample in samples])
-
     filtersets = [
         filterset.short_name
         for filterset in FilterSet.objects.all().order_by("display_order")
@@ -196,14 +213,14 @@ def graph(request, template="graph.html") -> HttpResponse:
     )
 
 
+@never_cache
 def meta(request: "WSGIRequest") -> HttpResponse:
     if request.method == "GET":
         if "meta" not in request.GET:  # something's busted, just ignore it
             return HttpResponse(status=204)
-        selections = request.GET.getlist("selection")
-        prev_selected_list = request.GET.getlist("prev_selected")
+        if not (selections := get_selections(request)):
+            return HttpResponse(status=204)
         search_formset = concealed_search_factory(request)(request.GET)
-        selections = list(set(selections + prev_selected_list))
         samples = Sample.objects.filter(id__in=selections)
         dictionaries = [obj.as_dict() for obj in samples]
         sample_json = json.dumps(
@@ -223,8 +240,10 @@ def meta(request: "WSGIRequest") -> HttpResponse:
         return response
 
 
+@never_cache
 def export(request: "WSGIRequest") -> HttpResponse:
-    selections = request.GET.getlist("selection")
+    if not (selections := get_selections(request)):
+        return HttpResponse(status=204)
     export_sim = False
     if "do-we-export-sim" in request.GET:
         if request.GET["do-we-export-sim"] == "True":
@@ -233,12 +252,12 @@ def export(request: "WSGIRequest") -> HttpResponse:
         simulated_instrument = request.GET["sim-instrument-for-export"]
     else:
         simulated_instrument = ""
-    selections = list(selections)
     return handlers.construct_export_zipfile(
         selections, export_sim, simulated_instrument
     )
 
 
+@never_cache
 def upload(request: "WSGIRequest") -> HttpResponse:
     form = UploadForm(request.POST, request.FILES)
     if not form.is_valid():
@@ -289,6 +308,7 @@ def upload(request: "WSGIRequest") -> HttpResponse:
     )
 
 
+@never_cache
 def admin_upload_image(request, ids=None) -> HttpResponse:
     warn_multiple = False
     if ids:
@@ -323,6 +343,7 @@ def admin_upload_image(request, ids=None) -> HttpResponse:
     )
 
 
+@never_cache
 def about(request: "WSGIRequest") -> HttpResponse:
     databases = Database.objects.all()
     filtersets = FilterSet.objects.all().order_by("display_order")
@@ -336,6 +357,7 @@ def about(request: "WSGIRequest") -> HttpResponse:
     )
 
 
+@never_cache
 def status(request: "WSGIRequest") -> HttpResponse:
     return render(
         request,
