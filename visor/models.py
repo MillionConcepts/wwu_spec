@@ -298,8 +298,17 @@ class Sample(models.Model):
         # check to see if this appears to be in the database
         # but don't do this check if it's from the admin console
         # i.e., allow updating
-        # uploaded = kwargs.pop("uploaded", False)
-        self._handle_duplicate_sample_ids()
+        pks = model_values(Sample, "id")
+        if int(self.id) in pks:
+            if kwargs.pop("uploaded", False) is True:
+                raise ValueError(
+                    "Sorry, modifying an existing sample is not allowed "
+                    "from this interface."
+                )
+        else:
+            # if it's not an update to an existing sample,
+            # check duplicate sample ids and true duplicates
+            self._handle_duplicate_sample_ids()
         if self.image:
             self._clean_image_field()
         convolve = kwargs.pop("convolve", True)
