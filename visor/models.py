@@ -360,7 +360,11 @@ class Sample(models.Model):
     def as_json(self, brief=False):
         json_dict = {}
         brief_fields = (
-            "id", "sample_id", "sample_name", "origin", "sample_type"
+            "id",
+            "sample_id",
+            "sample_name",
+            "origin",
+            "sample_type"
         )
         for field in self._meta.fields:
             if not getattr(self, field.name):
@@ -392,6 +396,9 @@ class Sample(models.Model):
                     json_dict |= {name: spectrum}
             else:
                 json_dict |= {field.name: getattr(self, field.name)}
+            json_dict[
+                "wavelength_range"
+            ] = f"{self.min_wavelength}-{self.max_wavelength}"
         return json_dict
 
     @cached_property

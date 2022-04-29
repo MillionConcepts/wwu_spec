@@ -33,19 +33,24 @@
                                 of {{ page_results.paginator.count }}
                             </label>
                         </div>
-                        <label id="selectAllLabel" for="selectAllBox">
+                        <div>
+                        <label id="select-all-label" for="select-all" style="width: 100px">
                             <input type="checkbox"
-                                   name="selectall"
-                                   onClick="toggle(this)">
+                                   id="select-all"
+                                   name="select-all"
+                                   class="factory-checkbox"
+                                   onclick="toggle(this)"
+                            >
                             <span>Select All</span>
                         </label>
+                        </div>
                     </div>
                     <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
                         <table class="results">
                             <thead>
                             <tr>
                                 <th style="width:65px; flex-grow:0; flex-shrink:0"></th>
-                                <th class="result_column"
+                                <th class="results-column"
                                     onclick="sortByField('sample_id')">
                                     <label class="truncate"><a>
                                         ID
@@ -58,7 +63,7 @@
                                         {% endif %}
                                     </a></label>
                                 </th>
-                                <th class="result_column"
+                                <th class="results-column"
                                     onclick="sortByField('sample_name')">
                                     <label class="truncate"><a>
                                         Name
@@ -72,7 +77,7 @@
                                     </a></label>
                                 </th>
 
-                                <th class="result_column"
+                                <th class="results-column"
                                     onclick="sortByField('origin')">
                                     <label class="truncate"><a>
                                         Origin
@@ -85,7 +90,7 @@
                                         {% endif %}
                                     </a></label>
                                 </th>
-                                <th class="result_column"
+                                <th class="results-column"
                                     onclick="sortByField('sample_type')">
                                     <label class="truncate"><a>
                                         Sample Type
@@ -98,7 +103,7 @@
                                         {% endif %}
                                     </a></label>
                                 </th>
-                                <th class="result_column">
+                                <th class="results-column">
                                     <label class="truncate"><a
                                             style="color:#1c2023">
                                         Wavelengths
@@ -106,58 +111,7 @@
                                 </th>
                             </tr>
                             </thead>
-                            <tbody style='max-height:1024px; overflow-y: auto'>
-                            {% for result in page_results %}
-                                <tr>
-
-                                    <td style="width:65px; flex-grow:0; flex-shrink:0">
-                                        <div>
-                                            {% if result.id in selected_ids %}
-                                                <label for="option{{ result.id }}">
-                                                <input type="checkbox"
-                                                       checked="checked"
-                                                       name="main-selection"
-                                                       id="option{{ result.id }}"
-                                                       value={{ result.id }}>
-                                                <span></span>
-                                                </label>
-                                            {% else %}
-                                                <label for="option{{ result.id }}">
-                                                <input type="checkbox"
-                                                       name="main-selection"
-                                                       id="option{{ result.id }}"
-                                                       value={{ result.id }}>
-                                                <span></span>
-
-                                                </label>
-                                            {% endif %}
-                                            <label for="option{{ result.id }}"></label>
-                                        </div>
-                                    </td>
-
-
-                                    <td class="result_column"><label
-                                            class="truncate"
-                                            for="option{{ result.id }}"> {{ result.sample_id }}</label>
-                                    </td>
-                                    <td class="result_column"><label
-                                            class="truncate"
-                                            for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
-                                    </td>
-
-                                    <td class="result_column"><label
-                                            class="truncate"
-                                            for="option{{ result.id }}"> {{ result.origin }} </label>
-                                    </td>
-                                    <td class="result_column"><label
-                                            class="truncate"
-                                            for="option{{ result.id }}"> {{ result.sample_type }} </label>
-                                    </td>
-                                    <td class="result_column"><label
-                                            for="option{{ result.id }}"> {{ result.min_wavelength }}-{{ result.max_wavelength }} </label>
-                                    </td>
-                                </tr>
-                            {% endfor %}
+                            <tbody id='results-body' style='max-height:1024px; overflow-y: auto'>
                             </tbody>
                         </table>
                         <div class="section center-align">
@@ -176,32 +130,11 @@
                             <br>
                         </div>
                     </div>
-
-
-
-
                     <!--- holding search form data -- perhaps awkward? --->
                     <div style="display:None">
                         {{ search_formset }}
                     </div>
 
-{# TODO: this is crufty and doesn't really do what we want, but should maybe be replaced with _something_ ('memory') #}
-{# for the results view on returning from graph  -- maybe just [age tracking#}
-{#                    {% for id in selected_ids %}#}
-{#                        {% if id not in page_ids %}#}
-{#                            <input type="hidden" name="prev_selected"#}
-{#                                   value="{{ id }}"/>#}
-{#                        {% endif %}#}
-{#                    {% endfor %}#}
-{##}
-{#                    {% if results_string %}#}
-{#                        <input type="hidden" name="results_string"#}
-{#                               value="{{ results_string }}"/>#}
-{#                    {% endif %}#}
-{#                    {% if prev_selected %}#}
-{#                        <input type="hidden" name="prev_selected"#}
-{#                               value="{{ prev_selected }}"/>#}
-{#                    {% endif %}#}
 
                     {% for sort_param in sort_params %}
                         <input type="hidden" name="sort_params"
@@ -286,14 +219,8 @@
 
 
     <script>
-        // Select all toggle
-        const toggle = function (source) {
-            let checkboxes = document.getElementsByName("mainSelection");
-            let i = 0, n = checkboxes.length;
-            for (; i < n; i++) {
-                checkboxes[i].checked = source.checked;
-            }
-        }
+
+
 
         // Pagination value. Allows user to select the next page
         const selectPage = function(pageNumber) {
@@ -329,7 +256,16 @@
             document.getElementById('resultsForm').submit();
         }
 
-
+        const resultsTable = gid("results-body")
+        const tableColumns = [
+            'sample_id', 'sample_name', 'origin', 'sample_type', 'wavelength_range'
+        ]
+        const populateResultsTable = function() {
+            samples.forEach(
+                sample => addTableRow(sample, 'results', resultsTable, tableColumns)
+            )
+        }
+        loadListen(populateResultsTable)
     </script>
 
 {% endblock %}
