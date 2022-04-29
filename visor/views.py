@@ -1,8 +1,10 @@
 from ast import literal_eval
 from functools import reduce
 import json
+import logging
 from operator import or_
 from pathlib import Path
+import random
 from typing import TYPE_CHECKING
 
 from django.http import HttpResponse
@@ -28,16 +30,36 @@ from visor.models import Database, Sample, FilterSet
 if TYPE_CHECKING:
     from django.core.handlers.wsgi import WSGIRequest
 
+logger = logging.getLogger("django")
+
 
 def ip(request):
-    return request.META['REMOTE_ADDR']
+    # forwarded ip from server layer -- this specific property may only
+    # be populated by nginx
+    forwarded_ip = request.META.get('HTTP_X_REAL_IP')
+    if forwarded_ip is not None:
+        return forwarded_ip
+    return request.META.get('REMOTE_ADDR')
+
+
+def session_id(request):
+    address = ip(request)
+    if request.session.get('identifier') is None:
+        request.session[
+            'identifier'
+        ] = f"{address}_{random.randint(1000000, 9999999)}"
+        logger.warning(
+            f"started session with identifier "
+            f"{request.session['identifier']}"
+        )
+    return request.session['identifier']
 
 
 def get_inventory_id_json(request) -> str:
     try:
-        user_notes = Notepad(ip(request))
+        user_notes = Notepad(session_id(request))
     except FileNotFoundError:
-        user_notes = Notepad.open(ip(request))
+        user_notes = Notepad.open(session_id(request))
         user_notes['inventory'] = "[]"
     return user_notes['inventory']
 
@@ -45,9 +67,9 @@ def get_inventory_id_json(request) -> str:
 def set_inventory_id_json(request) -> None:
     inventory_ids = request.GET.get("inventory")
     try:
-        user_notes = Notepad(ip(request))
+        user_notes = Notepad(session_id(request))
     except FileNotFoundError:
-        user_notes = Notepad.open(ip(request))
+        user_notes = Notepad.open(session_id(request))
     user_notes['inventory'] = inventory_ids
 
 

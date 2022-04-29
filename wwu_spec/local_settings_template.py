@@ -76,7 +76,6 @@ DATABASES = {
 
 DATABASE_ROUTERS = ['routers.VisorRouter']
 
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
