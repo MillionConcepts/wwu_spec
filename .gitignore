@@ -1,5 +1,4 @@
 *scratch*
-*.sqlite3
 .idea
 __pycache__
 secret*
@@ -22,3 +21,6 @@ uwinn_split_ingest*csv
 some_ids_missing.csv
 /static_dev/sample_images
 /uwinn_ingest/
+/data/*.sqlite3
+/data/*.sqlite3.gz
+local_user_inventory.json

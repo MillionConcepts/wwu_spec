@@ -1,3 +1,4 @@
+import sys
 from ast import literal_eval
 from functools import reduce
 import json
@@ -56,6 +57,15 @@ def session_id(request):
 
 
 def get_inventory_id_json(request) -> str:
+    # TODO: this is a hack and I don't like it. come up with a
+    #  better solution, maybe.
+    if sys.platform in ('win32', 'cygwin'):
+        inv = Path("local_user_inventory.json")
+        if inv.exists():
+            return inv.read_text()
+        else:
+            inv.write_text("[]")
+            return "[]"
     try:
         user_notes = Notepad(session_id(request))
     except FileNotFoundError:
@@ -66,6 +76,14 @@ def get_inventory_id_json(request) -> str:
 
 def set_inventory_id_json(request) -> None:
     inventory_ids = request.GET.get("inventory")
+    # TODO: this is a hack and I don't like it. come up with a
+    #  better solution.
+    if sys.platform in ('win32', 'cygwin'):
+        inv = Path("local_user_inventory.json")
+        if not inv.exists():
+            inv.touch()
+        inv.write_text(inventory_ids)
+        return
     try:
         user_notes = Notepad(session_id(request))
     except FileNotFoundError:
