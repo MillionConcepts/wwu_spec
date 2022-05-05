@@ -299,12 +299,13 @@ class Sample(models.Model):
         # but don't do this check if it's from the admin console
         # i.e., allow updating
         pks = model_values(Sample, "id")
-        if int(self.id) in pks:
-            if kwargs.pop("uploaded", False) is True:
-                raise ValueError(
-                    "Sorry, modifying an existing sample is not allowed "
-                    "from this interface."
-                )
+        if self.id is not None:
+            if int(self.id) in pks:
+                if kwargs.pop("uploaded", False) is True:
+                    raise ValueError(
+                        "Sorry, modifying an existing sample is not allowed "
+                        "from this interface."
+                    )
         else:
             # if it's not an update to an existing sample,
             # check duplicate sample ids and true duplicates
