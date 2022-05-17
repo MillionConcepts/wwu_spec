@@ -41,8 +41,6 @@ def map_metadata_to_related_tables(
         # note: actually makes a new Database object
         warnings = create_database_from_origin_field(field_dict, warnings)
     field_dict["origin"] = Database.objects.get(name=field_dict["origin"])
-    if "sample_id" not in field_dict.keys():
-        field_dict["sample_id"], warnings = random_sample_id(warnings)
     return field_dict, warnings, errors
 
 
@@ -72,11 +70,13 @@ def create_database_from_origin_field(
     return warnings
 
 
-def random_sample_id(warnings: list) -> (str, list):
-    random_id = str(random.randint(1000000,9999999))
+def random_sample_id(field_dict: dict, warnings: list) -> (str, list):
+    random_id = str(random.randint(1000000, 9999999))
+    if "sample_name" in field_dict.keys():
+        random_id = f"{field_dict['sample_name']}_{random_id}"
     warnings.append(
         f"No id was provided for this sample. It has been assigned the "
-        f"placeholder identifier {random_id}."
+        f"identifier {random_id}."
     )
     return random_id, warnings
 
@@ -123,8 +123,10 @@ def split_data_and_metadata(
             "reflectance data after all of the metadata, or that there are "
             "some non-numeric characters in the reflectance data. "
         )
-    # make sure float NaNs have not sneakily crept in
-    meta_frame = meta_frame.astype(str)
+    # drop any empty rows/columns (stray whitespace, Excel nonsense, etc.)
+    for axis in (0, 1):
+        meta_frame = meta_frame.dropna(axis=axis, how='all')
+        data_frame = data_frame.dropna(axis=axis, how='all')
     return data_frame, meta_frame, warnings, errors
 
 

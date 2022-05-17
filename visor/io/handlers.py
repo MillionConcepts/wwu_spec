@@ -22,9 +22,74 @@ from visor.io._steps import (
     parse_csv_metadata,
     save_ingest_results_into_database,
     split_data_and_metadata,
-    write_samples_into_buffer, make_dict_for_view_function,
+    write_samples_into_buffer, make_dict_for_view_function, random_sample_id,
 )
 from visor.models import Sample
+
+
+def split_multicolumn_sample(
+    data_frame, meta_frame, warnings, errors, filename
+):
+    if meta_frame.shape[1] != data_frame.shape[1]:
+        if meta_frame.shape[1] > 2:
+            errors.append(
+                f"Error: number of header columns does not match number of "
+                f"data columns."
+            )
+            return ingested_sample_dict(None, filename, warnings, errors)
+        else:
+            warnings.append(
+                "Only one header column given. Assuming its values apply to "
+                "all data columns."
+            )
+            for ix in range(2, data_frame.shape[1]):
+                meta_frame[ix] = meta_frame[1]
+    for ix, row in meta_frame.iterrows():
+        row_nans = row.loc[row.isna()]
+        if len(row_nans) == 0:
+            continue
+        warnings.append(
+            f"Missing values found in header row {ix} ({row.loc[0]}). "
+            f"Assuming the first value ({row.loc[1]}) applies to all samples."
+        )
+        meta_frame.loc[ix, row.isna()] = row.loc[1]
+    split_frames = []
+    for data_col, meta_col in zip(data_frame.columns, meta_frame.columns):
+        if data_col == 0:
+            continue
+        split_data = data_frame[[0, data_col]]
+        split_data.columns = [0, 1]
+        split_meta = meta_frame[[0, meta_col]]
+        split_meta.columns = [0, 1]
+        split_frames.append((split_data, split_meta))
+    sample_dicts = []
+    for data, meta in split_frames:
+        # map metadata field names to fields of visor.models.Sample
+        field_dict, warnings, errors = parse_csv_metadata(
+            meta, warnings, errors
+        )
+        # map metadata values for FOREIGN KEY / many-to-many fields to
+        # instances of those objects in our database
+        field_dict, warnings, errors = map_metadata_to_related_tables(
+            field_dict, warnings, errors
+        )
+        if len(errors) > 0:
+            return ingested_sample_dict(None, filename, warnings, errors)
+        sample_dicts.append(field_dict | {"reflectance": data})
+    if "sample_id" not in sample_dicts[0].keys():
+        sample_id, warnings = random_sample_id(sample_dicts[0], warnings)
+        sample_dicts = [d | {"sample_id": sample_id} for d in sample_dicts]
+    if all(
+        [d["sample_id"] == sample_dicts[0]["sample_id"] for d in sample_dicts]
+    ):
+        for ix, d in enumerate(sample_dicts):
+            d["sample_id"] = f"{d['sample_id']}_{ix}"
+    return {
+        "sample": [Sample(**sample_dict) for sample_dict in sample_dicts],
+        "filename": filename,
+        "warnings": warnings,
+        "errors": None
+    }
 
 
 def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
@@ -46,20 +111,10 @@ def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
     )
     if len(errors) > 0:
         return ingested_sample_dict(None, filename, warnings, errors)
-    # check for and handle multicolumn reflectance data
-    # we simply strip unwanted empty columns off the end of the metadata frame
-    # and split the data frame into a list of dataframes
     if data_frame.shape[1] > 2:
-        meta_frame = meta_frame.iloc[:, 0:2]
-        split_frames = []
-        for refl_col in data_frame.columns:
-            if refl_col == 0:
-                continue
-            split_frame = data_frame[[0, refl_col]]
-            split_frame.columns = [0, 1]
-            split_frames.append(split_frame)
-        data_frame = split_frames
-
+        return split_multicolumn_sample(
+            data_frame, meta_frame, warnings, errors, filename
+        )
     # map metadata field names to fields of visor.models.Sample
     field_dict, warnings, errors = parse_csv_metadata(
         meta_frame, warnings, errors
@@ -72,16 +127,6 @@ def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
     field_dict |= {"import_notes": str(warnings), "filename": filename}
     if errors:
         return ingested_sample_dict(None, filename, warnings, errors)
-    # split multicolumn data into a list of Sample objects
-    if isinstance(data_frame, list):
-        sample_out = []
-        for ix, column in enumerate(data_frame):
-            unique_items = {
-                "reflectance": column,
-                # add incrementing numbers to distinguish the columns
-                "sample_id": field_dict["sample_id"] + "_" + str(ix),
-            }
-            sample_out.append(Sample(**(field_dict | unique_items)))
     # and make single-column data into a single Sample object
     else:
         sample_out = Sample(**(field_dict | {"reflectance": data_frame}))
