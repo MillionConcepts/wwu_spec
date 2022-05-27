@@ -347,7 +347,7 @@ class Sample(models.Model):
         frames = {}
         for instrument in instruments:
             frame = pd.read_json(sims[instrument])
-            base_name = instrument.strip("_no_illumination")
+            base_name = instrument.replace("_no_illumination", "")
             if base_name in sims.keys():
                 frame["solar_illuminated_response"] = pd.read_json(
                     sims[base_name]
