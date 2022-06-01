@@ -23,5 +23,6 @@ some_ids_missing.csv
 /uwinn_ingest/
 /data/*.sqlite3
 /data/*.sqlite3.gz
+/data/*.csv
 /data/backup/**
 local_user_inventory.json
