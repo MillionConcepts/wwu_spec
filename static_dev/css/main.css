@@ -1,0 +1,497 @@
+@font-face {
+    font-family: "Share Tech Mono";
+    src: url("../fonts/Share_Tech_Mono/ShareTechMono-Regular.ttf") format("truetype");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Regular.ttf") format("truetype");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Medium.ttf") format("truetype");
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "Fira Mono";
+    src: url("../fonts/Fira Mono/FiraMono-Bold.ttf") format("truetype");
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/Material Icons/material_icons_67.woff2') format('woff2')
+}
+
+html {
+    font-family: "Fira Mono", sans-serif;
+    background: #003f87;
+    color: #1c2023;
+}
+
+ul:not(.browser-default) {
+  padding-left: inherit;
+  list-style-type: inherit;
+}
+
+ul:not(.browser-default) li {
+  list-style-type: inherit;
+}
+
+ul.note-list {
+    line-height: 1.4rem;
+    margin-left: 1rem;
+    padding-left: 1rem
+}
+
+label {
+    color: #1c2023;
+    font-size: 0.9rem
+}
+
+a {
+    color: #007ac8;
+    opacity: 1;
+}
+
+code {
+    font-family: "Share Tech Mono", monospace;
+    background: rgba(0, 0, 0, 0.08)
+}
+
+.warm-content {
+    background: #f5f6f7;
+}
+
+.body-text-holder {
+    max-width: 60rem;
+    padding: 5rem;
+    margin-left: 5rem
+}
+
+.truncate {
+    overflow: visible;
+    white-space: pre-line;
+    word-wrap: break-word;
+    line-height: 1em;
+}
+
+
+.material-icons {
+    font-family: 'Material Icons', fantasy;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -moz-font-feature-settings: 'liga';
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+    width: 98%;
+}
+
+
+.dropdown-content li > a, .dropdown-content li > span {
+    color: #007ac8;
+}
+
+.graph-card {
+    background: #e6ecf3;
+}
+
+.noUi-horizontal, .noUi-handle, .noUi-vertical, .noUi-connect, .noUi-horizontal {
+    background-color: #007ac8 !important
+}
+
+.noUi-base {
+    background-color: #003f87;
+}
+
+.switch label .lever {
+    background-color: #667986;
+}
+
+.switch label .lever:after {
+    background-color: #ffffff;
+}
+
+.switch label input[type=checkbox]:checked + .lever {
+    background-color: #667986;
+}
+
+.switch label input[type=checkbox]:checked + .lever:after {
+    background-color: #007ac8;
+}
+
+.brightswitch label .lever {
+    background-color: #006b3f;
+}
+
+.brightswitch label .lever:after {
+    background-color: #bad80a;
+}
+
+.brightswitch label input[type=checkbox]:checked + .lever {
+    background-color: #006b3f;
+}
+
+.brightswitch label input[type=checkbox]:checked + .lever:after {
+    background-color: #d6e86c;
+}
+
+.form-header {
+    display: block;
+    cursor: pointer;
+    min-height: 3rem;
+    line-height: 3rem;
+    padding: 0 1rem;
+}
+
+.search-form-section {
+    border-bottom: 1px solid #c3ccd4;
+}
+
+
+[type="radio"]:not(:checked)+span, [type="radio"]:checked+span  {
+    font-size: 0.9rem;
+}
+
+input[type="number"].graph-number-input  {
+    background-color: white;
+    border: 1px solid;
+    border-radius: 0;
+    outline: none;
+    height: 1.5rem;
+    width: 60%;
+    font-size: 1rem;
+    margin: 0 0 5px 0;
+    padding: 0;
+    box-shadow: none;
+    box-sizing: content-box;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+input, select {
+    font-family: Fira Mono, monospace
+}
+
+
+input[type="radio"]:not(:checked) + label,
+input[type="radio"]:checked + label {
+    font-size: 0.9rem;
+    height: 35px;
+    line-height: 20px;
+}
+
+[type="radio"]:checked + label:after,
+[type="radio"].with-gap:checked + label:after {
+    background-color: #007ac8;
+}
+
+[type="radio"]:checked + label:after,
+[type="radio"].with-gap:checked + label:before,
+[type="radio"].with-gap:checked + label:after {
+    border: 2px solid #007ac8;
+}
+
+.btn {
+    background-color: #007ac8;
+    font-family: Fira Mono, monospace;
+}
+
+.btn.invisible-btn {
+    background-color: transparent;
+    font-family: Fira Mono, monospace;
+    text-transform: none;
+    transition: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    font-size: 1rem;
+    color: #fff;
+    padding: 0 15px;
+    line-height: inherit;
+    height: inherit
+}
+
+.btn.invisible-btn:hover {
+    background-color: transparent;
+}
+
+.btn:hover {
+    background-color: #63c2ff;
+    font-family: Fira Mono, monospace;
+}
+
+.btn.inventory-action {
+    font-size: 12px
+}
+
+.graphButton {
+    height: 26px;
+    line-height: 26px;
+    margin-bottom: 10px;
+    margin-top: 0;
+    padding: 0 1rem;
+    font-size: 10pt;
+    background-color: #007ac8;
+}
+
+.redButton {
+    background-color: #006b3f;
+}
+
+
+.graphButton:hover {
+    background-color: #63c2ff;
+}
+
+.redButton:hover {
+    background-color: #d6e86c;
+}
+
+[type="checkbox"]:checked + label:before {
+    color: #007ac8;
+    border-right: 2px solid #007ac8;
+    border-bottom: 2px solid #007ac8;
+}
+
+.sampleImage {
+    max-width: 625px;
+    height: auto;
+}
+
+nav {
+    background: #667986;
+    height: 2rem;
+    line-height: 2rem;
+}
+
+nav ul a {
+    color: #fff;
+}
+
+.pagination li.active {
+    background: #006b3f
+}
+
+td, th {
+    max-width: 175px;
+    white-space: normal;
+}
+
+th {
+    height: 75px;
+}
+
+.inventory-row {
+    line-height: 1rem
+}
+
+.results {
+    width: 100%;
+    border: 0;
+    border-collapse: collapse;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1em;
+}
+
+.results table {
+    width: 100%;
+    border: 0;
+    border-collapse: collapse;
+    overflow: visible;
+    white-space: pre-line;
+    word-wrap: break-word;
+    line-height: 1em;
+}
+
+.results tr {
+    display: flex;
+}
+
+.results td, th {
+    align-self: flex-start;
+    display: block;
+}
+
+.results th {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: auto;
+}
+
+.results td {
+    width: 65px;
+    flex-grow: 0;
+    flex-shrink: 0
+}
+
+.results .results-column {
+    text-align: left;
+    width: 50%;
+    max-width: 200px;
+}
+
+.results tbody {
+    width: 100%;
+    display: inline;
+    overflow-y: auto;
+    height: calc(80vh - 200px);
+}
+
+.svg-text-holder, .draggable-title{
+    pointer-events: none;
+}
+
+.svg-text-div {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height: 100%;
+    width: 100%;
+}
+
+.svg-text-content {
+    font-size: 24px;
+    line-height: 2rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-family: Fira Mono, monospace;
+    pointer-events: none;
+    width: fit-content;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.graph-legend {
+    width: 100%;
+    border: 0;
+    overflow: visible;
+    border-collapse: collapse;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+table.graph-legend {
+    max-width: 80vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: fit-content;
+}
+
+.graph-legend tr {
+    display: flex;
+    align-items: center;
+}
+
+.graph-legend td, th {
+    flex-grow: 1;
+    flex-shrink: 1;
+    display: block;
+    width: auto;
+    max-width: 160px;
+    padding-top: 5px;
+    padding-bottom: 5px
+}
+
+/*.graph-legend td {*/
+/*    padding-bottom:0.1rem;*/
+/*    padding-top:0.1rem*/
+/*}*/
+
+.graph-legend thead, tbody {
+    width: 100%;
+}
+
+.graph-legend tbody {
+    display: inline;
+    overflow-y: auto;
+}
+
+.graph-legend .graph-column {
+    flex: 0;
+}
+
+.graph-column div {
+    position: relative
+}
+
+td.graph-column, th.graph-column {
+    padding-right: 2rem
+}
+
+.imgContainer {
+    width: 100%;
+    padding-top: 100%;
+    position: relative;
+}
+
+.flex-buffer {
+    display: flex;
+    flex-shrink: 1;
+    flex-grow: 0
+}
+
+.controls {
+    border-top: thin solid gray;
+    display: flex;
+    align-items: baseline;
+    flex-direction: row;
+}
+
+.control-section {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.control-block {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: baseline;
+    justify-content: center;
+    margin-bottom: 2rem;
+
+}
+
+.control-block form,
+.control-block select {
+    display: flex
+}
+
+.control-block input[type="radio"] + label,
+.control-block .switch {
+    height: fit-content;
+    min-height: 1.9rem
+}
+
+.control-header {
+    font-size: 12pt;
+    font-weight: bold;
+    align-self: center;
+    margin-bottom: 0.8rem
+}
+
+.control-block .switch {
+    display: flex
+}
