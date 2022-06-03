@@ -25,12 +25,17 @@ const resultsSelections = function() {
         .map(item => Number(item.value))
 }
 
-// Select all toggle
+// Select all toggles
 const toggle = function (source) {
     resultsCheckboxes().forEach(
         function (box) {box.checked = source.checked})
 }
 
+const inventoryToggle = function (source) {
+    inventoryBoxes.forEach(
+        function (box) {box.checked = source.checked}
+    )
+}
 
 const checkFactory = function(value, idPrefix="") {
     return `<label for="${idPrefix}-check${value}">
@@ -43,6 +48,7 @@ const checkFactory = function(value, idPrefix="") {
         </label>`
 }
 
+
 const dropSelected = function() {
     Array.from(inventoryBoxes)
         .filter(box => box.checked)
@@ -50,6 +56,8 @@ const dropSelected = function() {
         .remove()
     )
     updateInventory()
+    if (inventoryPKs().length === 0) {gid("inventory-select-all")
+    }
 }
 
 const dropAll = function() {
@@ -57,7 +65,6 @@ const dropAll = function() {
         box => gid(box.id.replace("-check", "")).remove()
     )
     updateInventory()
-
 }
 
 const undefinedToNone = function(obj) {
@@ -98,12 +105,13 @@ const checkInventory = function () {
     inventoryCall.responseType = "json"
     inventoryCall.onload = function () {
     if (inventoryCall.readyState === inventoryCall.DONE) {
-        const inventoryJSON = inventoryCall.response
+            const inventoryJSON = inventoryCall.response
             populateInventoryDiv(inventoryJSON)
         }
     }
     inventoryCall.send()
 }
+
 
 const populateInventoryDiv = function(inventoryJSON) {
     inventoryJSON.forEach(
@@ -111,6 +119,9 @@ const populateInventoryDiv = function(inventoryJSON) {
             sample, 'inventory', inventory, ['sample_id', 'sample_name']
         )
     )
+    gid("inventory-select-all-row")
+        .style
+        .display = inventoryBoxes.length === 0 ? "none" : "revert"
 }
 
 const updateInventory = function () {
@@ -118,7 +129,10 @@ const updateInventory = function () {
     const inventoryUrl = `/visor/inventory/?inventory=${JSON.stringify(inventoryPKs())}`
     inventoryCall.open("GET", inventoryUrl)
     inventoryCall.send()
-}
+    gid("inventory-select-all-row")
+        .style
+        .display = inventoryBoxes.length === 0 ? "none" : "revert"
+    }
 
 const loadListen = function (func) {
     document.addEventListener("DOMContentLoaded", func)
