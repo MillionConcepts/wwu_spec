@@ -46,15 +46,19 @@
 </div>
 <div id="inventory-container"
      style="position: absolute;
-     z-index: 9999; top: 80vh; left: 0.1vw; background: aliceblue">
+     z-index: 9999;
+     top: 80vh;
+     left: 0.1vw;
+     background: aliceblue;
+    ">
     <div id="inventory-handle" style="background: #667986; color: white; height:3rem">
         <span id="inventory-title" class="draggable-title"
               style="font-size: 2rem">inventory</span>
     </div>
     <form id="inventory-form">
-    <div id="inventory-content" style="display: none; margin-left: 1rem; margin-right: 1rem; width: 45rem">
-        <div id="inventory-items">
-
+    <div id="inventory-content" style="display: none; margin-left: 1rem; width: 45rem">
+        <div id="inventory-items"
+             style="max-height: 60vh; overflow: auto">
             <table>
                 <tbody id="inventory">
                 <tr class="inventory-row" id="inventory-select-all-row">
