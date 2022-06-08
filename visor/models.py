@@ -13,7 +13,9 @@ from PIL import Image
 from django import forms
 from django.conf import settings
 from django.db import models, IntegrityError
+from marslab.compat.xcam import DERIVED_CAM_DICT
 from toolz import valmap
+from toolz.curried import valfilter
 
 from visor.dj_utils import model_values
 from visor.spectral import simulate_spectrum
@@ -352,7 +354,33 @@ class Sample(models.Model):
                 frame["solar_illuminated_response"] = pd.read_json(
                     sims[base_name]
                 )["response"]
-            frames[base_name] = frame.to_csv(index=None)
+            frame.index = frame['filter']
+            output = {}
+            for filt in frame.index:
+                output[filt] = frame.loc[filt, 'response']
+                if 'solar_illuminated_response' in frame.columns:
+                    output[f"{filt}_ILLUM"] = frame.loc[filt, 'response']
+                output[f"{filt}_NM"] = frame.loc[filt, 'wavelength']
+            if base_name in ("Mastcam", "Mastcam-Z"):
+                code = {"Mastcam": "MCAM", "Mastcam-Z": "ZCAM"}[base_name]
+                cam_info = DERIVED_CAM_DICT[code]
+                for filt in cam_info['filters'].keys():
+                    if filt in frame.index:
+                        continue
+                    filter_pair = valfilter(
+                        lambda pair: filt in pair,
+                        cam_info["virtual_filter_mapping"]
+                    )
+                    mate = next(
+                        filter(
+                            lambda f: f != filt,
+                            next(iter(filter_pair.values()))
+                        )
+                    )
+                    output[filt] = output[mate]
+                    output[f"{filt}_ILLUM"] = output[f"{mate}_ILLUM"]
+                    output[f"{filt}_NM"] = cam_info["filters"][filt]
+            frames[base_name] = output
         return frames
 
     # TODO: is this really appropriate? it's very specifically intended to get

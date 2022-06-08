@@ -12,6 +12,7 @@ from django.conf import settings
 import numpy as np
 import pandas as pd
 import PIL
+from marslab.compat.xcam import construct_field_ordering
 
 from visor.dj_utils import model_values, extension_is, split_on
 from visor.models import SampleType, Database, Sample
@@ -391,15 +392,34 @@ def write_simulated_spectra_to_zipfile(
 ) -> zipfile.ZipFile:
     """
     writes simulated spectra into an in-memory ZipFile object as multiple
-    distinct CSV files (compressed in that archive)
+    distinct marslab-format CSV files
     """
     sims = sample.sim_csv_blocks()
     if simulated_instrument == "all":
         simulated_instruments = sims.keys()
     else:
         simulated_instruments = [simulated_instrument]
+    metadict = {
+        k.upper().replace(" ", "_"): v
+        for k, v
+        in filter(
+            lambda line: len(line) == 2,
+            map(lambda s: s.split(","), metadata.split("\n"))
+        )
+    }
+    if "SAMPLE_NAME" in metadict.keys():
+        metadict["NAME"] = metadict.pop("SAMPLE_NAME")
     for instrument in simulated_instruments:
-        text_buffer = io.StringIO(metadata + "\n" + sims[instrument])
+        output_dict = metadict | sims[instrument]
+        ordering = construct_field_ordering(
+            tuple(sims[instrument].keys()), tuple(output_dict.keys())
+        )
+        output_dict = {k: output_dict[k] for k in ordering}
+        output_text = (
+            f"{','.join(map(str, output_dict.keys()))}\n"
+            f"{','.join(map(str, output_dict.values()))}"
+        )
+        text_buffer = io.StringIO(output_text)
         text_buffer.seek(0)
         output.writestr(
             f"{sample.sample_id.replace('/', '_')}"

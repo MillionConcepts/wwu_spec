@@ -2,27 +2,13 @@
 functions to ingest observational data -- right now just including
 XCAM ROI files
 """
+from itertools import chain
 
+from marslab.compat.xcam import DERIVED_CAM_DICT, polish_xcam_spectrum
 import numpy as np
 import pandas as pd
 
-from marslab.compatibility import polish_xcam_spectrum, DERIVED_CAM_DICT
-from mcam_spect_data_conversion.convert import merspect_to_marslab
 from visor.models import Database, Sample
-
-
-MARSLAB_METADATA_FIELDS = {
-    "MCAM": (
-        "SOL",
-        "SEQ_ID",
-        "INSTRUMENT",
-        "COLOR",
-        "FEATURE",
-        "FORMATION",
-        "MEMBER",
-        "FLOAT",
-    )
-}
 
 
 def make_cam_db_entry(instrument: str):
@@ -104,25 +90,25 @@ def roi_to_sample(
 
 def ingest_xcam_roi_file(filename: str) -> None:
     """
-    ingest all spectra from a csv file containing ROI spectra from an xcam
-    instrument into VISOR. we assume the file is _either_ a marslab format file
-    or a merspect-type file that merspect_to_marslab can ingest, with
-    conventional naming format. we could add more checks to this.
+    ingest all spectra from a marslab file into VISOR.
     """
-    if not filename.endswith("-marslab.csv"):
-        merspect_to_marslab(filename)
-        filename = filename.replace(".csv", "-marslab.csv")
+    if not filename.startswith("marslab_"):
+        raise ValueError("This function only takes marslab files.")
     spectra = pd.read_csv(filename)
     instrument = spectra["INSTRUMENT"].iloc[0]
     database = make_cam_db_entry(instrument)
-    meta_fields = MARSLAB_METADATA_FIELDS[instrument]
-    for line in spectra.iterrows():
-        metadata = line[1][
-            [col for col in spectra.columns if col in meta_fields]
-        ].to_dict()
-        spectrum = (
-            line[1][[col for col in spectra.columns if col not in meta_fields]]
-            .dropna()
-            .to_dict()
-        )
+    data_columns = [
+        col for col in spectra.columns
+        if col in DERIVED_CAM_DICT[instrument]['filters']
+    ]
+    metadata_columns = [
+        col for col in spectra.columns
+        if col not in chain.from_iterable([
+            DERIVED_CAM_DICT[instrument]['filters'],
+            map(lambda s: f"{s}_ERR", DERIVED_CAM_DICT[instrument]['filters'])
+        ])
+    ]
+    for _, line in spectra.iterrows():
+        metadata = line[metadata_columns].dropna().to_dict()
+        spectrum = line[data_columns].dropna().to_dict()
         roi_to_sample(instrument, database, metadata, spectrum, filename)
