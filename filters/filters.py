@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 
 def decompose_mastcam_bayer(dataframe):
     red = dataframe.reindex(

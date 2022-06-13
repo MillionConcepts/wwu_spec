@@ -187,9 +187,7 @@
                                 <label>
                                     <select id="filter-picker" onchange="updateDataVisibility()">
                                         {% for filterset in filtersets %}
-                                            {% if 'illumination' not in filterset %}
-                                                <option value="{{ filterset }}">{{ filterset }}</option>
-                                            {% endif %}
+                                            <option value="{{ filterset }}">{{ filterset }}</option>
                                         {% endfor %}
                                     </select>
                                 </label>
@@ -210,14 +208,6 @@
                                            onclick="updateDataVisibility()">
                                     <span class="lever"></span>
                                     Show Points
-                                </label>
-                            </div>
-                            <div class="switch">
-                                <label>
-                                    <input id="illumination-switch"
-                                           type="checkbox">
-                                    <span class="lever"></span>
-                                    Add solar illumination
                                 </label>
                             </div>
                         </div>
