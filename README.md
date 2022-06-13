@@ -42,7 +42,7 @@ you use in order to properly cite their sources.
 
 VISOR was created by:
 
-* Michael St. Clair and Chase Million-- software development and UX design 
+* Michael St. Clair and Chase Million -- software development and UX design 
 * Melissa Rice -- research and requirements design
 
 VISOR is based on an older tool developed by Kyle Mellander with significant 
