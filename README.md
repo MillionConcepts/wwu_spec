@@ -2,6 +2,8 @@
 
 *a marslab project*
 
+[![DOI](https://zenodo.org/badge/238997928.svg)](https://zenodo.org/badge/latestdoi/238997928)
+
 ## Description
 
 VISOR is a search and visualization engine for reflectance spectra in
