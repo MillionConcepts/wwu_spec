@@ -1,13 +1,10 @@
 # utilities for interpreting and manipulating filter data
 
 import json
-from ast import literal_eval
-from functools import cache
 
-from scipy import interpolate
-from scipy import integrate
-import pandas as pd
 import numpy as np
+import pandas as pd
+from scipy import integrate, interpolate
 
 import visor.models
 
@@ -48,73 +45,55 @@ def convolve(
 
 
 def simulate_spectrum(
-    sample: "visor.models.Sample",
-    filterset: "visor.models.FilterSet",
-    illuminated: bool = True,
+    sample: "visor.models.Sample", filterset: "visor.models.FilterSet",
 ) -> pd.DataFrame:
-    # turn sample and illumination values into nice arrays
-
-    filterset_wavelengths = filterset.wavelength_array
-
+    # turn sample values into nice arrays
     sample_data = sample.data_array
     sample_wavelengths = sample_data[:, 0]
     reflectance = sample_data[:, 1]
-
-    # then use them to get sample radiance
-
-    radiance = reflectance
-
-    if filterset.illumination:
-        if illuminated:
-            illumination = filterset.illumination_array
-            illumination_wavelengths = illumination[:, 0]
-            illumination_intensity = illumination[:, 1]
-
-            # trim and interpolate solar (or whatever) spectrum to sample
-            # spectrum
-            irradiance = interpolate_spectrum(
-                sample_wavelengths,
-                illumination_wavelengths,
-                illumination_intensity,
-            )
-            radiance = irradiance * reflectance
-
-    # trim and interpolate radiance and irradiance to the bins of the filterset
-
-    radiance = interpolate_spectrum(
-        filterset_wavelengths, sample_wavelengths, radiance
-    )
-    if illuminated:
-        irradiance = interpolate_spectrum(
-            filterset_wavelengths,
-            illumination_wavelengths,
-            illumination_intensity,
-        )
+    # trim and interpolate reflectance values to necessary bins: for
+    # resample-only filtersets, these are simply the center wavelengths of
+    # each filterset bin; for other filtersets, these are the shared bins used
+    # in the filterset's full responsivity curves.
+    # treat these interpolated reflectance values as target radiance
+    if filterset.resample_only is True:
+        filter_bins = np.array(filterset.filter_centers)[:, 1]
+        filter_bins.sort()
     else:
-        irradiance = None
-
-    # load filter bank
-    filters = filterset.filterbank
+        filter_bins = filterset.wave_array
+    radiance = interpolate_spectrum(
+        filter_bins, sample_wavelengths, reflectance
+    )
 
     # if we hadn't already power-normalized the filters, we would normalize
-    # them here, but our filtersets should all be power-normalized at upload
+    # them here, but our filtersets should all be power-normalized at upload.
 
     # create blank spectral response dataframe
     simulated_spectrum = pd.DataFrame(
-        literal_eval(filterset.filter_wavelengths),
-        columns=["filter", "wavelength"],
+        filterset.filter_centers, columns=["filter", "wavelength"],
     ).sort_values(["wavelength"])
 
-    # convolve reflectance with each of the filters (dividing illumination
-    # back out) and stick it in the spectral response dataframe.
-    response = []
-    for filt in simulated_spectrum["filter"]:
-        response.append(
-            convolve(
-                radiance, filters[filt], filterset_wavelengths, irradiance
-            )
-        )
-    simulated_spectrum["response"] = response
+    # is this filterset assumed to have flat response across spectral bins
+    # (like many high-resolution spectrometers)?
+    if filterset.resample_only is True:
+        simulated_spectrum["response"] = radiance
+    else:
+        # otherwise, convolve reflectance with each of the filters and stick it
+        # in the spectral response dataframe.
+        responses = []
+        for _, filtwave in simulated_spectrum.iterrows():
+            filt, wave = filtwave
+            if (
+                (sample_wavelengths.max() < wave)
+                or (sample_wavelengths.min() > wave)
+            ):
+                response = 0
+            else:
+                response = convolve(
+                    radiance, filterset.filterbank[filt], filterset.wave_array
+                )
+            responses.append(response)
+        simulated_spectrum["response"] = responses
     return simulated_spectrum
 
 
@@ -124,7 +103,6 @@ def make_filterset(
     filters: dict,
     bins: np.ndarray,
     waves: dict[str, float],
-    illumination_path: str,
 ):
     """
     make_filterset below is a convenience function for generating filtersets.
@@ -166,17 +144,10 @@ def make_filterset(
         filters[filt] = normalize_power(filters[filt]["responsivity"], bins)
     for filt in filters:
         filters[filt] = np.array(filters[filt]).tolist()
-    illumination = str(
-        pd.read_csv(
-            illumination_path, names=["wavelength", "irradiance"]
-        ).values.tolist()
-    )
     filterset = {
         "name": name,
         "filters": json.dumps(filters),
         "wavelengths": str(bins.tolist()),
         "filter_wavelengths": str(waves.values.tolist()),
     }
-    if illumination_path:
-        filterset |= {"illumination": illumination}
     return visor.models.FilterSet(**filterset)

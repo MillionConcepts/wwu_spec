@@ -234,11 +234,6 @@ def graph(request, template="graph.html") -> HttpResponse:
         filterset.short_name
         for filterset in FilterSet.objects.all().order_by("display_order")
     ]
-    # TODO: cruft?
-    filtersets += [
-        filterset.short_name + " (no illumination)"
-        for filterset in FilterSet.objects.all().order_by("display_order")
-    ]
     return render(
         request,
         template,

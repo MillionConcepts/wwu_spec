@@ -487,14 +487,10 @@ const eraseVerts = function () {
 // erase every path associated with a line. use
 // during redraws and such.
 const eraseLine = function (lineID) {
-    d3.select("#line" + lineID)
-        .remove()
-    d3.select("#line" + lineID + "_r")
-        .remove()
-    d3.select("#points" + lineID)
-        .remove()
-    d3.select("#points" + lineID + "_r")
-        .remove()
+    d3.select("#line" + lineID).remove()
+    d3.select("#line" + lineID + "_r").remove()
+    d3.select("#points" + lineID).remove()
+    d3.select("#points" + lineID + "_r").remove()
 };
 
 // toggle whether or not to draw instrument / lab points / lines
@@ -634,13 +630,7 @@ const generateLine = function (sample) {
         eraseLine(sample.id + '_r')
         return;
     }
-    const simulateIlluminated = illuminationBox.checked
-    let filterSet
-    if (simulateIlluminated) {
-        filterSet = filterPicker.value;
-    } else {
-        filterSet = filterPicker.value+'_no_illumination';
-    }
+    let filterSet = filterPicker.value
     let labReflectance = Object.entries(sample["reflectance"])
     let instReflectance = Object.entries(sample[filterSet])
     const offset = parseFloat(
@@ -707,18 +697,16 @@ const toggleSpectrum = function (boxID, index) {
 };
 
 const filterPicker = gid('filter-picker');
-const illuminationBox = gid('illumination-switch')
 
-for (let selection of [filterPicker, illuminationBox]) {
-    selection.addEventListener('change', function () {
-        graph.forEach(function (sample) {
+filterPicker.addEventListener('change', function () {
+    graph.forEach(function (sample) {
             eraseLine(sample.id)
             eraseLine(sample.id + '_r')
             generateLine(sample)
         })
     },
-        {passive: true}
-)}
+    {passive: true}
+)
 
 const updateDataVisibility = function () {
     labPointsVisible = gid('point-switch').checked
@@ -1035,6 +1023,7 @@ const stepCalcFoci = function (wavelength, line) {
 
 let calcResults = {}
 
+// TODO: cruft?
 const getSampleName = function (sampleID) {
     let sampleName
     for (let sample of Object.values(graph)) {

@@ -1,3 +1,4 @@
+import ast
 import json
 import os
 from ast import literal_eval
@@ -33,19 +34,19 @@ class FilterSet(models.Model):
     )
     name = models.CharField(max_length=120, blank=True, db_index=True)
 
-    # stringified array of wavelength bins, must be shared by all filters
-    wavelengths = models.TextField(blank=False, db_index=True)
+    # stringified array of wavelength bins used in responsivity curves.
+    # must be shared by all filters.
+    # should be set null for filtersets with resample_only=True.
+    wavelengths = models.TextField(blank=False, null=True, db_index=True)
 
-    # JSON string containing dictionary of filters, formatted like:
+    # JSON string containing dictionary of filter responsivity curves,
+    # formatted like:
     # {"filter name":array_of_responsivity_values}
     # we expect all filters to be power-normalized
     # such that the integral over the wavelength bins = 1
     # see normalize_power() in spectral.py
-    filters = models.TextField(blank=False, db_index=True)
-
-    # stringified 2-D array containing wavelength and spectrum
-    # of reference illuminating radiation(e.g., solar spectrum)
-    illumination = models.TextField(blank=True, db_index=True)
+    # this should be set null for filtersets with resample_only=True.p
+    filters = models.TextField(blank=False, null=True, db_index=True)
 
     # stringified 2-D array of effective center wavelength for
     # each filter, formatted like: ["filter name",center_wavelength]
@@ -63,6 +64,10 @@ class FilterSet(models.Model):
         blank=True, default=10000, db_index=True
     )
 
+    # is this a high-resolution instrument assumed to have flat /
+    # perfectly-calibrated spectral response across all bins?
+    resample_only = models.BooleanField(default=False, db_index=True)
+
     def __str__(self):
         return self.name
 
@@ -74,12 +79,18 @@ class FilterSet(models.Model):
         return filters
 
     @cached_property
-    def wavelength_array(self):
+    def wave_array(self):
         return np.array(json.loads(self.wavelengths))
 
     @cached_property
-    def illumination_array(self):
-        return np.array(json.loads(self.illumination))
+    def filter_centers(self):
+        """
+        return a nested list formatted like: [
+            (filter name, nominal center filter frequency)
+            for filter in self.filters
+        ]
+        """
+        return ast.literal_eval(self.filter_wavelengths)
 
 
 class Library(models.Model):
@@ -345,24 +356,16 @@ class Sample(models.Model):
 
     def sim_csv_blocks(self):
         sims = dict(json.loads(self.simulated_spectra))
-        instruments = [key for key in sims if key.endswith("_no_illumination")]
         frames = {}
-        for instrument in instruments:
+        for instrument in sims.keys():
             frame = pd.read_json(sims[instrument])
-            base_name = instrument.replace("_no_illumination", "")
-            if base_name in sims.keys():
-                frame["solar_illuminated_response"] = pd.read_json(
-                    sims[base_name]
-                )["response"]
             frame.index = frame['filter']
             output = {}
             for filt in frame.index:
                 output[filt] = frame.loc[filt, 'response']
-                if 'solar_illuminated_response' in frame.columns:
-                    output[f"{filt}_ILLUM"] = frame.loc[filt, 'response']
                 output[f"{filt}_NM"] = frame.loc[filt, 'wavelength']
-            if base_name in ("Mastcam", "Mastcam-Z"):
-                code = {"Mastcam": "MCAM", "Mastcam-Z": "ZCAM"}[base_name]
+            if instrument in ("Mastcam", "Mastcam-Z"):
+                code = {"Mastcam": "MCAM", "Mastcam-Z": "ZCAM"}[instrument]
                 cam_info = DERIVED_CAM_DICT[code]
                 for filt in cam_info['filters'].keys():
                     if filt in frame.index:
@@ -378,9 +381,8 @@ class Sample(models.Model):
                         )
                     )
                     output[filt] = output[mate]
-                    output[f"{filt}_ILLUM"] = output[f"{mate}_ILLUM"]
                     output[f"{filt}_NM"] = cam_info["filters"][filt]
-            frames[base_name] = output
+            frames[instrument] = output
         return frames
 
     # TODO: is this really appropriate? it's very specifically intended to get
@@ -493,9 +495,6 @@ class Sample(models.Model):
         sims = {}
         for filterset in FilterSet.objects.all():
             sims[filterset.short_name] = simulate_spectrum(self, filterset)
-            sims[
-                filterset.short_name + "_no_illumination"
-            ] = simulate_spectrum(self, filterset, illuminated=False)
         for sim in sims:
             sims[sim] = sims[sim].reset_index(drop=True).to_json()
         self.simulated_spectra = json.dumps(sims)
