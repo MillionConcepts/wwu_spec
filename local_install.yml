@@ -17,3 +17,4 @@ dependencies:
   - pip
   - pip:
       - django-mass-edit
+      - git+https://github.com/MillionConcepts/marslab.git
