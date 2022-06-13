@@ -34,15 +34,19 @@ class FilterSet(models.Model):
     )
     name = models.CharField(max_length=120, blank=True, db_index=True)
 
-    # stringified array of wavelength bins, must be shared by all filters
-    wavelengths = models.TextField(blank=False, db_index=True)
+    # stringified array of wavelength bins used in responsivity curves.
+    # must be shared by all filters.
+    # should be set null for filtersets with resample_only=True.
+    wavelengths = models.TextField(blank=False, null=True, db_index=True)
 
-    # JSON string containing dictionary of filters, formatted like:
+    # JSON string containing dictionary of filter responsivity curves,
+    # formatted like:
     # {"filter name":array_of_responsivity_values}
     # we expect all filters to be power-normalized
     # such that the integral over the wavelength bins = 1
     # see normalize_power() in spectral.py
-    filters = models.TextField(blank=False, db_index=True)
+    # this should be set null for filtersets with resample_only=True.p
+    filters = models.TextField(blank=False, null=True, db_index=True)
 
     # stringified 2-D array of effective center wavelength for
     # each filter, formatted like: ["filter name",center_wavelength]
