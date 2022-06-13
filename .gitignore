@@ -28,3 +28,6 @@ some_ids_missing.csv
 local_user_inventory.json
 /csv_library/
 /mastcamz_library/
+!/uwinn_ingestion_handler.py
+
+!/uwinn_ingestion_handler_notebook.ipynb
