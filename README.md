@@ -8,8 +8,7 @@
 
 VISOR is a search and visualization engine for reflectance spectra in
 visible and infrared wavelengths. It is currently in open beta. It has a 
-publicly-accessible web version, 
-[which you can access at https://www.westernreflectancelab.com/visor/](https://www.westernreflectancelab.com/visor/).
+publicly-accessible web version, [which you can access at https://www.westernreflectancelab.com/visor/](https://www.westernreflectancelab.com/visor/).
 
 We developed VISOR in support of our research group's analyses of hyper- 
 and multi-spectral imaging data of planetary surfaces, and to share 
