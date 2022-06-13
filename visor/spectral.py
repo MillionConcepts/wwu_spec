@@ -51,11 +51,18 @@ def simulate_spectrum(
     sample_data = sample.data_array
     sample_wavelengths = sample_data[:, 0]
     reflectance = sample_data[:, 1]
-
-    # trim and interpolate these values to the bins of the filterset; treat
-    # this as target radiance
+    # trim and interpolate reflectance values to necessary bins: for
+    # resample-only filtersets, these are simply the center wavelengths of
+    # each filterset bin; for other filtersets, these are the shared bins used
+    # in the filterset's full responsivity curves.
+    # treat these interpolated reflectance values as target radiance
+    if filterset.resample_only is True:
+        filter_bins = np.array(filterset.filter_centers)[:, 1]
+        filter_bins.sort()
+    else:
+        filter_bins = filterset.wave_array
     radiance = interpolate_spectrum(
-        filterset.wave_array, sample_wavelengths, reflectance
+        filter_bins, sample_wavelengths, reflectance
     )
 
     # if we hadn't already power-normalized the filters, we would normalize
@@ -73,12 +80,20 @@ def simulate_spectrum(
     else:
         # otherwise, convolve reflectance with each of the filters and stick it
         # in the spectral response dataframe.
-        simulated_spectrum["response"] = [
-            convolve(
-                radiance, filterset.filterbank[filt], filterset.wave_array
-            )
-            for filt in simulated_spectrum["filter"]
-        ]
+        responses = []
+        for _, filtwave in simulated_spectrum.iterrows():
+            filt, wave = filtwave
+            if (
+                (sample_wavelengths.max() < wave)
+                or (sample_wavelengths.min() > wave)
+            ):
+                response = 0
+            else:
+                response = convolve(
+                    radiance, filterset.filterbank[filt], filterset.wave_array
+                )
+            responses.append(response)
+        simulated_spectrum["response"] = responses
     return simulated_spectrum
 
 
