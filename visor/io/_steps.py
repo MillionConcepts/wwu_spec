@@ -412,7 +412,10 @@ def write_simulated_spectra_to_zipfile(
     for instrument in simulated_instruments:
         output_dict = metadict | sims[instrument]
         ordering = construct_field_ordering(
-            tuple(sims[instrument].keys()), tuple(output_dict.keys())
+            tuple(
+                filter(lambda f: "NM" not in str(f), sims[instrument].keys())
+            ),
+            tuple(output_dict.keys())
         )
         output_dict = {k: output_dict[k] for k in ordering}
         output_text = (
