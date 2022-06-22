@@ -27,7 +27,7 @@ def interpolate_spectrum(
 
 # noinspection PyTypeChecker
 def normalize_power(spectrum: pd.Series, bins: np.ndarray) -> pd.Series:
-    return spectrum / integrate.trapz(spectrum.values, bins)
+    return spectrum / integrate.trapz(spectrum.to_numpy(), bins)
 
 
 def convolve(
@@ -100,7 +100,7 @@ def simulate_spectrum(
 # noinspection PyUnresolvedReferences
 def make_filterset(
     name: str,
-    filters: dict,
+    filters: dict[str, pd.DataFrame],
     bins: np.ndarray,
     waves: dict[str, float],
 ):
@@ -128,26 +128,19 @@ def make_filterset(
     used only for graphing convolved spectra); this is a dict formatted like
     {'filter_name':center_wavelength,'filter_name_2'...}
     """
-    # 'filter' is a python builtin so not a good variable name
-    for filt in filters:
-        filters[filt] = pd.DataFrame(
-            {
-                "wavelength": bins,
-                "responsivity": interpolate_spectrum(
-                    bins,
-                    filters[filt]["wavelength"],
-                    filters[filt]["responsivity"],
-                ),
-            }
-        )
-    for filt in filters:
-        filters[filt] = normalize_power(filters[filt]["responsivity"], bins)
-    for filt in filters:
-        filters[filt] = np.array(filters[filt]).tolist()
+    output_filters = {}
+    for band, filter_df in filters.items():
+        if not (filter_df['wavelength'].to_numpy() == bins).all():
+            responsivity = interpolate_spectrum(
+                bins, filter_df["wavelength"], filter_df['responsivity']
+            )
+        else:
+            responsivity = filter_df['responsivity']
+        output_filters[band] = normalize_power(responsivity, bins).tolist()
     filterset = {
         "name": name,
-        "filters": json.dumps(filters),
+        "filters": json.dumps(output_filters),
         "wavelengths": str(bins.tolist()),
-        "filter_wavelengths": str(waves.values.tolist()),
+        "filter_wavelengths": json.dumps(list(waves.items())),
     }
     return visor.models.FilterSet(**filterset)
