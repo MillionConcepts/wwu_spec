@@ -1,20 +1,14 @@
 name: visor
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - clize
-  - pillow
-  - scipy
-  - python=3.9
   - django
   - django-extensions
   - git
-  - cytoolz
-  - pandas
-  - numpy
   - jupyter
+  - marslab
   - pip
+  - python=3.9
   - pip:
       - django-mass-edit
-      - git+https://github.com/MillionConcepts/marslab.git
