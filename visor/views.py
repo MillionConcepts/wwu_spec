@@ -78,7 +78,7 @@ def set_inventory_id_json(request) -> None:
     inventory_ids = request.GET.get("inventory")
     # TODO: this is a hack and I don't like it. come up with a
     #  better solution.
-    if sys.platform in ('win32', 'cygwin'):
+    if sys.platform in ('win32', 'cygwin', 'darwin'):
         inv = Path("local_user_inventory.json")
         if not inv.exists():
             inv.touch()
