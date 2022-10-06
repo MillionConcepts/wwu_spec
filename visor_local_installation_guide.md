@@ -1,4 +1,4 @@
-# visor local installation guide v0.1a (2021-03-19)
+# visor local installation guide v0.2a (2022-10-05)
 
 ## introduction
 
@@ -8,24 +8,23 @@ spectra, edit your copy of the database as you please, and even import your
 own spectra. This is also useful for checking spectra files you plan to submit
 to the "official" VISOR database.
 
-Please do not use this guide to deploy VISOR on a public server. The
+**Please do not use this guide to deploy VISOR on a public server. The
 settings here are perfectly good for running a local copy for your personal
 use, but they are both insecure and inefficient for installations facing the
-open internet.
+open internet.**
 
 ## requirements
 
 ### os
 
 The instructions in this guide should work on Windows 10, macOS 10.13 or
-later, and any in-support version of any major distribution of Linux. The
-VISOR can probably be made to run on several other operating systems,
-including sandboxed/virtualized environments like Linux for Chrome OS or
-Windows Subsystem for Linux, but these cases are not covered by this guide.
+later, and any in-support version of any major distribution of Linux. They 
+should also work on most sandboxed/virtualized versions of those 
+environments, specifically including Windows Subsystem for Linux.
 
 You will also need permission to install software, and some unusual firewall
 or anti-malware software settings may interfere with VISOR. You should
-talk to a system administrator before attempting to install VISOR in a
+talk to your system administrator before attempting to install VISOR in a
 secure environment.
 
 ### hardware
@@ -55,57 +54,66 @@ also be useful to have a spreadsheet program like Microsoft Excel, iWork
 Numbers, or LibreOffice Calc installed. However, any other method of
 manipulating or viewing CSV files will also work.
 
+## step 0: clone the repository to your computer
+
+If you have `git` installed on your computer, navigate in a terminal emulator to wherever you'd 
+like to place the software and run `git clone https://github.com/MillionConcepts/wwu_spec.git`.
+If you don't, and you are on Windows or MacOS, we recommend using 
+[GitHub Desktop](https://desktop.github.com/). Install that program, run it, 
+log in to your account, choose "clone a repository from the Internet," click the "URL" tab,
+paste `https://github.com/MillionConcepts/wwu_spec.git` into the 'Repository URL' field,
+and click 'Clone'.
+
 ## step 1: install conda
 
-*If you already have Anaconda or Miniconda installed on your computer, you can
-skip this step. If it's very old and not working well, you should uninstall it first.
-We **definitely** don't recommend installing multiple versions of ```conda```
-unless you have a really strong need to do so.*
+*Note: If you already have Anaconda or Miniconda installed on your computer, you can
+skip this step. If it's very old or not working well, you should uninstall it first.
+We **definitely** don't recommend installing multiple versions of `conda`
+unless you have a strong and specific reason to do so.*
 
-[You can get ```conda``` here as part of the Miniconda distribution of Python](https://docs.conda.io/projects/continuumio-conda/en/latest/user-guide/install/index.html).
-Download the 64-bit version of the installer for your operating system and
-follow the instructions on that website to set up your environment. Make sure
-you download Miniconda3, not Miniconda2. VISOR is not compatible with
-Python 2.
+We recommend using [Mambaforge](https://github.com/conda-forge/miniforge). 
+Download the appropriate version of the installer for your operating system and 
+processor architecture (in most cases 64-bit). If you are on Windows, just double-click
+the .exe to start installation; on MacOS or Linux, navigate to wherever you downloaded
+the file in a terminal and run "sudo chmod +x name_of_file.sh" followed by 
+"./name_of_file.sh". If this doesn't work, try running the commands in that website.
+
+It you don't want to use Mambaforge, 
+[you can get `conda` here as part of the Miniconda distribution of Python](https://docs.conda.io/projects/continuumio-conda/en/latest/user-guide/install/index.html).
+Download the appropriate version of the installer and follow the instructions on that 
+website to set up your `conda` installation. Make sure you download Miniconda3, not 
+Miniconda2. VISOR is not compatible with Python 2.
+
+**IMPORTANT: If you install Miniconda, replace `mamba` in all the commands below with `conda`.**
+
+If you have trouble installing `conda`, check "common gotchas" below. If they don't help, 
+there are a multitude of helpful tutorials online. [Here is one.](https://www.youtube.com/watch?v=zL65J9c5_KU))
 
 ## step 2: create conda environment
 
-Now that you have ```conda``` installed, you can set up a Python environment
-to run VISOR. First, download the 
-[local_install.yml](https://drive.google.com/file/d/1ptrTI_qbJdaEYLwq5bMtv-AfXdBL_1D5/)
-file. Next, open up a terminal: Anaconda Prompt on Windows, Terminal on macOS,
-or your console emulator of choice on Linux. Navigate to the directory where
-you put local_install.yml and run the command:
+Now that you have `conda` installed, you can set up a Python environment
+to use VISOR. Open a terminal window: Anaconda Prompt on Windows, Terminal on macOS,
+or your terminal emulator of choice on Linux. (Windows might name the prompt "Miniconda Prompt" 
+or something instead; just search for "prompt" in the Start Menu.)
 
-```conda env create -f local_install.yml```
+Navigate to the directory where you put the repository and run the command:
+`mamba env create -f local_install.yml`
+
+## step 3: activate conda environment
 
 Say yes at the prompts and let the installation finish. Then run:
 
-```conda env list```
+`mamba env list`
 
-You should see ```VISOR``` in the list of environments. Now run:
+You should see `visor` in the list of environments. Now run:
 
-```conda activate visor```
+`conda activate visor`
 
 and you will be in a Python environment that contains all the packages
-VISOR needs to run. 
+VISOR needs. 
 
 **Important:** now that you've created this environment, you should 
-always have it active whenever you work with VISOR from the command line.
-In particular, anything you try to do with the ```manage.py``` application 
-without first running ```conda activate visor``` will probably fail.
-
-If you can't activate the environment, see 'common gotchas' below.
-
-
-## step 3: download the VISOR software
-
-Navigate to wherever on your computer you'd like to install VISOR and run
-```git clone https://github.com/MillionConcepts/wwu_spec.git```. This will
-make a directory named ```wwu_spec``` with subdirectories containing other
-parts of the application. For the remainder of the guide, ```wwu_spec``` will
-just refer to that installation root directory, which will be wherever on your
-system you installed it at this step.
+always have it active whenever you work with VISOR.
 
 ## step 4: create settings file
 
@@ -114,32 +122,36 @@ Make a copy of the file
 ```settings.py``` (make sure it's still in the ```wwu_spec/wwu_spec/``` 
 directory).
 
-## step 5: get database file
+## step 5: get database files
 
-VISOR is backed by a SQLite database. SQLite databases are contained in
-single monolithic files. The "official" VISOR database file is not versioned
-on GitHub because it's too large. We are
-[currently serving it from Google Drive.](https://drive.google.com/file/d/1ODiwwN1k2wkggcDWuMiZFppYFuRtM8z5/)
-(This is a 'clean' version of the database with no user accounts or samples
-marked out for QA.) Unzip this and place the unzipped file (```db.sqlite3```) 
-in the ```wwu_spec```  (installation root) directory. We recommend keeping a 
-backup of this file somewhere outside the working directory, especially if 
-you plan to edit or add spectra yourself. That way, you can reverse any 
-unintended changes to the database just by copying your backup over the 
-```db.sqlite3``` file in the installation root directory -- even while the
-application is running.
+VISOR is backed by SQLite databases. SQLite databases are contained in
+single monolithic files. These files are too large to conveniently version 
+on GitHub. [You can retrieve them from Google Drive.](https://drive.google.com/drive/folders/1lAMBXFL2t0oGhbD0pGXGW7lLSLQGa3Zz/)
+
+Download the three files in this folder, unzip them, and place the unzipped 
+files (`spectra.sqlite3`, `backend.sqlite3`, and `filtersets.sqlite3`) in 
+the `data` subdirectory of the `wwu_spec` directory you cloned. If you are 
+not sure you have the right directory, check to see if it contains a 
+README.md file telling you to put database files in it. We recommend keeping
+backups of these files, especially 
+if you plan to edit or add spectra / filtersets yourself. That way, you can 
+reverse any unintended changes just by copying your backup over the 
+corresponding file in the installation root directory -- even while the
+application is running!
 
 ### alternative: make an empty database
 If you **only** want to use spectra you import yourself and aren't interested
-in the lab spectra in the official database, you can skip grabbing this file.
-Instead, go to the ```wwu_spec``` (installation root) directory and run:
+in the lab spectra in the official database, you can skip grabbing 
+these files. Instead, go to the `wwu_spec` (installation root) directory 
+and run:
 
-```python manage.py migrate```
+`python manage.py migrate`
+`python manage.py migrate --database spectra`
+`python manage.py migrate --database filtersets`
 
-This will create a ```db.sqlite3``` file structured correctly for VISOR
-but containing no spectra or other information.
+This will create files structured correctly for VISOR but empty of data.
 
-## step 6: make an admin user
+## step 6: make an admin user [optional]
 
 This will allow you to upload your own spectra and use the admin console to
 edit the database. Navigate to the ```wwu_spec``` (installation root) 
@@ -153,8 +165,8 @@ directory and running ```python manage.py runserver```. You can then navigate
 to ```127.0.0.1:8000``` in your browser of choice to use VISOR. Don't
 close that terminal while you're still using VISOR, or the application
 will also close. When you're ready to close or restart VISOR, you can
-simply terminate that process (with CTRL/CMD+C or by closing the terminal) -- it
-doesn't need to be closed in any especially graceful way.
+simply terminate that process (with CTRL/CMD+C or by closing the terminal) 
+-- it doesn't need to be closed in any especially graceful way.
 
 # common gotchas
 
