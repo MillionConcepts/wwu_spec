@@ -59,7 +59,7 @@ def session_id(request):
 def get_inventory_id_json(request) -> str:
     # TODO: this is a hack and I don't like it. come up with a
     #  better solution, maybe.
-    if sys.platform in ('win32', 'cygwin'):
+    if sys.platform in ('win32', 'cygwin', 'darwin'):
         inv = Path("local_user_inventory.json")
         if inv.exists():
             return inv.read_text()
