@@ -242,13 +242,9 @@ class Sample(models.Model):
     original_sample_id = models.CharField(
         "Original Sample ID", max_length=40, db_index=True
     )
-    sample_type = models.ForeignKey(
-        SampleType,
-        on_delete=models.PROTECT,
-        null=True,
-        verbose_name="Sample Type",
+    sample_type = models.ManyToManyField(
+        SampleType, verbose_name="Sample Type",
     )
-
     # dictionary of pandas dataframes stored as json string
     simulated_spectra = models.TextField(
         "Simulated Spectra", default="{}", db_index=True
@@ -256,7 +252,6 @@ class Sample(models.Model):
     view_geom = models.CharField(
         "Viewing Geometry", blank=True, max_length=40, db_index=True
     )
-
     # fields we view as "private" or "data"
     unprintable_fields = (
         "image",
@@ -397,7 +392,7 @@ class Sample(models.Model):
             "origin",
             "sample_type"
         )
-        for field in self._meta.fields:
+        for field in self._meta.get_fields():
             if not getattr(self, field.name):
                 continue
             if brief and (field.name not in brief_fields):
@@ -410,6 +405,9 @@ class Sample(models.Model):
                 json_dict |= {"date_added": str(self.date_added)}
             elif isinstance(field, models.ForeignKey):
                 json_dict |= {field.name: getattr(self, field.name).name}
+            elif isinstance(field, models.ManyToManyField):
+                vals = [val.name for val in getattr(self, field.name).all()]
+                json_dict |= {field.name: vals}
             elif field.name == "simulated_spectra":
                 sims = json.loads(self.simulated_spectra)
                 for filterset in sims:

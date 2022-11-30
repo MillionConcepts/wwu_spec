@@ -109,4 +109,4 @@ def perform_search_from_form(search_form, search_results):
         entry = search_form.cleaned_data.get("any_field", None)
         if entry is not None:
             search_results = search_results & search_all_samples(entry)
-    return search_results
+    return search_results.distinct()

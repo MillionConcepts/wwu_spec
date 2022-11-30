@@ -65,8 +65,8 @@
                     <td> <p><b> Sample ID:</b>            {{ result.sample_id}} </p>
                     <p><b> Sample name:</b>       {{ result.sample_name }} </p>
                     <p><b> Material class:</b>      {{ result.material_class }} </p>
-                    <p><b> Sample type:</b>       {{ result.sample_type }} </p>
-                    <p><b>Formula:</b>            {{ result.formula }} </p>
+                    <p><b> Sample type:</b>       {{ result.sample_type.all|join:", " }} </p>
+                    <p><b> Formula:</b>            {{ result.formula }} </p>
                     <p><b> Description:</b>        {{ result.sample_desc }} </p>
                     <p><b> Database of origin:</b> {{ result.origin }} </p>
                     <p><b> Locality:</b>           {{ result.locality }} </p>
