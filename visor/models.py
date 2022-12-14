@@ -191,6 +191,9 @@ class Sample(models.Model):
     formula = models.CharField(
         "Formula", blank=True, max_length=40, db_index=True
     )
+    grain_size_description = models.CharField(
+        "Grain Size Description", blank=True, max_length=40, db_index=True
+    )
     grain_size = models.CharField(
         "Grain Size", blank=True, max_length=40, db_index=True
     )
