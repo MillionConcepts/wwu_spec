@@ -109,6 +109,12 @@
                                         Wavelengths
                                     </a></label>
                                 </th>
+                                <th class="results-column">
+                                    <label class="truncate"><a
+                                            style="color:#1c2023">
+                                        Size (um)
+                                    </a></label>
+                                </th>
                             </tr>
                             </thead>
                             <tbody id='results-body' style='max-height:1024px; overflow-y: auto'>
@@ -258,7 +264,12 @@
 
         const resultsTable = gid("results-body")
         const tableColumns = [
-            'sample_id', 'sample_name', 'origin', 'sample_type', 'wavelength_range'
+            'sample_id',
+            'sample_name',
+            'origin',
+            'sample_type',
+            'wavelength_range',
+            'grain_size'
         ]
         const populateResultsTable = function() {
             samples.forEach(

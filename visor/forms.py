@@ -45,12 +45,12 @@ class SelectMultipleHide(forms.SelectMultiple):
 class SearchForm(forms.Form):
     def __init__(self, *args, conceal_unreleased=True, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
-        choice_fields = {
+        model_choice_fields = {
             "origin__name": [Database, "name"],
             "sample_type__name": [SampleType, "name"],
             "library": [Library, "name"],
         }
-        for form_field, model_plus_field in choice_fields.items():
+        for form_field, model_plus_field in model_choice_fields.items():
             self.fields[form_field].choices = make_choice_list(
                 *model_plus_field, conceal_unreleased=conceal_unreleased
             )
@@ -58,18 +58,13 @@ class SearchForm(forms.Form):
     sample_name = forms.CharField(
         required=False,
         widget=forms.TextInput(
-            attrs={
-                "placeholder": "e.g. Gypsum",
-                "id": "sample-name",
-            }
+            attrs={"placeholder": "e.g. Gypsum", "id": "sample-name"}
         ),
     )
     any_field = forms.CharField(
         required=False, widget=forms.TextInput(attrs={"id": "any-field"})
     )
-
     id = forms.CharField(required=False)
-
     library = forms.ChoiceField(required=False, label="Library Name")
     origin__name = forms.ChoiceField(
         required=False, label="Database of Origin",
@@ -90,6 +85,21 @@ class SearchForm(forms.Form):
             ("VIS", "VIS (400-750 nm)"),
             ("NIR", "NIR  (750-2500 nm)"),
             ("MIR", "MIR (>2500 nm)"),
+        ],
+    )
+    size_min = forms.FloatField(required=False, label="size min (um):")
+    size_max = forms.FloatField(required=False, label="size max (um):")
+    size_strings = forms.MultipleChoiceField(
+        required=False,
+        label="size description:",
+        widget=SelectMultipleHide(
+            attrs={"id": "size-strings", "value": "", "placeholder": ""}
+        ),
+        choices=[
+            ("", ""),
+            ("Unknown", "Unknown"),
+            ("Whole Object", "Whole Object"),
+            ("Unspecified Particulate", "Unspecified Particulate")
         ],
     )
 

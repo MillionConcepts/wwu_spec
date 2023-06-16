@@ -393,7 +393,8 @@ class Sample(models.Model):
             "sample_id",
             "sample_name",
             "origin",
-            "sample_type"
+            "sample_type",
+            "grain_size"
         )
         for field in self._meta.get_fields():
             if not getattr(self, field.name):

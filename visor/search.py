@@ -1,3 +1,5 @@
+import ast
+from collections import defaultdict
 from functools import reduce
 from itertools import chain
 from operator import or_
@@ -40,6 +42,57 @@ def wavelength_range_filter(form_results, wavelength_query):
     form_results = form_results.filter(min_wavelength__lte=maximum_minimum)
     form_results = form_results.filter(max_wavelength__gte=minimum_maximum)
     return form_results
+
+
+def make_grain_size_dicts():
+    values = Sample.objects.values('grain_size', 'id')
+    strings, nums = defaultdict(list), defaultdict(list)
+    for v in values:
+        i, g = v['id'], v['grain_size']
+        if g.startswith("("):
+            tup = ast.literal_eval(g)
+            nums[i] += [g for g in tup if isinstance(g, float)]
+            strings[i] += [g for g in tup if isinstance(g, str)]
+        else:
+            try:
+                nums[i].append(float(g))
+            except ValueError:
+                strings[i].append(g)
+    return strings, nums
+
+
+def match_num_ranges(nums, num_range):
+    matches, use_range = set(), []
+    for n, infinity in zip(num_range, (float('-inf'), float('inf'))):
+        if n is None:
+            use_range.append(infinity)
+        else:
+            use_range.append(n)
+    for i, g in nums.items():
+        try:
+            if (min(g) >= use_range[0]) and (max(g) <= use_range[1]):
+                matches.add(i)
+        except ValueError:
+            continue
+    return matches
+
+
+def match_strings(strings, target_strings):
+    tset = set(target_strings)
+    sfilter = filter(lambda ig: tset.intersection(ig[1]), strings.items())
+    return set([ig[0] for ig in sfilter])
+
+
+def size_filter(search_results, target_strings=(), num_range=(None, None)):
+    # note that num_range must be ordered.
+    matches = set()
+    strings, nums = make_grain_size_dicts()
+    if num_range != (None, None):
+        matches.update(match_num_ranges(nums, num_range))
+    if target_strings != ():
+        matches.update(match_strings(strings, target_strings))
+    size_results = Sample.objects.filter(id__in=matches)
+    return search_results & size_results
 
 
 def qual_field_filter(field, entry, search_results):
@@ -102,6 +155,13 @@ def perform_search_from_form(search_form, search_results):
     if wavelength_query:
         search_results = wavelength_range_filter(
             search_results, wavelength_query
+        )
+    size_strings = search_form.cleaned_data.get("size_strings")
+    size_min = search_form.cleaned_data.get("size_min")
+    size_max = search_form.cleaned_data.get("size_max")
+    if size_min or size_max or size_strings:
+        search_results = size_filter(
+            search_results, size_strings, (size_min, size_max)
         )
     # don't bother continuing if we're already empty
     if search_results:
