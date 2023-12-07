@@ -2,10 +2,13 @@
 
 // convenience shorthand functions
 const gid = function(element) {return document.getElementById(element)}
+
 const gcn = function(className) {
     return document.getElementsByClassName(className)
 }
+
 const gen = function(name) {return document.getElementsByName(name)}
+
 const gtn = function(tagName) {
     return document.getElementsByTagName(tagName)
 }
@@ -15,14 +18,27 @@ const inventoryPKs = function() {
         .map(item => Number(item.value))
 }
 
+// for pickup on most non-graph pages
 const resultsCheckboxes = function() {
     return Array.from(gen("results-selection"))
 }
 
-const resultsSelections = function() {
-    return resultsCheckboxes()
+// for pickup on graph page
+const mainCheckboxes = function() {
+    return Array.from(gen("main-selection"))
+}
+
+// get values of all checked boxes. for pickup etc.
+const checkedIDs = function(checkboxElements) {
+    return checkboxElements
         .filter(box => box.checked)
         .map(item => Number(item.value))
+
+}
+
+const selectedIDs = function() {
+    return checkedIDs(resultsCheckboxes())
+        .concat(checkedIDs(mainCheckboxes()))
 }
 
 // Select all toggles
@@ -89,7 +105,7 @@ const addTableRow = function(sample, tableClass, parentTable, fields) {
 }
 
 const pickUpSelected = function() {
-    Array.from(resultsSelections()).forEach(function(id) {
+    Array.from(selectedIDs()).forEach(function(id) {
         if (inventoryPKs().includes(id)) {
             return
         }
@@ -111,7 +127,6 @@ const checkInventory = function () {
     }
     inventoryCall.send()
 }
-
 
 const populateInventoryDiv = function(inventoryJSON) {
     inventoryJSON.forEach(
@@ -137,7 +152,3 @@ const updateInventory = function () {
 const loadListen = function (func) {
     document.addEventListener("DOMContentLoaded", func)
 }
-
-
-
-

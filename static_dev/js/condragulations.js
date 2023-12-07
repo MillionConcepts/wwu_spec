@@ -1,8 +1,5 @@
-// Make the DIV element draggable:
-
 let whatAreWeDragging = null;
 let mouseDragTracker = {'x': 0, 'y': 0};
-let currentEvent = null;
 let draggables = [];
 let visibilityRecord = {};
 
