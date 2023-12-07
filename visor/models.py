@@ -1,22 +1,22 @@
-import ast
-import json
-import os
 from ast import literal_eval
 from functools import cached_property
+from io import StringIO
 from itertools import accumulate, repeat
+import json
 from operator import add
+import os
 
-import PIL
-import PIL.ImageFile
-import numpy as np
-import pandas as pd
-from PIL import Image
 from django import forms
 from django.conf import settings
 from django.db import models, IntegrityError
 from marslab.compat.xcam import DERIVED_CAM_DICT
-from toolz import valmap
+import numpy as np
+import pandas as pd
+import PIL
+import PIL.ImageFile
+from PIL import Image
 from toolz.curried import valfilter
+from toolz import valmap
 
 from visor.dj_utils import model_values
 from visor.spectral import simulate_spectrum
@@ -90,7 +90,7 @@ class FilterSet(models.Model):
             for filter in self.filters
         ]
         """
-        return ast.literal_eval(self.filter_wavelengths)
+        return literal_eval(self.filter_wavelengths)
 
 
 class Library(models.Model):
@@ -422,7 +422,7 @@ class Sample(models.Model):
                     # for samples that have reflectance ranges that lie
                     # totally outside of a filterset's range
                     spectrum = dict(
-                        pd.read_json(sims[filterset])
+                        pd.read_json(StringIO(sims[filterset]))
                         .drop(columns="filter")
                         .values.astype(float)
                     )
