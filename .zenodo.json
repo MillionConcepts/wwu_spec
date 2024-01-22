@@ -1,0 +1,30 @@
+{
+  "creators": [
+    {"affiliation": "Million Concepts",
+      "name": "Michael St. Clair",
+      "orcid": "0000-0002-7877-3148"
+    },
+    {"affliation": "Million Concepts",
+      "name": "Chase Million",
+      "orcid": "0000-0003-2732-3486"
+    },
+    {"affliation": "Western Washington University",
+      "name": "Melissa Rice",
+      "orcid": "0000-0002-8370-4139"
+    },
+    {"affliation": "Million Concepts",
+      "name": "Sabrina Curtis",
+      "orcid": "0009-0004-6071-5865"
+    },
+    {"affliation": "Million Concepts",
+      "name": "Sierra V. Brown",
+      "orcid": "0000-0001-6065-5461"
+  ],
+  "keywords": [
+    "spectroscopy",
+    "visible",
+    "infrared",
+  ],
+  "license": "BSD-3"
+  "upload_type": "software"
+}
