@@ -1,4 +1,5 @@
 import ast
+import warnings
 from collections import defaultdict
 from functools import reduce
 from itertools import chain
@@ -6,6 +7,8 @@ from operator import or_
 
 from django.core.paginator import Paginator
 from django.db import models
+from dustgoggles.func import gmap
+from numpy import inf
 
 from visor.constants import WAVELENGTH_RANGES
 from visor.models import Sample, Library
@@ -44,55 +47,61 @@ def wavelength_range_filter(form_results, wavelength_query):
     return form_results
 
 
-def make_grain_size_dicts():
-    values = Sample.objects.values('grain_size', 'id')
-    strings, nums = defaultdict(list), defaultdict(list)
+def make_grain_size_dicts(search_results):
+    values = search_results.values('grain_size', 'id')
+    nums, objs, unk = defaultdict(set), set(), set()
+    unknown = {'Unknown', 'Unspecified Particulate', ''}
     for v in values:
         i, g = v['id'], v['grain_size']
         if g.startswith("("):
             tup = ast.literal_eval(g)
-            nums[i] += [g for g in tup if isinstance(g, float)]
-            strings[i] += [g for g in tup if isinstance(g, str)]
+            if quant := {g for g in tup if isinstance(g, float)}:
+                nums[i].update(quant)
+            if unknown.intersection(g):
+                unk.add(i)
+            elif "Whole Object" in g:
+                objs.add(i)
+        elif g in unknown:
+            unk.add(i)
+        elif g == "Whole Object":
+            objs.add(i)
+        elif g.replace('.', '').isnumeric():
+            nums[i].add(float(g))
         else:
-            try:
-                nums[i].append(float(g))
-            except ValueError:
-                strings[i].append(g)
-    return strings, nums
+            warnings.warn(f"invalid size string {g} for sample with pk {i}")
+    return nums, objs, unk
 
+def noneinf(x, ishigh=True):
+    if x is not None:
+        return x
+    if ishigh is True:
+        return inf
+    return -inf
 
-def match_num_ranges(nums, num_range):
+def match_num_ranges(nums, size_ranges):
     matches, use_range = set(), []
-    for n, infinity in zip(num_range, (float('-inf'), float('inf'))):
-        if n is None:
-            use_range.append(infinity)
-        else:
-            use_range.append(n)
+    size_ranges = [(noneinf(a, False), noneinf(b)) for a, b in size_ranges]
     for i, g in nums.items():
-        try:
-            if (min(g) >= use_range[0]) and (max(g) <= use_range[1]):
-                matches.add(i)
-        except ValueError:
-            continue
+        for size_range in size_ranges:
+            try:
+                if (min(g) >= size_range[0]) and (max(g) <= size_range[1]):
+                    matches.add(i)
+                    break
+            except ValueError:
+                continue
     return matches
 
 
-def match_strings(strings, target_strings):
-    tset = set(target_strings)
-    sfilter = filter(lambda ig: tset.intersection(ig[1]), strings.items())
-    return set([ig[0] for ig in sfilter])
-
-
-def size_filter(search_results, target_strings=(), num_range=(None, None)):
-    # note that num_range must be ordered.
+def size_filter(search_results, sizes):
     matches = set()
-    strings, nums = make_grain_size_dicts()
-    if num_range != (None, None):
-        matches.update(match_num_ranges(nums, num_range))
-    if target_strings != ():
-        matches.update(match_strings(strings, target_strings))
-    size_results = Sample.objects.filter(id__in=matches)
-    return search_results & size_results
+    nums, objs, unk = make_grain_size_dicts(search_results)
+    if size_ranges := [t for t in sizes if isinstance(t, tuple)]:
+        matches.update(match_num_ranges(nums, size_ranges))
+    if "Whole Object" in sizes:
+        matches.update(objs)
+    if None in sizes:
+        matches.update(unk)
+    return search_results.filter(id__in=matches)
 
 
 def qual_field_filter(field, entry, search_results):
@@ -148,7 +157,7 @@ def perform_search_from_form(search_form, search_results):
     ):
         entry = search_form.cleaned_data.get(field, None)
         # "Any" entries do not restrict the search, nor do empty form fields
-        if entry in [None, "Any", '']:
+        if entry in [None, "Any", '', []]:
             continue
         search_results = qual_field_filter(field, entry, search_results)
     wavelength_query = search_form.cleaned_data.get("wavelength_range")
@@ -156,13 +165,10 @@ def perform_search_from_form(search_form, search_results):
         search_results = wavelength_range_filter(
             search_results, wavelength_query
         )
-    size_strings = search_form.cleaned_data.get("size_strings")
-    size_min = search_form.cleaned_data.get("size_min")
-    size_max = search_form.cleaned_data.get("size_max")
-    if size_min or size_max or size_strings:
-        search_results = size_filter(
-            search_results, size_strings, (size_min, size_max)
-        )
+    if (sizes := search_form.cleaned_data.get("sizes")) is not None:
+        sizes = gmap(ast.literal_eval, filter(lambda s: s != "", sizes))
+        if sizes != ():
+            search_results = size_filter(search_results, sizes)
     # don't bother continuing if we're already empty
     if search_results:
         # 'search all fields' function

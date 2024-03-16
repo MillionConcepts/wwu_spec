@@ -93,21 +93,26 @@ class SearchForm(forms.Form):
             ("MIR", "MIR (>2500 nm)"),
         ],
     )
-    size_min = forms.FloatField(required=False, label="size min (um):")
-    size_max = forms.FloatField(required=False, label="size max (um):")
-    size_strings = forms.MultipleChoiceField(
+    sizes = forms.MultipleChoiceField(
         required=False,
-        label="size description:",
-        widget=SelectMultipleHide(
-            attrs={"id": "size-strings", "value": "", "placeholder": ""}
-        ),
+        label="restrict to size categories",
+        widget=SelectMultipleHide(attrs={'id': 'size-range'}),
         choices=[
+            # note: labels should all be suitable input for literal_eval()
             ("", ""),
-            ("Unknown", "Unknown"),
-            ("Whole Object", "Whole Object"),
-            ("Unspecified Particulate", "Unspecified Particulate")
+            ("(None, 50)", "<=50 μm"),
+            ("(50, 100)", "50-100 μm"),
+            ("(100, 250)", "100-250 μm"),
+            ("(250, 500)", "250-500 μm"),
+            ("(500, 1000)", "500-1000 μm"),
+            ("(1000, 2000)", "1-2 mm"),
+            ("(2000, 5000)", "2-5 mm"),
+            ("(5000, None)", ">=5 mm"),
+            ("'Whole Object'", "Whole Object"),
+            ("None", "Unspecified")
         ],
     )
+
 
 
 def concealed_search_factory(request):
