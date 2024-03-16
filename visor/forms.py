@@ -62,7 +62,13 @@ class SearchForm(forms.Form):
         ),
     )
     any_field = forms.CharField(
-        required=False, widget=forms.TextInput(attrs={"id": "any-field"})
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "id": "any-field",
+                "placeholder": "e.g., Sulfate, or Gypsum, or SPT127"
+            }
+        )
     )
     id = forms.CharField(required=False)
     library = forms.ChoiceField(required=False, label="Library Name")
