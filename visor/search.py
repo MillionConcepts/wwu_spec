@@ -52,7 +52,8 @@ def make_grain_size_dicts(search_results):
     nums, objs, unk = defaultdict(set), set(), set()
     unknown = {'Unknown', 'Unspecified Particulate', ''}
     for v in values:
-        i, g = v['id'], v['grain_size']
+        # TODO: this replace() should not be necessary. db needs cleaning.
+        i, g = v['id'], v['grain_size'].replace("_", ",")
         if g.startswith("("):
             tup = ast.literal_eval(g)
             if quant := {g for g in tup if isinstance(g, float)}:
@@ -167,11 +168,7 @@ def perform_search_from_form(search_form, search_results):
         )
     if (sizes := search_form.cleaned_data.get("sizes")) is not None:
         sizes = gmap(
-            # Note that this behaves subtly differently on different HTTP
-            #  servers for reasons I am not totally clear on. The replace is
-            #  an attempt at input cleaning.
-            lambda s: ast.literal_eval(s.replace("_", ",")),
-            filter(lambda s: s != "", sizes)
+            lambda s: ast.literal_eval(s), filter(lambda s: s != "", sizes)
         )
         if sizes != ():
             search_results = size_filter(search_results, sizes)
