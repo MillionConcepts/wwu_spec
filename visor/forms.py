@@ -8,15 +8,13 @@ from visor.dj_utils import make_choice_list
 
 
 class SelectMultipleHide(forms.SelectMultiple):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     def create_option(
         self, name, value, label, selected, index, subindex=None, attrs=None
     ):
         index = str(index) if subindex is None else "%s_%s" % (index, subindex)
-        if attrs is None:
-            attrs = {}
+        attrs = {} if attrs is None else attrs
+        attrs = {"value": "", "placeholder": ""} | attrs
         option_attrs = (
             self.build_attrs(self.attrs, attrs)
             if self.option_inherits_attrs
@@ -48,7 +46,8 @@ class SearchForm(forms.Form):
         model_choice_fields = {
             "origin__name": [Database, "name"],
             "sample_type__name": [SampleType, "name"],
-            "library": [Library, "name"],
+            # TODO: restore if we ever actually use this
+            # "library": [Library, "name"],
         }
         for form_field, model_plus_field in model_choice_fields.items():
             self.fields[form_field].choices = make_choice_list(
@@ -71,19 +70,20 @@ class SearchForm(forms.Form):
         )
     )
     id = forms.CharField(required=False)
-    library = forms.ChoiceField(required=False, label="Library Name")
-    origin__name = forms.ChoiceField(
-        required=False, label="Database of Origin",
+    # TODO: restore if and when we actually populate these
+    # library = forms.MultipleChoiceField(
+    #     required=False, label="Library Name", widget=SelectMultipleHide()
+    # )
+    origin__name = forms.MultipleChoiceField(
+        required=False, label="Database of Origin", widget=SelectMultipleHide()
     )
-    sample_type__name = forms.ChoiceField(
-        required=False, label="Type of Sample"
+    sample_type__name = forms.MultipleChoiceField(
+        required=False, label="Type of Sample", widget=SelectMultipleHide()
     )
     wavelength_range = forms.MultipleChoiceField(
         required=False,
         label="require wavelength ranges:",
-        widget=SelectMultipleHide(
-            attrs={"id": "wavelength-range", "value": "", "placeholder": ""}
-        ),
+        widget=SelectMultipleHide(attrs={"id": "wavelength-range"}),
         choices=[
             ("", ""),
             ("UVB", "UVB (<315 nm)"),

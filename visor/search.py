@@ -103,7 +103,7 @@ def qual_field_filter(field, entry, search_results):
         return search_results & library.sample_set.all()
     # require exact phrase searches for choice fields,
     # don't waste time checking any other possibilities
-    query = field + "__iexact"
+    query = field + "__in"
     if field in Sample.choice_fields:
         search_results = search_results.filter(**{query: entry})
     # use an inflexible search for other fields
