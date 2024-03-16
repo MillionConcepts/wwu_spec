@@ -166,7 +166,13 @@ def perform_search_from_form(search_form, search_results):
             search_results, wavelength_query
         )
     if (sizes := search_form.cleaned_data.get("sizes")) is not None:
-        sizes = gmap(ast.literal_eval, filter(lambda s: s != "", sizes))
+        sizes = gmap(
+            # Note that this behaves subtly differently on different HTTP
+            #  servers for reasons I am not totally clear on. The replace is
+            #  an attempt at input cleaning.
+            lambda s: ast.literal_eval(s.replace("_", ",")),
+            filter(lambda s: s != "", sizes)
+        )
         if sizes != ():
             search_results = size_filter(search_results, sizes)
     # don't bother continuing if we're already empty
