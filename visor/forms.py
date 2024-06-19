@@ -120,15 +120,3 @@ def concealed_search_factory(request):
         formset_factory(SearchForm),
         form_kwargs=({"conceal_unreleased": not request.user.is_superuser}),
     )
-
-
-class AdminUploadImageForm(forms.Form):
-    file = forms.FileField(
-        label="Select an image",
-    )
-
-
-class UploadForm(forms.Form):
-    file = forms.FileField(
-        label="Select a file.",
-    )

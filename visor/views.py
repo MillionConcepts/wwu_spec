@@ -1,5 +1,4 @@
 import sys
-from ast import literal_eval
 from functools import reduce
 import json
 import logging
@@ -11,8 +10,6 @@ from typing import TYPE_CHECKING
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
-import PIL
-from PIL import Image
 
 from notetaking.notepad import Notepad
 from visor.io import handlers
@@ -21,11 +18,7 @@ from visor.search import (
     paginate_results,
     perform_search_from_form,
 )
-from visor.forms import (
-    UploadForm,
-    AdminUploadImageForm,
-    concealed_search_factory,
-)
+from visor.forms import concealed_search_factory
 from visor.models import Database, Sample, FilterSet
 
 if TYPE_CHECKING:
@@ -289,92 +282,6 @@ def export(request: "WSGIRequest") -> HttpResponse:
         simulated_instrument = ""
     return handlers.construct_export_zipfile(
         selections, export_sim, simulated_instrument
-    )
-
-
-@never_cache
-def upload(request: "WSGIRequest") -> HttpResponse:
-    form = UploadForm(request.POST, request.FILES)
-    if not form.is_valid():
-        form = UploadForm()
-        return render(request, "upload.html", {"form": form})
-    uploaded_file = request.FILES["file"]
-    # these are separate cases mostly because we allow people to jam images
-    # into zipped archives, which requires extra validation steps.
-    if Path(uploaded_file.name).suffix == ".csv":
-        upload_results = handlers.process_csv_file(uploaded_file)
-    elif Path(uploaded_file.name).suffix == ".zip":
-        upload_results = handlers.process_zipfile(uploaded_file)
-    # we don't mess around with files that don't have one of those extensions
-    else:
-        return render(
-            request,
-            "upload.html",
-            {
-                "form": form,
-                "headline": "File upload failed.",
-                "upload_errors": ["Please upload a csv or zip file."],
-            },
-        )
-    # this first case is mostly: we couldn't open the zip file or its contents
-    # were badly organized; we didn't even try to parse anything
-    if upload_results["status"] == "failed before ingest":
-        return render(
-            request,
-            "upload.html",
-            {"form": form, "upload_errors": upload_results["errors"]},
-        )
-    if upload_results["status"] == "failed during ingest":
-        headline = "No samples uploaded successfully."
-    elif upload_results["status"] == "partially successful":
-        headline = "The following samples uploaded successfully:"
-    else:
-        headline = "Upload successful."
-    return render(
-        request,
-        "upload.html",
-        {
-            "form": form,
-            "successful": upload_results["good"],
-            "unsuccessful": upload_results["bad"],
-            "upload_errors": upload_results["errors"],
-            "headline": headline,
-        },
-    )
-
-
-@never_cache
-def admin_upload_image(request, ids=None) -> HttpResponse:
-    warn_multiple = False
-    if ids:
-        ids = literal_eval(ids)
-        if len(ids) > 1:
-            warn_multiple = True
-    if request.method == "POST":
-        form = AdminUploadImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                image = PIL.Image.open(request.FILES["file"])
-            except (FileNotFoundError, PIL.UnidentifiedImageError):
-                return HttpResponse("The image file couldn't be parsed.")
-            samples = Sample.objects.filter(id__in=ids)
-            for sample in samples:
-                sample.image = image
-                sample.clean()
-                sample.save()
-            return HttpResponse("Upload successful.")
-            # maybe redirect to metadata
-    else:
-        form = AdminUploadImageForm()
-
-    return render(
-        request,
-        "admin_upload_image.html",
-        {
-            "ids": ids,
-            "form": form,
-            "warn_multiple": warn_multiple,
-        },
     )
 
 

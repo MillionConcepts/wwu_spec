@@ -64,9 +64,9 @@ def simulate_spectrum(
     radiance = interpolate_spectrum(
         filter_bins, sample_wavelengths, reflectance
     )
-
-    # if we hadn't already power-normalized the filters, we would normalize
-    # them here, but our filtersets should all be power-normalized at upload.
+    # NOTE: if we hadn't already power-normalized the filters, we would
+    # normalize them here, but our filtersets should all be power-normalized on
+    # ingest
 
     # create blank spectral response dataframe
     simulated_spectrum = pd.DataFrame(

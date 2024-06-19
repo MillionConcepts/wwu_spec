@@ -4,39 +4,37 @@ pipelines defined in visor.io.handlers.
 """
 import io
 import random
-from pathlib import Path
-from typing import Optional, Sequence
 import zipfile
+from typing import Optional, Sequence
 
-from django.conf import settings
 import numpy as np
 import pandas as pd
-import PIL
+from django.conf import settings
 from marslab.compat.xcam import construct_field_ordering
 
-from visor.dj_utils import model_values, extension_is, split_on
+from visor.dj_utils import model_values, split_on
 from visor.models import SampleType, Database, Sample
 
 
 def map_metadata_to_related_tables(
     field_dict: dict, warnings: list, errors: list
 ) -> (dict, list, list):
-    # maps upload text to ForeignKey fields.
+    # maps metadata from ingested file to ForeignKey fields.
     # This behavior is inconsistent but matches current spec.
     # 1. checks and assigns SampleType (will not create new)
     # 2. checks and assigns Database (will create new)
     # 3. assigns a random sample ID if not present
-    uploaded_sample_type = field_dict.get("sample_type")
+    imported_sample_type = field_dict.get("sample_type")
     if (
-        uploaded_sample_type is not None
-        and uploaded_sample_type not in SampleType.objects.values_list("name")
+        imported_sample_type is not None
+        and imported_sample_type not in SampleType.objects.values_list("name")
     ):
         errors.append(
             f"{field_dict['sample_type']} is not an allowable sample type."
         )
-    elif uploaded_sample_type is not None:
+    elif imported_sample_type is not None:
         field_dict["sample_type"] = SampleType.objects.get(
-            name=uploaded_sample_type
+            name=imported_sample_type
         )
     if field_dict["origin"] not in model_values(Database, "name"):
         # note: actually makes a new Database object
@@ -131,89 +129,6 @@ def split_data_and_metadata(
     return data_frame, meta_frame, warnings, errors
 
 
-def associate_zipped_images(
-    zipped_file: zipfile.ZipFile, manifest: dict, upload_errors: list
-):
-    """
-    attempt to open images and associate them with csv files
-    we're fairly strict about this to avoid confusing situations for users
-    and also to avoid saving mangled files into our media space
-    """
-    image_associations = {}
-    csv_stems = [Path(csv_file).stem for csv_file in manifest["csv_files"]]
-    for jpg_file in manifest["jpg_files"]:
-        matches = [
-            f"{csv_stem}.csv"
-            for csv_stem in csv_stems
-            if csv_stem == Path(jpg_file).stem
-        ]
-        if len(matches) == 1:
-            # great, a match, fine
-            try:
-                matching_image = PIL.Image.open(zipped_file.open(jpg_file))
-                image_associations[matches[0]] = matching_image
-            except (FileNotFoundError, PIL.UnidentifiedImageError):
-                upload_errors.append(
-                    f"{jpg_file} does not appear to be a valid image file. "
-                    f"Please verify it and reload."
-                )
-        elif len(matches) == 0:
-            # aww, no match
-            upload_errors.append(
-                f"{jpg_file} is not associated with any csv file. Please "
-                f"remove it from the zip file and reload."
-            )
-        elif len(matches) > 1:
-            # look, don't do this
-            upload_errors.append(
-                f"{jpg_file} appears to have multiple related CSV files. "
-                f"Please give things distinct filenames and reload."
-            )
-    return image_associations, upload_errors
-
-
-def check_for_inappropriate_files(
-    csv_files: list[str], other_files: list[str], upload_errors: list[str]
-) -> list[str]:
-    if other_files:
-        upload_errors.append(
-            "There are files that do not have a csv or jpg extension in the "
-            "upload. Please correct this and reload."
-        )
-    if len(csv_files) != len(set(csv_files)):
-        upload_errors.append(
-            "There appear to be duplicate csv filenames in the upload. "
-            + "Please correct this and reload."
-        )
-    if len(csv_files) == 0:
-        upload_errors.append(
-            "There do not appear to be any csv files in this upload."
-        )
-    return upload_errors
-
-
-def classify_zip_file_contents(
-    zipped_file: zipfile.ZipFile, upload_errors: list[str]
-) -> (dict, list[str]):
-    files = zipped_file.namelist()
-    manifest = {
-        "csv_files": list(filter(extension_is(".csv"), files)),
-        "jpg_files": list(filter(extension_is(".jpg"), files)),
-        "other_files": list(
-            filter(
-                lambda x: not extension_is(".jpg")
-                and not extension_is(".csv"),
-                files,
-            )
-        ),
-    }
-    upload_errors = check_for_inappropriate_files(
-        manifest["csv_files"],
-        manifest["other_files"],
-        upload_errors,
-    )
-    return manifest, upload_errors
-
 
 def add_images_to_results(
     image_associations: dict, results: Sequence[dict]
@@ -294,7 +209,7 @@ def write_spectrum_to_buffer(metadata, buffer, sample):
 
 def map_field_name(field_name, warnings, errors):
     """
-    if a field name given in an uploaded CSV file isn't one of our known
+    if a field name given in an imported CSV file isn't one of our known
     field names, check to see if it's empty or a legacy field, and respond
     appropriately.
     """
@@ -432,7 +347,7 @@ def write_simulated_spectra_to_zipfile(
     return output
 
 
-def make_dict_for_view_function(bad_results, good_results):
+def make_ingest_status_dict(bad_results, good_results):
     if not good_results:
         status = "failed during ingest"
     elif bad_results:
