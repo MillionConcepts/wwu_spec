@@ -7,7 +7,7 @@ from math import floor
 from statistics import mean
 from itertools import chain, combinations
 
-from marslab.compatibility import WAVELENGTH_TO_FILTER
+from marslab.compat.xcam import WAVELENGTH_TO_FILTER
 
 
 def make_cam_filter_dict(abbreviation):
