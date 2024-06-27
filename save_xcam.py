@@ -8,7 +8,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wwu_spec.settings")
 django.setup()
 
-from visor.convert import ingest_xcam_roi_file
+from visor.io.observational import ingest_xcam_roi_file
 
 
 
