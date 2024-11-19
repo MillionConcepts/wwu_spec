@@ -428,10 +428,12 @@ class Sample(models.Model):
         return valmap(literal_eval, literal_eval(self.simulated_spectra))
 
     def _raise_for_duplicates(self):
-        for refl_array in Sample.objects.filter(
+        for sample in Sample.objects.filter(
             sample_id__icontains=self.original_sample_id
-        ).values("reflectance"):
-            if self.reflectance == refl_array["reflectance"]:
+        ).all():
+            if sample.id == self.id:
+                continue  # it's a modification
+            if self.reflectance == sample.reflectance:
                 raise IntegrityError(
                     f"{self.original_sample_id} already in database "
                     f"w/identical spectrum"
@@ -500,13 +502,13 @@ class Sample(models.Model):
     def _regularize_metadata_strings(self):
         """
         regularize whitespace padding and capitalization; get rid of commas.
-        don't mess with arrays or pathnames.
+        don't mess with arrays or pathnames or the primary key.
         """
         for field in self._meta.fields:
-            if field.name in ["reflectance", "image"]:
+            if field.name in ["reflectance", "image", "id"]:
                 continue
             value = getattr(self, field.name)
-            if not value:
+            if value is None:
                 continue
             if field.name not in ["origin", "sample_type"]:
                 value = str(value).strip().replace(",", "_")
