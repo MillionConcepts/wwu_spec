@@ -8,6 +8,7 @@ dependencies:
   - git
   - jupyter
   - marslab
+  - notebook=6.2.0
   - pip
   - python=3.9
   - pip:

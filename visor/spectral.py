@@ -27,7 +27,7 @@ def interpolate_spectrum(
 
 # noinspection PyTypeChecker
 def normalize_power(spectrum: pd.Series, bins: np.ndarray) -> pd.Series:
-    return spectrum / integrate.trapz(spectrum.to_numpy(), bins)
+    return spectrum / integrate.trapezoid(spectrum.to_numpy(), bins)
 
 
 def convolve(
@@ -36,11 +36,11 @@ def convolve(
     bins: np.ndarray,
     irradiance: bool = None,
 ) -> float:
-    output = integrate.trapz(radiance * responsivity, bins)
+    output = integrate.trapezoid(radiance * responsivity, bins)
     if irradiance is None:
         scale = 1
     else:
-        scale = integrate.trapz(responsivity * irradiance, bins)
+        scale = integrate.trapezoid(responsivity * irradiance, bins)
     return output / scale
 
 
@@ -64,9 +64,9 @@ def simulate_spectrum(
     radiance = interpolate_spectrum(
         filter_bins, sample_wavelengths, reflectance
     )
-
-    # if we hadn't already power-normalized the filters, we would normalize
-    # them here, but our filtersets should all be power-normalized at upload.
+    # NOTE: if we hadn't already power-normalized the filters, we would
+    # normalize them here, but our filtersets should all be power-normalized on
+    # ingest
 
     # create blank spectral response dataframe
     simulated_spectrum = pd.DataFrame(

@@ -306,21 +306,7 @@ class Sample(models.Model):
         Sample.clean(), this function can interact with the database -- and
         at the end, it inserts the Sample into the database.
         """
-        # check to see if this appears to be in the database
-        # but don't do this check if it's from the admin console
-        # i.e., allow updating
-        pks = model_values(Sample, "id")
-        if self.id is not None:
-            if int(self.id) in pks:
-                if kwargs.pop("uploaded", False) is True:
-                    raise ValueError(
-                        "Sorry, modifying an existing sample is not allowed "
-                        "from this interface."
-                    )
-        else:
-            # if it's not an update to an existing sample,
-            # check duplicate sample ids and true duplicates
-            self._handle_duplicate_sample_ids()
+        self._handle_duplicate_sample_ids()
         if self.image:
             self._clean_image_field()
         convolve = kwargs.pop("convolve", True)
@@ -446,15 +432,6 @@ class Sample(models.Model):
             sample_id__icontains=self.original_sample_id
         ).values("reflectance"):
             if self.reflectance == refl_array["reflectance"]:
-                # TODO: make this a reporting thing instead
-                # raise ValueError(
-                #     f"The sample {self.original_sample_id} appears to "
-                #     f"already be in the database (with an identical "
-                #     f"spectrum). If you're sure this is a unique sample, "
-                #     f"please give it a new ID. If you want to correct a "
-                #     f"previously uploaded sample, please contact the site "
-                #     f"administrator to delete your previous uploads."
-                # )
                 raise IntegrityError(
                     f"{self.original_sample_id} already in database "
                     f"w/identical spectrum"
@@ -483,7 +460,7 @@ class Sample(models.Model):
     def _clean_image_field(self):
         image_path = settings.SAMPLE_IMAGE_PATH
         # this Sample may have been initialized either with an
-        # in-memory raster (as with an upload) or with a string representing
+        # in-memory raster or with a string representing
         # a path to an image file (as in most local sample creation)
         if isinstance(self.image, str):
             if os.path.exists(os.path.join(image_path, self.image)):
@@ -559,8 +536,6 @@ class Sample(models.Model):
                 self.reflectance = json.loads(self.reflectance)
             self.reflectance = np.array(self.reflectance)
         except ValueError:
-            # this should only happen if someone's made typos in the admin
-            # console, not with uploaded CSV
             self._errors.append(
                 "Error: the reflectance values don't appear to be formatted "
                 "as an array. "

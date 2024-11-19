@@ -53,7 +53,7 @@ def make_choice_list(
     else:
         queryset = model.objects.all()
     choice_data = [(c, c) for c in queryset.values_list(field, flat=True)]
-    choice_data.insert(0, ("Any", "Any"))
+    # choice_data.insert(0, ("Any", "Any"))
     choice_data.insert(0, ("", ""))
     return choice_data
 

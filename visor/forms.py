@@ -8,15 +8,13 @@ from visor.dj_utils import make_choice_list
 
 
 class SelectMultipleHide(forms.SelectMultiple):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     def create_option(
         self, name, value, label, selected, index, subindex=None, attrs=None
     ):
         index = str(index) if subindex is None else "%s_%s" % (index, subindex)
-        if attrs is None:
-            attrs = {}
+        attrs = {} if attrs is None else attrs
+        attrs = {"value": "", "placeholder": ""} | attrs
         option_attrs = (
             self.build_attrs(self.attrs, attrs)
             if self.option_inherits_attrs
@@ -48,7 +46,8 @@ class SearchForm(forms.Form):
         model_choice_fields = {
             "origin__name": [Database, "name"],
             "sample_type__name": [SampleType, "name"],
-            "library": [Library, "name"],
+            # TODO: restore if we ever actually use this
+            # "library": [Library, "name"],
         }
         for form_field, model_plus_field in model_choice_fields.items():
             self.fields[form_field].choices = make_choice_list(
@@ -62,22 +61,29 @@ class SearchForm(forms.Form):
         ),
     )
     any_field = forms.CharField(
-        required=False, widget=forms.TextInput(attrs={"id": "any-field"})
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "id": "any-field",
+                "placeholder": "e.g., Sulfate, or Gypsum, or SPT127"
+            }
+        )
     )
     id = forms.CharField(required=False)
-    library = forms.ChoiceField(required=False, label="Library Name")
-    origin__name = forms.ChoiceField(
-        required=False, label="Database of Origin",
+    # TODO: restore if and when we actually populate these
+    # library = forms.MultipleChoiceField(
+    #     required=False, label="Library Name", widget=SelectMultipleHide()
+    # )
+    origin__name = forms.MultipleChoiceField(
+        required=False, label="Database of Origin", widget=SelectMultipleHide()
     )
-    sample_type__name = forms.ChoiceField(
-        required=False, label="Type of Sample"
+    sample_type__name = forms.MultipleChoiceField(
+        required=False, label="Type of Sample", widget=SelectMultipleHide()
     )
     wavelength_range = forms.MultipleChoiceField(
         required=False,
         label="require wavelength ranges:",
-        widget=SelectMultipleHide(
-            attrs={"id": "wavelength-range", "value": "", "placeholder": ""}
-        ),
+        widget=SelectMultipleHide(attrs={"id": "wavelength-range"}),
         choices=[
             ("", ""),
             ("UVB", "UVB (<315 nm)"),
@@ -87,37 +93,30 @@ class SearchForm(forms.Form):
             ("MIR", "MIR (>2500 nm)"),
         ],
     )
-    size_min = forms.FloatField(required=False, label="size min (um):")
-    size_max = forms.FloatField(required=False, label="size max (um):")
-    size_strings = forms.MultipleChoiceField(
+    sizes = forms.MultipleChoiceField(
         required=False,
-        label="size description:",
-        widget=SelectMultipleHide(
-            attrs={"id": "size-strings", "value": "", "placeholder": ""}
-        ),
+        label="restrict to size categories",
+        widget=SelectMultipleHide(attrs={'id': 'size-range'}),
         choices=[
+            # note: labels should all be suitable input for literal_eval()
             ("", ""),
-            ("Unknown", "Unknown"),
-            ("Whole Object", "Whole Object"),
-            ("Unspecified Particulate", "Unspecified Particulate")
+            ("(None, 50)", "<=50 μm"),
+            ("(50, 100)", "50-100 μm"),
+            ("(100, 250)", "100-250 μm"),
+            ("(250, 500)", "250-500 μm"),
+            ("(500, 1000)", "500-1000 μm"),
+            ("(1000, 2000)", "1-2 mm"),
+            ("(2000, 5000)", "2-5 mm"),
+            ("(5000, None)", ">=5 mm"),
+            ("'Whole Object'", "Whole Object"),
+            ("None", "Unspecified")
         ],
     )
+
 
 
 def concealed_search_factory(request):
     return partial(
         formset_factory(SearchForm),
         form_kwargs=({"conceal_unreleased": not request.user.is_superuser}),
-    )
-
-
-class AdminUploadImageForm(forms.Form):
-    file = forms.FileField(
-        label="Select an image",
-    )
-
-
-class UploadForm(forms.Form):
-    file = forms.FileField(
-        label="Select a file.",
     )

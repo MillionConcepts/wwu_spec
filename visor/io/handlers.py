@@ -1,6 +1,6 @@
 """
 ingest/export pipelines for dealing with various sorts of project-internal
-input and output formats, especially uploaded and exported CSV
+input and output formats, especially imported and exported CSV
 """
 import datetime as dt
 import io
@@ -12,9 +12,6 @@ from django.http import HttpResponse
 
 from visor.dj_utils import split_on
 from visor.io._steps import (
-    add_images_to_results,
-    associate_zipped_images,
-    classify_zip_file_contents,
     flatten_multisamples,
     flip_and_strip_whitespace,
     map_metadata_to_related_tables,
@@ -22,7 +19,7 @@ from visor.io._steps import (
     parse_csv_metadata,
     save_ingest_results_into_database,
     split_data_and_metadata,
-    write_samples_into_buffer, make_dict_for_view_function, random_sample_id,
+    write_samples_into_buffer, make_ingest_status_dict, random_sample_id,
 )
 from visor.models import Sample
 
@@ -138,59 +135,6 @@ def ingest_sample_csv(csv_file: Union[str, IO, zipfile.ZipExtFile]) -> dict:
     }
 
 
-def process_zipfile(input_stream: Union[IO, str]) -> dict:
-    """
-    top-level handler for user-facing "upload all the files you like in a
-    compressed blob" functionality. attempts to process files, including
-    multisample files, into samples, and to save passed images. this perhaps
-    does too much, but we are required to handle a lot of options.
-    returns a dictionary with a status code, errors, and information
-    about successful and unsuccessful ingests (when available).
-    """
-    upload_errors = []
-    # try opening the stream as a zip file
-    try:
-        zipped_file = zipfile.ZipFile(input_stream)
-    # TODO, maybe: make this more specific?
-    except Exception as error:
-        upload_errors.append(
-            "This doesn't seem to be a zip file. Please verify it and reload."
-        )
-        # also list the specific error for more interesting debugging
-        upload_errors.append(f"{type(error)}:{error}")
-        return {"status": "failed before ingest", "errors": upload_errors}
-    manifest, upload_errors = classify_zip_file_contents(
-        zipped_file, upload_errors
-    )
-    image_associations, upload_errors = associate_zipped_images(
-        zipped_file, manifest, upload_errors
-    )
-    if upload_errors:
-        return {"status": "failed before ingest", "errors": upload_errors}
-    # if the zipped bundle looks ok, try to turn the files into Samples.
-    # first, process the CSV files
-    ingest_results = [
-        ingest_sample_csv(zipped_file.open(file))
-        for file in manifest["csv_files"]
-    ]
-    # separate successful and failed ingests
-    good_results, bad_results = split_on(
-        lambda result: result["errors"] is None, ingest_results
-    )
-    # check for and, if present, flatten multisamples
-    good_results = flatten_multisamples(good_results)
-    # add associated images
-    good_results = add_images_to_results(image_associations, good_results)
-    # clean each sample and save it into the database
-    save_results = save_ingest_results_into_database(good_results)
-    # separate samples that had errors at either stage from successful ones
-    good_results, badly_saved_results = split_on(
-        lambda result: result["errors"] is None, save_results
-    )
-    bad_results += badly_saved_results
-    return make_dict_for_view_function(bad_results, good_results)
-
-
 def process_csv_file(csv_file: Union[str, IO]) -> dict:
     """
     a simpler form of process_zipfile, intended for a single CSV file --
@@ -210,7 +154,7 @@ def process_csv_file(csv_file: Union[str, IO]) -> dict:
     good_results, bad_results = split_on(
         lambda result: result["errors"] is None, save_results
     )
-    return make_dict_for_view_function(bad_results, good_results)
+    return make_ingest_status_dict(bad_results, good_results)
 
 
 def construct_export_zipfile(database_ids, export_sim, simulated_instrument):

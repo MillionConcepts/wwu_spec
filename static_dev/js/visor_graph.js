@@ -1,6 +1,7 @@
 // lines themselves, i.e., scaled reflectance data
 
 let lines = {};
+let sampleIds = {};
 
 // indicators as to line activity & status
 
@@ -8,19 +9,28 @@ let activeLines = {};
 
 // line colors
 
-let linePalette = [
-    '#FF3500',
-    '#FF8900',
-    '#0CB0FF',
-    '#00e102',
-    '#FF00FF',
-    '#1DCEA8',
-    '#7847e7',
-    '#ffb600',
-    '#a54262',
-    '#4df8ce',
+let corePalette = [
+    "#001fa1",
+    "#0077ff",
+    "#ffcc00",
+    "#ff7700",
+    "#ff0000",
+    "#000000",
+    "#139a40",
+    "#d44d0a",
+    "#555555",
+    "#7750aa",
+    "#855622",
+    "#ee4499",
+    "#50dd96",
+    "#880400",
+    "#ff00ff",
+    "#7db904",
+    "#6600cc",
+    "#bb33ff",
 ];
 
+let linePalette = corePalette.slice();
 let lineColors = {};
 
 // size, margin, various ratios for page elements
@@ -533,35 +543,31 @@ const drawLine = function (lineID) {
         chartBody.append('svg:path')
             .attr('d', scaleLine(instrumentLine))
             .attr('class', 'instrument-line')
-            .attr('stroke', lineColors[lineID + "_r"])
-            .attr('stroke-width', 3)
+            .attr('stroke', lineColors[lineID])
+            .attr('stroke-width', 7)
             .attr('id', 'line' + lineID + "_r")
             .attr("fill", "none")
             .style("stroke-dasharray", ("3, 3"))
     }
     if (labPointsVisible) {
         chartBody.append('svg:path')
-            .attr('d', tickMark(line))
+            .attr('d', tickMark(line, 2))
             .attr('stroke', lineColors[lineID])
-            .attr('stroke-width', 5)
+            .attr('stroke-width', 2)
             .attr('stroke-linecap', 'round')
             .attr('class', 'lab-point')
             .attr('id', 'points' + lineID)
-            .style("fill", "none")
-            .attr('fill', 'none')
+            .attr('fill', lineColors[lineID])
             .style("opacity", 0.6)
     }
     if (instrumentPointsVisible) {
         chartBody.append('svg:path')
-            .attr('d', tickMark(instrumentLine))
-            .attr('stroke', lineColors[lineID + "_r"])
-            .attr('stroke-width', 9)
+            .attr('d', tickMark(instrumentLine, 5))
+            .attr('stroke', '#000000')
+            .attr('stroke-width', 2)
             .attr('class', 'instrument-point')
-            .attr('stroke-linecap', 'square')
             .attr('id', 'points' + lineID + "_r")
-            .style("fill", "none")
-            .attr('fill', 'none')
-            .style("opacity", 0.95)
+            .attr("fill", lineColors[lineID])
     }
 }
 
@@ -570,6 +576,9 @@ let waveNormalized = false;
 let normWavelength = null;
 
 const pickLineColor = function (sampleID) {
+    if (linePalette.length === 0) {
+        linePalette = corePalette.slice()
+    }
     const colorSpin = Math.round((Math.random() * (linePalette.length - 1)));
     let activeColor = linePalette[colorSpin];
     linePalette.splice(colorSpin, 1)
@@ -577,14 +586,6 @@ const pickLineColor = function (sampleID) {
         activeColor = "#000000"
     }
     lineColors[sampleID] = activeColor
-    //make the rover color complementary
-    const roverColor = tinycolor(activeColor);
-    if (roverColor.isDark()) {
-        roverColor.lighten(25)
-    }
-    roverColor.spin(180)
-
-    lineColors[sampleID + '_r'] = roverColor.toHexString()
     gid('rect-' + sampleID).style.backgroundColor = activeColor
 }
 
@@ -642,6 +643,8 @@ const generateLine = function (sample) {
     } else if (waveNormalized && (normWavelength != null)) {
         scale = normLineToWavelength(labReflectance, normWavelength)
     }
+    sampleIds[sample.id] = sample.sample_id
+    sampleIds[sample.id + "_r"] = sample.sample_id
     lines[sample.id] = applyNormOffset(
         labReflectance, offset, scale
     )
@@ -1231,12 +1234,17 @@ chartBody.on("click", function (event) {
         let mouseX = activeXScale.invert(d3.pointer(event, this)[0])
         let mouseY = activeYScale.invert(d3.pointer(event, this)[1])
         let closest = findClosestLinePoint(lines, mouseX, mouseY);
+        let line = closest[1];
         let coord = closest[0];
         pointerFocus.attr("transform", "translate(" + activeXScale(coord[0]) +
             "," + activeYScale(coord[1]) + ")");
 
         pointerFocus.select("text")
-            .text(Math.round(coord[0]) + ", " + parseFloat(coord[1]).toFixed(3));
+            .text(
+                Math.round(coord[0])
+                + ", " + parseFloat(coord[1]).toFixed(3)
+                + " " + sampleIds[line]
+            );
         trackingVertLine.attr("x1", activeXScale(coord[0]))
             .attr("x2", activeXScale(coord[0]));
 
@@ -1249,14 +1257,17 @@ chartBody.on("click", function (event) {
 // Function for drawing tick marks
 // the shape is now all controlled by the stroke-linecap
 // property set in drawLine()
-const tickMark = function (d) {
+const tickMark = function (d, width) {
     const pathArray = [];
     for (let i = 0; i < d.length; i++) {
         const x = activeXScale(d[i][0]);
         const y = activeYScale(d[i][1]);
         pathArray.push([
-            "M", [x, y],
-            "L", [x, y],
+            "M", [x - width, y - width],
+            "L", [x + width, y - width],
+            "L", [x + width, y + width],
+            "L", [x - width, y + width],
+            "L", [x - width, y - width],
             "Z"
         ].join(" "));
     }
@@ -1478,11 +1489,11 @@ const zoomSpectra = function () {
         }
         if (labPointsVisible) {
             d3.select("#points" + lineID)
-                .attr('d', tickMark(line));
+                .attr('d', tickMark(line, 2));
         }
         if (instrumentPointsVisible) {
             d3.select("#points" + lineID + "_r")
-                .attr('d', tickMark(instrumentLine));
+                .attr('d', tickMark(instrumentLine, 5));
         }
     }
 }
