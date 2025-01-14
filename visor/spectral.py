@@ -130,13 +130,16 @@ def make_filterset(
     """
     output_filters = {}
     for band, filter_df in filters.items():
-        if not (filter_df['wavelength'].to_numpy() == bins).all():
+        if not (
+            len(filter_df['wavelength'].to_numpy()) == len(bins) 
+            and (filter_df['wavelength'].to_numpy() == bins).all()
+        ):
             responsivity = interpolate_spectrum(
                 bins, filter_df["wavelength"], filter_df['responsivity']
             )
         else:
             responsivity = filter_df['responsivity']
-        output_filters[band] = normalize_power(responsivity, bins).tolist()
+        output_filters[band] = normalize_power(pd.Series(responsivity), bins).tolist()
     filterset = {
         "name": name,
         "filters": json.dumps(output_filters),
