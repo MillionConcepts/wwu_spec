@@ -505,7 +505,7 @@ class Sample(models.Model):
         don't mess with arrays or pathnames or the primary key.
         """
         for field in self._meta.fields:
-            if field.name in ["reflectance", "image", "id"]:
+            if field.name in ["reflectance", "image", "id", "view_geom"]: # Attemting to not capitalize the "i" in Viewing Geometry
                 continue
             value = getattr(self, field.name)
             if value is None:
