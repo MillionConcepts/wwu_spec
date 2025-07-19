@@ -183,8 +183,11 @@ class Sample(models.Model):
         "Composition", blank=True, max_length=40, db_index=True
     )
     date_added = models.DateTimeField(
-        "Date Added", auto_now=True, db_index=True
+        "Date Added to VISOR", auto_now=True, db_index=True # Added: " to VISOR"
     )
+    # collection_date = models.DateTimeField( # TODO: Make sure this works
+    #     "Data Collection Date", auto_now=True, db_index=True
+    # )
     filename = models.CharField(
         "Name of Uploaded File", blank=True, max_length=80
     )
@@ -505,14 +508,15 @@ class Sample(models.Model):
         don't mess with arrays or pathnames or the primary key.
         """
         for field in self._meta.fields:
-            if field.name in ["reflectance", "image", "id", "view_geom"]: # Attemting to not capitalize the "i" in Viewing Geometry
+            if field.name in ["reflectance", "image", "id"]:
                 continue
             value = getattr(self, field.name)
             if value is None:
                 continue
             if field.name not in ["origin", "sample_type"]:
                 value = str(value).strip().replace(",", "_")
-                value = value[:1].upper() + value[1:]
+                if field.name not in ["view_geom"]:
+                    value = value[:1].upper() + value[1:]
                 setattr(self, field.name, value)
 
     def _load_image(self):
