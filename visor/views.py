@@ -157,7 +157,7 @@ def results(request: "WSGIRequest") -> HttpResponse:
         return no_results(request)
 
     sort_params = request.GET.getlist("sort_params", ["sample_name"])
-    search_results = Sample.objects.only(*Sample.searchable_fields)
+    search_results = Sample.objects.only(*Sample.searchable_fields, "view_geom")
     # hide unreleased samples from non-superusers
     if not request.user.is_superuser:
         search_results = search_results.filter(released=True)

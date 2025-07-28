@@ -233,7 +233,11 @@ def map_field_name(field_name, warnings, errors):
             "sample_name."
         )
         mapped_field = "sample_name"
-    elif "origin" in field_name:
+    elif "origin" in field_name: 
+            # Tried assigning either the name or verbose name to "field_names" (line 259) 
+            # but that was causing a bug where the "Original Sample ID" field caused thousands 
+            # of new databases to be created, so switched it back to verbose only
+            # Potential TODO: revist this 
         mapped_field = "origin"
     # and raise an error for extraneous fields
     else:
@@ -254,6 +258,7 @@ def parse_csv_metadata(
     field_names = {
         field.verbose_name.lower(): field.name for field in Sample._meta.fields
     }
+    
     # dict to hold field / value pairs
     field_dict = {}
     for header, value in zip(meta_frame[0], meta_frame[1]):

@@ -3,6 +3,39 @@
 {% block content %}
     <title>Results - VISOR</title>
 
+    <style>
+        table.results {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            table-layout: fixed !important;
+        }
+
+        /* Make all columns equal width and responsive */
+        table.results th,
+        table.results td {
+            width: calc(100% / 8) !important;
+            box-sizing: border-box !important;
+            padding: 8px !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+        }
+
+        /* Exception for the checkbox column */
+        table.results th:first-child,
+        table.results td:first-child {
+            width: 65px !important;
+        }
+
+        /* Adjust other columns to account for fixed checkbox width */
+        table.results th:not(:first-child),
+        table.results td:not(:first-child) {
+            width: calc((100% - 65px) / 7) !important;
+        }
+    </style>
+
     {% if search_results %}
         <div class="container section">
             <div class="card section warm-content">
@@ -50,19 +83,7 @@
                             <thead>
                             <tr>
                                 <th style="width:65px; flex-grow:0; flex-shrink:0"></th>
-                                <th class="results-column"
-                                    onclick="sortByField('sample_id')">
-                                    <label class="truncate"><a>
-                                        ID
-                                        {% if "sample_id" in sort_params %}
-                                            <i style="vertical-align: bottom;"
-                                               class="material-icons">arrow_drop_up</i>
-                                        {% elif "-sample_id" in sort_params %}
-                                            <i style="vertical-align: bottom;"
-                                               class="material-icons">arrow_drop_down</i>
-                                        {% endif %}
-                                    </a></label>
-                                </th>
+
                                 <th class="results-column"
                                     onclick="sortByField('sample_name')">
                                     <label class="truncate"><a>
@@ -73,6 +94,20 @@
                                         {% elif "-sample_name" in sort_params %}
                                             <i style="vertical-align: bottom;"
                                                class="material-icons align-vertical">arrow_drop_down</i>
+                                        {% endif %}
+                                    </a></label>
+                                </th>
+                               
+                                <th class="results-column"
+                                    onclick="sortByField('sample_id')">
+                                    <label class="truncate"><a>
+                                        Sample ID
+                                        {% if "sample_id" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons">arrow_drop_up</i>
+                                        {% elif "-sample_id" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons">arrow_drop_down</i>
                                         {% endif %}
                                     </a></label>
                                 </th>
@@ -112,9 +147,17 @@
                                 <th class="results-column">
                                     <label class="truncate"><a
                                             style="color:#1c2023">
-                                        Size (um)
+                                        Grain Size (um)
                                     </a></label>
                                 </th>
+                                <!-- Adding new viewing geometry column -->
+                                <th class="results-column">
+                                    <label class="truncate"><a
+                                            style="color:#1c2023">
+                                        Viewing Geometry
+                                    </a></label>
+                                </th>
+
                             </tr>
                             </thead>
                             <tbody id='results-body' style='max-height:1024px; overflow-y: auto'>
@@ -268,12 +311,13 @@
 
         const resultsTable = gid("results-body")
         const tableColumns = [
-            'sample_id',
             'sample_name',
+            'sample_id',
             'origin',
             'sample_type',
             'wavelength_range',
-            'grain_size'
+            'grain_size',
+            'view_geom'
         ]
         const populateResultsTable = function() {
             samples.forEach(

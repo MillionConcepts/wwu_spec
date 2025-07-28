@@ -23,7 +23,8 @@ def search_all_samples(entry: str) -> models.QuerySet:
             "sample_type",
             "min_wavelength",
             "max_wavelength",
-            "date_added"
+            "date_added",
+            "view_geom"
         ]
     ]
     queries += [

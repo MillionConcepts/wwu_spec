@@ -110,7 +110,7 @@ const pickUpSelected = function() {
             return
         }
         let sample = samples.filter(item => item["id"] === id)[0]
-        addTableRow(sample, 'inventory', inventory, ["sample_id", "sample_name"])
+        addTableRow(sample, 'inventory', inventory, ["sample_id", "sample_name", "view_geom"])
     })
     updateInventory()
 }
@@ -131,7 +131,7 @@ const checkInventory = function () {
 const populateInventoryDiv = function(inventoryJSON) {
     inventoryJSON.forEach(
         sample => addTableRow(
-            sample, 'inventory', inventory, ['sample_id', 'sample_name']
+            sample, 'inventory', inventory, ['sample_id', 'sample_name', 'view_geom']
         )
     )
     gid("inventory-select-all-row")
