@@ -32,3 +32,4 @@ local_user_inventory.json
 *.gz
 *.DS_Store
 *.sqlite3
+visor_programming_manual.ipynb
