@@ -18,9 +18,10 @@
             padding: 8px !important;
             word-wrap: break-word !important;
             overflow-wrap: break-word !important;
-            text-overflow: ellipsis !important;
+            /* text-overflow: ellipsis !important;
             white-space: nowrap !important;
-            overflow: hidden !important;
+            overflow: hidden !important; */
+            min-height: 40px;
         }
 
         /* Exception for the checkbox column */
@@ -77,6 +78,24 @@
                             <span>Select All</span>
                         </label>
                         </div>
+                         <!-- Allow user to specify results per page -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label for="results-per-page">Results per page:</label>
+                            <input id="results-per-page" 
+                                name="results-per-page" 
+                                type="number" 
+                                min="5" 
+                                max="100" 
+                                value="{{ page_results.paginator.per_page }}"
+                                style="width: 70px; padding: 5px;">
+                            <button type="submit" 
+                                    name="update-page-size"
+                                    formaction="/visor/results/"
+                                    class="btn btn-success" 
+                                    style="padding: 5px 15px;">
+                                Update
+                            </button>
+                        </div>
                     </div>
                     <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
                         <table class="results">
@@ -101,7 +120,7 @@
                                 <th class="results-column"
                                     onclick="sortByField('sample_id')">
                                     <label class="truncate"><a>
-                                        Sample ID
+                                        Spectrum ID
                                         {% if "sample_id" in sort_params %}
                                             <i style="vertical-align: bottom;"
                                                class="material-icons">arrow_drop_up</i>
