@@ -85,14 +85,13 @@
                                 name="results-per-page" 
                                 type="number" 
                                 min="5" 
-                                max="100" 
+                                max="1000" 
                                 value="{{ page_results.paginator.per_page }}"
-                                style="width: 70px; padding: 5px;">
+                                style="width: 70px;">
                             <button type="submit" 
                                     name="update-page-size"
                                     formaction="/visor/results/"
-                                    class="btn btn-success" 
-                                    style="padding: 5px 15px;">
+                                    class="btn btn-success" >
                                 Update
                             </button>
                         </div>
