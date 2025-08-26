@@ -1,8 +1,38 @@
-
-button.btn.updateBtn {
+/* Makes results-per-page button shorter to better fit layout */
+.btn.updateBtn {
     height: 25px;
     line-height: 12px;
     font-size: 10pt;
-    font-family: Fira Mono, monospace;
-    text-align: center
+}
+
+/* Style changes to results page; addition of view geo column caused text overflow issues, so word-wrap was requested */
+.res-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 750px;
+}
+
+.res-table th,
+.res-table td {
+    box-sizing: border-box;
+    padding: 8px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    min-height: 40px;
+}
+.res-table th:first-child, 
+.res-table td:first-child {
+    width: 40px;
+}
+.res-table th:not(:first-child), 
+.res-table td:not(:first-child) {
+    width: calc((100% - 40px) / 7);
+}
+
+.results-table-container {
+    width: 100%; 
+    padding-left: 15px; 
+    padding-right: 15px;
+    overflow-x: auto;
 }
