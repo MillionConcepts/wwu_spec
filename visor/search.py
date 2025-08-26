@@ -156,7 +156,7 @@ def paginate_results(request, search_results):
     page_results = paginator.page(page_selected)
     page_choices = range(
         max(1, page_selected - 6),
-        min(page_selected + 6, paginator.num_pages),
+        min(page_selected + 6, paginator.num_pages+1), # Requested to display last partially full page
     )
     page_ids = []
     for sample in page_results.object_list:

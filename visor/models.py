@@ -144,7 +144,6 @@ class Database(models.Model):
         # regularize whitespace padding and capitalization
 
         self.name = str(self.name).strip()
-        # self.name = self.name[0].upper() + self.name[1:] # Requested to leave capitalization scheme as-is
 
         if errors:
             raise forms.ValidationError(errors)
@@ -516,9 +515,6 @@ class Sample(models.Model):
                 continue
             if field.name not in ["origin", "sample_type"]:
                 value = str(value).strip().replace(",", "_")
-                # Requested to leave capitalization scheme as-is 
-                # if field.name not in ["view_geom"]: # Don't capitalize the i (incidence angle) in viewing geometry
-                #     value = value[:1].upper() + value[1:]
                 setattr(self, field.name, value)
 
     def _load_image(self):

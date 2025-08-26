@@ -67,6 +67,24 @@
                                 of {{ page_results.paginator.count }}
                             </label>
                         </div>
+                         <!-- Allow user to specify results per page (update button shrunk by request)-->
+                        <div class="center-align">
+                            <label for="results-per-page">Results per page:</label>
+                            <input id="results-per-page" 
+                                name="results-per-page" 
+                                type="number" 
+                                min="5" 
+                                max="100" 
+                                value="{{ page_results.paginator.per_page }}"
+                                style="height: 20px; width: 45px; text-align: center;">
+                            <button type="submit" 
+                                name="update-page-size"
+                                formaction="/visor/results/"
+                                class="btn btn-success"
+                                style="height: 25px; text-align: center; line-height: 12px;">
+                                Update
+                            </button>
+                        </div>
                         <div>
                         <label id="select-all-label" for="select-all" style="width: 100px">
                             <input type="checkbox"
@@ -77,23 +95,6 @@
                             >
                             <span>Select All</span>
                         </label>
-                        </div>
-                         <!-- Allow user to specify results per page -->
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <label for="results-per-page">Results per page:</label>
-                            <input id="results-per-page" 
-                                name="results-per-page" 
-                                type="number" 
-                                min="5" 
-                                max="1000" 
-                                value="{{ page_results.paginator.per_page }}"
-                                style="width: 70px;">
-                            <button type="submit" 
-                                    name="update-page-size"
-                                    formaction="/visor/results/"
-                                    class="btn btn-success" >
-                                Update
-                            </button>
                         </div>
                     </div>
                     <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
@@ -222,6 +223,19 @@
                     <ul class="pagination center-align" style="flex: 1">
                         {% if page_results.has_previous %}
                             <li class="waves-effect">
+                                <a onclick="selectPage(1);"
+                                   name="action" value="results"><i class="material-icons">first_page</i></a>
+                            </li>
+                        {% else %}
+                            <li class="disabled">
+                                <a name="action" value="results">
+                                <i class="material-icons">first_page</i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if page_results.has_previous %}
+                            <li class="waves-effect">
                                 <a onclick="selectPage({{ page_results.previous_page_number }});"
                                    name="action" value="results"><i class="material-icons">chevron_left</i></a>
                             </li>
@@ -263,6 +277,21 @@
                             <li class="disabled">
                                 <a name="action" value="results">
                                     <i class="material-icons">chevron_right</i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if page_results.has_next %}
+                            <li class="waves-effect">
+                                <a onclick="selectPage({{ page_results.paginator.num_pages }});"
+                                   name="action" value="results">
+                                    <i class="material-icons">last_page</i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="disabled">
+                                <a name="action" value="results">
+                                    <i class="material-icons">last_page</i>
                                 </a>
                             </li>
                         {% endif %}
