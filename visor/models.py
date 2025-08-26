@@ -182,11 +182,8 @@ class Sample(models.Model):
         "Composition", blank=True, max_length=40, db_index=True
     )
     date_added = models.DateTimeField(
-        "Date Added to VISOR", auto_now=True, db_index=True # Added: " to VISOR"
+        "Date Added to VISOR", auto_now=True, db_index=True
     )
-    # collection_date = models.DateTimeField( # TODO: Make sure this works
-    #     "Data Collection Date", blank=True, null=True, db_index=True
-    # )
     filename = models.CharField(
         "Name of Uploaded File", blank=True, max_length=80
     )

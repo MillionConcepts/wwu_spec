@@ -1,0 +1,8 @@
+
+button.btn.updateBtn {
+    height: 25px;
+    line-height: 12px;
+    font-size: 10pt;
+    font-family: Fira Mono, monospace;
+    text-align: center
+}
