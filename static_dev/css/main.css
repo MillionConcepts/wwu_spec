@@ -300,61 +300,6 @@ th {
     line-height: 1rem
 }
 
-.results {
-    width: 100%;
-    border: 0;
-    border-collapse: collapse;
-    overflow-x: hidden;
-    overflow-y: auto;
-    white-space: normal;
-    word-wrap: break-word;
-    line-height: 1em;
-}
-
-.results table {
-    width: 100%;
-    border: 0;
-    border-collapse: collapse;
-    overflow: visible;
-    white-space: pre-line;
-    word-wrap: break-word;
-    line-height: 1em;
-}
-
-.results tr {
-    display: flex;
-}
-
-.results td, th {
-    align-self: flex-start;
-    display: block;
-}
-
-.results th {
-    flex-grow: 1;
-    flex-shrink: 1;
-    width: auto;
-}
-
-.results td {
-    width: 65px;
-    flex-grow: 0;
-    flex-shrink: 0
-}
-
-.results .results-column {
-    text-align: left;
-    width: 50%;
-    max-width: 200px;
-}
-
-.results tbody {
-    width: 100%;
-    display: inline;
-    overflow-y: auto;
-    height: calc(80vh - 200px);
-}
-
 .svg-text-holder, .draggable-title{
     pointer-events: none;
 }
