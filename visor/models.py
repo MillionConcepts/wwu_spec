@@ -144,7 +144,6 @@ class Database(models.Model):
         # regularize whitespace padding and capitalization
 
         self.name = str(self.name).strip()
-        self.name = self.name[0].upper() + self.name[1:]
 
         if errors:
             raise forms.ValidationError(errors)
@@ -183,7 +182,7 @@ class Sample(models.Model):
         "Composition", blank=True, max_length=40, db_index=True
     )
     date_added = models.DateTimeField(
-        "Date Added", auto_now=True, db_index=True
+        "Date Added to VISOR", auto_now=True, db_index=True
     )
     filename = models.CharField(
         "Name of Uploaded File", blank=True, max_length=80
@@ -240,7 +239,7 @@ class Sample(models.Model):
         "Sample Description", blank=True, db_index=True
     )
     sample_id = models.CharField(
-        "Sample ID", max_length=40, db_index=True, unique=True
+        "Spectrum ID", max_length=40, db_index=True, unique=True
     )
     original_sample_id = models.CharField(
         "Original Sample ID", max_length=40, db_index=True
@@ -264,7 +263,7 @@ class Sample(models.Model):
         "import_notes",
         "flagged",
         "simulated_spectra",
-        "released",
+        "released"
     )
     # defined groups of fields we can and cannot use for various sorts of
     # operations.
@@ -380,7 +379,8 @@ class Sample(models.Model):
             "sample_name",
             "origin",
             "sample_type",
-            "grain_size"
+            "grain_size",
+            "view_geom"
         )
         for field in self._meta.get_fields():
             if not getattr(self, field.name):
@@ -512,7 +512,6 @@ class Sample(models.Model):
                 continue
             if field.name not in ["origin", "sample_type"]:
                 value = str(value).strip().replace(",", "_")
-                value = value[:1].upper() + value[1:]
                 setattr(self, field.name, value)
 
     def _load_image(self):

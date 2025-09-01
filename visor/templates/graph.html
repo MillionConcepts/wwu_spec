@@ -278,9 +278,12 @@
                                     <label>Line</label></th>
                                 <th class="graph-column">
                                     <label>Color</label></th>
-                                <th><label>ID</label></th>
                                 <th><label>Name</label></th>
+                                <th><label>Spectrum ID</label></th>
                                 <th><label>Origin</label></th>
+                                <th><label>Sample Type</label></th>
+                                <th><label>Grain Size (um)</label></th>
+                                <th><label>Viewing Geometry</label></th>
                                 <th><label>Offset</label></th>
                             </tr>
                             </thead>
@@ -306,14 +309,24 @@
                                         </div>
                                     </td>
                                     <td><label class="truncate"
-                                               for="option{{ result.id }}">{{ result.sample_id }}</label>
-                                    </td>
-                                    <td><label class="truncate"
                                                for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
+                                    </td>                                    
+                                    <td><label class="truncate"
+                                               for="option{{ result.id }}">{{ result.sample_id }}</label>
                                     </td>
                                     <td><label class="truncate"
                                                for="option{{ result.id }}"> {{ result.origin.name }} </label>
                                     </td>
+                                    <td><label class="truncate"
+                                               for="option{{ result.id }}"> {{ result.material_class }} </label>
+                                    </td>
+                                    <td><label class="truncate"
+                                               for="option{{ result.id }}"> {{ result.grain_size }} </label>
+                                    </td>
+                                    <td><label class="truncate"
+                                               for="option{{ result.id }}"> {{ result.view_geom }} </label>
+                                    </td>
+                                    
                                     <td>
                                         <label for="offset-dialog{{ result.id }}">
                                             <input id="offset-dialog{{ result.id }}"

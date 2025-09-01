@@ -135,16 +135,28 @@ def qual_field_filter(field, entry, search_results):
 
 
 def paginate_results(request, search_results):
-    paginator = Paginator(search_results, 10)
+    # Allow user to specify results per page
+    if "update-page-size" in request.GET or "results-per-page" in request.GET:
+        try:
+            results_per_page = int(request.GET.get("results-per-page", 15))
+            results_per_page = max(5, min(100, results_per_page))
+        except (ValueError, TypeError):
+            results_per_page = 15
+    else:
+        results_per_page = 15
+    
+    paginator = Paginator(search_results, results_per_page)
     if "jump-button" in request.GET:
         page_selected = max(1, int(request.GET.get("jump-to-page")))
         page_selected = min(paginator.num_pages, page_selected)
+    elif "update-page-size" in request.GET:
+        page_selected = 1 # Resets to page 1 if num results/page changes to prevent bug caused by user from viewing a page with 0 results 
     else:
         page_selected = int(request.GET.get("page_selected", 1))
     page_results = paginator.page(page_selected)
     page_choices = range(
         max(1, page_selected - 6),
-        min(page_selected + 6, paginator.num_pages),
+        min(page_selected + 6, paginator.num_pages+1), # Requested to display last partially full page
     )
     page_ids = []
     for sample in page_results.object_list:

@@ -33,6 +33,23 @@
                                 of {{ page_results.paginator.count }}
                             </label>
                         </div>
+                         <!-- Allow user to specify results per page -->
+                        <div class="center-align">
+                            <label for="results-per-page">Results per page:</label>
+                            <input id="results-per-page" 
+                                name="results-per-page" 
+                                type="number" 
+                                min="5" 
+                                max="100" 
+                                value="{{ page_results.paginator.per_page }}"
+                                style="height: 20px; width: 45px; text-align: center;">
+                            <button type="submit" 
+                                name="update-page-size"
+                                formaction="/visor/results/"
+                                class="btn updateBtn">
+                                UPDATE
+                            </button>
+                        </div>
                         <div>
                         <label id="select-all-label" for="select-all" style="width: 100px">
                             <input type="checkbox"
@@ -45,24 +62,12 @@
                         </label>
                         </div>
                     </div>
-                    <div style="width: 100%; padding-left: 10px; padding-right: 10px;">
-                        <table class="results">
+                    <div class="results-table-container">
+                        <table class="results res-table">
                             <thead>
                             <tr>
-                                <th style="width:65px; flex-grow:0; flex-shrink:0"></th>
-                                <th class="results-column"
-                                    onclick="sortByField('sample_id')">
-                                    <label class="truncate"><a>
-                                        ID
-                                        {% if "sample_id" in sort_params %}
-                                            <i style="vertical-align: bottom;"
-                                               class="material-icons">arrow_drop_up</i>
-                                        {% elif "-sample_id" in sort_params %}
-                                            <i style="vertical-align: bottom;"
-                                               class="material-icons">arrow_drop_down</i>
-                                        {% endif %}
-                                    </a></label>
-                                </th>
+                                <th style="width: 40px; flex-grow:0; flex-shrink:0"></th>
+
                                 <th class="results-column"
                                     onclick="sortByField('sample_name')">
                                     <label class="truncate"><a>
@@ -73,6 +78,20 @@
                                         {% elif "-sample_name" in sort_params %}
                                             <i style="vertical-align: bottom;"
                                                class="material-icons align-vertical">arrow_drop_down</i>
+                                        {% endif %}
+                                    </a></label>
+                                </th>
+                               
+                                <th class="results-column"
+                                    onclick="sortByField('sample_id')">
+                                    <label class="truncate"><a>
+                                        Spectrum ID
+                                        {% if "sample_id" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons">arrow_drop_up</i>
+                                        {% elif "-sample_id" in sort_params %}
+                                            <i style="vertical-align: bottom;"
+                                               class="material-icons">arrow_drop_down</i>
                                         {% endif %}
                                     </a></label>
                                 </th>
@@ -112,9 +131,17 @@
                                 <th class="results-column">
                                     <label class="truncate"><a
                                             style="color:#1c2023">
-                                        Size (um)
+                                        Grain Size (um)
                                     </a></label>
                                 </th>
+                                <!-- Adding new viewing geometry column -->
+                                <th class="results-column">
+                                    <label class="truncate"><a
+                                            style="color:#1c2023">
+                                        Viewing Geometry
+                                    </a></label>
+                                </th>
+
                             </tr>
                             </thead>
                             <tbody id='results-body' style='max-height:1024px; overflow-y: auto'>
@@ -161,6 +188,19 @@
                     <ul class="pagination center-align" style="flex: 1">
                         {% if page_results.has_previous %}
                             <li class="waves-effect">
+                                <a onclick="selectPage(1);"
+                                   name="action" value="results"><i class="material-icons">first_page</i></a>
+                            </li>
+                        {% else %}
+                            <li class="disabled">
+                                <a name="action" value="results">
+                                <i class="material-icons">first_page</i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if page_results.has_previous %}
+                            <li class="waves-effect">
                                 <a onclick="selectPage({{ page_results.previous_page_number }});"
                                    name="action" value="results"><i class="material-icons">chevron_left</i></a>
                             </li>
@@ -202,6 +242,21 @@
                             <li class="disabled">
                                 <a name="action" value="results">
                                     <i class="material-icons">chevron_right</i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if page_results.has_next %}
+                            <li class="waves-effect">
+                                <a onclick="selectPage({{ page_results.paginator.num_pages }});"
+                                   name="action" value="results">
+                                    <i class="material-icons">last_page</i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="disabled">
+                                <a name="action" value="results">
+                                    <i class="material-icons">last_page</i>
                                 </a>
                             </li>
                         {% endif %}
@@ -268,12 +323,13 @@
 
         const resultsTable = gid("results-body")
         const tableColumns = [
-            'sample_id',
             'sample_name',
+            'sample_id',
             'origin',
             'sample_type',
             'wavelength_range',
-            'grain_size'
+            'grain_size',
+            'view_geom'
         ]
         const populateResultsTable = function() {
             samples.forEach(

@@ -31,3 +31,4 @@ local_user_inventory.json
 *.zip
 *.gz
 *.DS_Store
+*.sqlite3
