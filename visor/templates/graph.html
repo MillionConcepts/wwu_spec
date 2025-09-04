@@ -275,7 +275,16 @@
                             <thead>
                             <tr style="height:2rem">
                                 <th class="graph-column">
-                                    <label>Line</label></th>
+                                    <div style="display: flex; flex-direction: row; align-items: center;">
+                                        <button type="button" 
+                                                id="toggle-all-btn" 
+                                                class="btn updateBtn" 
+                                                onclick="toggleAllSpectra()" 
+                                                style="width:50px; padding: 0">
+                                            None
+                                        </button>
+                                        <!-- <label>Line</label> -->
+                                    </div>
                                 <th class="graph-column">
                                     <label>Color</label></th>
                                 <th><label>Name</label></th>
@@ -382,6 +391,30 @@
                 </form>
             </div>
         </div>
+
+        <script>
+            let allSelected = true; // Track current state (start with all selected since they default to checked)
+
+            const toggleAllSpectra = function() {
+                // Find all checkboxes in the table
+                const checkboxes = document.querySelectorAll('input[name="main-selection"]');
+                
+                // Toggle to opposite of current state
+                allSelected = !allSelected;
+                
+                // Update each checkbox and trigger its associated graph update
+                checkboxes.forEach((checkbox, index) => {
+                    if (checkbox.checked !== allSelected) {
+                        checkbox.checked = allSelected;
+                        // Call the existing toggleSpectrum function to update the graph
+                        toggleSpectrum(checkbox, index);
+                    }
+                });
+                
+                // Update button text
+                const button = document.getElementById('toggle-all-btn');
+                button.textContent = allSelected ? 'None' : 'All';
+            };</script>
 
         <script src="{% static 'js/vendor/d3.min.js' %}"></script>
         <script src="{% static 'js/vendor/nouislider.js' %}"></script>
