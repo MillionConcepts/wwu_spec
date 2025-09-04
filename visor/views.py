@@ -171,12 +171,8 @@ def results(request: "WSGIRequest") -> HttpResponse:
     # Todo: when does this happen?
     selections = get_selections(request)
     selected_spectra = Sample.objects.filter(id__in=selections)
-    selected_list = []
-    for spectra in selected_spectra:
-        selected_list.append(spectra.id)
-    search_results_id_list = []
-    for result in search_results:
-        search_results_id_list.append(result.id)
+    selected_list = [v[0] for v in selected_spectra.values_list('id')]
+    search_results_id_list = [v[0] for v in search_results.values_list('id')]
     page_choices, page_ids, page_results = paginate_results(
         request, search_results
     )
