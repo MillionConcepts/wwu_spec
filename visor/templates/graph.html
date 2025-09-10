@@ -266,91 +266,8 @@
                     <div class="flex-buffer" style="flex-basis:4vw"></div>
                 </div>
 
-
-                <div class="row" style="height:fit-content">
-                    <div class="col s1" style="flex-shrink:1">
-                    </div>
-                    <div class="col s10">
-                        <table class="graph-legend">
-                            <thead>
-                            <tr style="height:2rem">
-                                <th class="graph-column">
-                                    <div style="display: flex; flex-direction: row; align-items: center;">
-                                        <button type="button" 
-                                                id="toggle-all-btn" 
-                                                class="btn updateBtn" 
-                                                onclick="toggleAllSpectra()" 
-                                                style="width:50px; padding: 0">
-                                            None
-                                        </button>
-                                        <!-- <label>Line</label> -->
-                                    </div>
-                                <th class="graph-column">
-                                    <label>Color</label></th>
-                                <th><label>Name</label></th>
-                                <th><label>Spectrum ID</label></th>
-                                <th><label>Origin</label></th>
-                                <th><label>Sample Type</label></th>
-                                <th><label>Grain Size (um)</label></th>
-                                <th><label>Viewing Geometry</label></th>
-                                <th><label>Offset</label></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for result in graphResults %}
-                                <tr>
-                                    <td class="graph-column">
-                                        <div>
-                                            <label for="option{{ result.id }}">
-                                                <input type="checkbox"
-                                                       checked="checked"
-                                                       name="main-selection"
-                                                       id="option{{ result.id }}"
-                                                       value={{ result.id }}
-                                                       onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
-                                                <span></span>
-                                            </label>
-                                        </div>
-                                    </td>
-                                    <td class="graph-column">
-                                        <div id="rect-{{ result.id }}"
-                                             style="border:1px solid gray; width:15px; height:15px">
-                                        </div>
-                                    </td>
-                                    <td><label class="truncate"
-                                               for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
-                                    </td>                                    
-                                    <td><label class="truncate"
-                                               for="option{{ result.id }}">{{ result.sample_id }}</label>
-                                    </td>
-                                    <td><label class="truncate"
-                                               for="option{{ result.id }}"> {{ result.origin.name }} </label>
-                                    </td>
-                                    <td><label class="truncate"
-                                               for="option{{ result.id }}"> {{ result.material_class }} </label>
-                                    </td>
-                                    <td><label class="truncate"
-                                               for="option{{ result.id }}"> {{ result.grain_size }} </label>
-                                    </td>
-                                    <td><label class="truncate"
-                                               for="option{{ result.id }}"> {{ result.view_geom }} </label>
-                                    </td>
-                                    
-                                    <td>
-                                        <label for="offset-dialog{{ result.id }}">
-                                            <input id="offset-dialog{{ result.id }}"
-                                                   step=".02" type="number" class = "graph-number-input"
-                                                   value="0">
-                                        </label>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="col s1">
-                    </div>
-                </div>
+                <!-- Wrapped table inside form so that "view metadata" and "export" will use selected checkboxes rather than all results -->
+                <!-- Moved buttons and added scrollbar to table by request -->
                 <form id="resultsForm" method="GET" name="results">
                     <div class="section center-align">
                         <button type="submit" name="search"
@@ -374,6 +291,90 @@
                         </button>
                         <br>
                     </div>
+
+                    <div class="row" style="height:fit-content">
+                        <div class="col s1" style="flex-shrink:1">
+                        </div>
+                        <div class="col s10" style="max-height: 500px; overflow-y: auto;">
+                            <table class="graph-legend">
+                                <thead>
+                                    <tr style="height:3rem;">
+                                        <th class="graph-col-small">
+                                            <button type="button" 
+                                                    id="toggle-all-btn" 
+                                                    class="btn updateBtn" 
+                                                    onclick="toggleAllSpectra()" 
+                                                    style="width:45px; height: 20px; padding: 0">
+                                                None
+                                            </button>
+                                        </th>
+                                        <th class="graph-col-small"> <label>Color</label></th>
+                                        <th class="graph-col"> <label>Name</label></th>
+                                        <th class="graph-col"> <label>Spectrum ID</label></th>
+                                        <th class="graph-col"> <label>Origin</label></th>
+                                        <th class="graph-col"> <label>Sample Type</label></th>
+                                        <th class="graph-col"> <label>Grain Size (um)</label></th>
+                                        <th class="graph-col"> <label>Viewing Geometry</label></th>
+                                        <th class="graph-col"> <label>Offset</label></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for result in graphResults %}
+                                    <tr>
+                                        <td class="graph-col-small">
+                                            <div>
+                                                <label for="option{{ result.id }}">
+                                                    <input type="checkbox"
+                                                        checked="checked"
+                                                        name="main-selection"
+                                                        id="option{{ result.id }}"
+                                                        value={{ result.id }}
+                                                        onclick="toggleSpectrum(this,{{ forloop.counter0 }});"/>
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </td>
+                                        <td class="graph-col-small">
+                                            <div id="rect-{{ result.id }}"
+                                                style="border:1px solid gray; width:15px; height:15px">
+                                            </div>
+                                        </td>
+                                        <td><label class="graph-col"
+                                                for="option{{ result.id }}"> {{ result.sample_name | title }} </label>
+                                        </td>                                    
+                                        <td><label class="graph-col"
+                                                for="option{{ result.id }}">{{ result.sample_id }}</label>
+                                        </td>
+                                        <td><label class="graph-col"
+                                                for="option{{ result.id }}"> {{ result.origin.name }} </label>
+                                        </td>
+                                        <td><label class="graph-col"
+                                                for="option{{ result.id }}"> {{ result.material_class }} </label>
+                                        </td>
+                                        <td><label class="graph-col"
+                                                for="option{{ result.id }}"> {{ result.grain_size }} </label>
+                                        </td>
+                                        <td><label class="graph-col"
+                                                for="option{{ result.id }}"> {{ result.view_geom }} </label>
+                                        </td>
+                                        
+                                        <td>
+                                            <label for="offset-dialog{{ result.id }}">
+                                                <input id="offset-dialog{{ result.id }}"
+                                                    step=".02" type="number" class = "graph-number-input"
+                                                    value="0">
+                                            </label>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col s1">
+                        </div>
+                    </div>
+                
+
                     {% for id in selected_ids %}
                         <input type="hidden" name="selection"
                                value="{{ id }}"/>
@@ -393,24 +394,19 @@
         </div>
 
         <script>
-            let allSelected = true; // Track current state (start with all selected since they default to checked)
-
+            let allSelected = true;
             const toggleAllSpectra = function() {
                 // Find all checkboxes in the table
                 const checkboxes = document.querySelectorAll('input[name="main-selection"]');
-                
                 // Toggle to opposite of current state
-                allSelected = !allSelected;
-                
+                allSelected = !allSelected;                
                 // Update each checkbox and trigger its associated graph update
                 checkboxes.forEach((checkbox, index) => {
                     if (checkbox.checked !== allSelected) {
                         checkbox.checked = allSelected;
-                        // Call the existing toggleSpectrum function to update the graph
                         toggleSpectrum(checkbox, index);
                     }
-                });
-                
+                });                
                 // Update button text
                 const button = document.getElementById('toggle-all-btn');
                 button.textContent = allSelected ? 'None' : 'All';

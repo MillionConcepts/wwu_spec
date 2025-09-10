@@ -65,7 +65,7 @@ class SearchForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 "id": "any-field",
-                "placeholder": "e.g., Sulfate, or Gypsum, or SPT127"
+                "placeholder": "Comma separated fields"
             }
         )
     )
