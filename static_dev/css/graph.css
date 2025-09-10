@@ -26,9 +26,13 @@ table.graph-legend {
     flex-shrink: 1;
     display: block;
     width: auto;
-    max-width: 160px;
+    /* max-width: 160px; */
     padding-top: 5px;
     padding-bottom: 5px
+}
+
+.graph-legend th {
+    height: 25px;
 }
 
 /*.graph-legend td {*/
@@ -37,6 +41,7 @@ table.graph-legend {
 /*}*/
 
 .graph-legend thead {
+    width: 100%;
     position: sticky;
     top: 0;
     background:#e3e7e9;
