@@ -90,6 +90,13 @@ td.graph-column, th.graph-column {
     flex-grow: 0
 }
 
+.card.page-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .controls {
     border-top: thin solid gray;
     display: flex;
