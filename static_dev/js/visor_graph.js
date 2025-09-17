@@ -90,6 +90,21 @@ const waveNormInput = gid('wavenormal-wavelength-input')
 d3.select("#x-slider").style("width", width);
 d3.select("#y-slider").style("height", height);
 
+// Toggle all/none functionality
+let allSelected = true;
+const toggleAllSpectra = function() {
+    const checkboxes = document.querySelectorAll('input[name="main-selection"]');
+    allSelected = !allSelected;                
+    checkboxes.forEach((checkbox, index) => {
+        if (checkbox.checked !== allSelected) {
+            checkbox.checked = allSelected;
+            toggleSpectrum(checkbox, index);
+        }
+    });                
+    const button = document.getElementById('toggle-all-btn');
+    button.textContent = allSelected ? 'None' : 'All';
+}
+
 // maybe should be several separate functions
 // sloppy signature because 'samples' can be the
 // entire 'graph' context object or just the dict of line data
