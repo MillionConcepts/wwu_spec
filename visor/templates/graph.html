@@ -308,6 +308,7 @@
                                                 None
                                             </button>
                                         </th>
+                                        <th class="graph-col-med"> <label>Offset</label></th>
                                         <th class="graph-col-small"> <label>Color</label></th>
                                         <th class="graph-col"> <label>Name</label></th>
                                         <th class="graph-col"> <label>Spectrum ID</label></th>
@@ -315,7 +316,6 @@
                                         <th class="graph-col"> <label>Sample Type</label></th>
                                         <th class="graph-col"> <label>Grain Size (um)</label></th>
                                         <th class="graph-col"> <label>Viewing Geometry</label></th>
-                                        <th class="graph-col"> <label>Offset</label></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -333,6 +333,14 @@
                                                     <span></span>
                                                 </label>
                                             </div>
+                                        </td>
+                                        <td class="graph-col-med" style="width: 80px; padding: 0">
+                                            <label for="offset-dialog{{ result.id }}" style="width:80px; padding: 0;">
+                                                <input id="offset-dialog{{ result.id }}"
+                                                    step=".02" type="number" class = "graph-number-input"
+                                                    style="width: 60px"
+                                                    value="0">
+                                            </label>
                                         </td>
                                         <td class="graph-col-small">
                                             <div id="rect-{{ result.id }}"
@@ -358,13 +366,6 @@
                                                 for="option{{ result.id }}"> {{ result.view_geom }} </label>
                                         </td>
                                         
-                                        <td>
-                                            <label for="offset-dialog{{ result.id }}">
-                                                <input id="offset-dialog{{ result.id }}"
-                                                    step=".02" type="number" class = "graph-number-input"
-                                                    value="0">
-                                            </label>
-                                        </td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>

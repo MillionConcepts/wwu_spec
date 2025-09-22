@@ -9,16 +9,16 @@
 }
 
 table.graph-legend {
-    max-width: 80vw;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    width: 100%;
+    /* display: flex;
+    flex-direction: column; */
+    align-items: stretch;
     height: fit-content;
 }
 
 .graph-legend tr {
     display: flex;
-    align-items: center;
+    align-items: stretch;
 }
 
 .graph-legend td, th {
@@ -26,7 +26,6 @@ table.graph-legend {
     flex-shrink: 1;
     display: block;
     width: auto;
-    max-width: 100px;
     padding-top: 5px;
     padding-bottom: 5px
 }
@@ -71,12 +70,17 @@ td.graph-column, th.graph-column {
 
 .graph-legend .graph-col {
     width: 100%;
-    max-width: 100px;
+    width: calc((100% - 110px) / 7);
 }
 
 .graph-legend .graph-col-small {
     width: 100%;
     max-width: 55px;
+}
+
+.graph-legend .graph-col-med {
+    width: 100%;
+    max-width: 80px;
 }
 
 .imgContainer {
@@ -95,7 +99,9 @@ td.graph-column, th.graph-column {
     flex: 1;
     display: flex;
     flex-direction: column;
+    max-height: 100vh;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .controls {
