@@ -1663,7 +1663,7 @@ waveNormInput.addEventListener(
 )
 
 
-let shrink = 1;
+let shrink = 2;
 
 const shrinkGraph = function () {
     if (shrink === 1) {

@@ -18,8 +18,8 @@ from visor.models import Sample, Library
 def search_all_samples(entry: str) -> models.QuerySet:
     # Updated to take multiple inputs in "search all" field separated by commas
     query_set = [query.strip() for query in entry.split(',') if query.strip()]
-    if query_set is None:
-        return Sample.objects.none()
+    if len(query_set) == 0:
+        return Sample.objects.all()
     result_set = Q()
     for query in query_set:
         filter_list = Q()
