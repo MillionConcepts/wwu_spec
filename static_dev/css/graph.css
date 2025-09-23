@@ -149,3 +149,9 @@ td.graph-column, th.graph-column {
 .control-block .switch {
     display: flex
 }
+
+.col.s10.body {
+    max-height: 400px;
+    width: 100%;
+    overflow-y: auto;
+}
