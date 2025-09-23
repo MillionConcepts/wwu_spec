@@ -5,20 +5,22 @@
     border-collapse: collapse;
     white-space: normal;
     word-wrap: break-word;
-    /* min-width: 1200px */
+    min-width: 100%;
 }
 
 table.graph-legend {
-    width: 100%;
-    /* display: flex;
-    flex-direction: column; */
+    width: auto;
+    table-layout: auto;
     align-items: stretch;
     height: fit-content;
+    display: inline-flex;
+    flex-direction: column;
 }
 
 .graph-legend tr {
     display: flex;
     align-items: stretch;
+    min-width: 100%;
 }
 
 .graph-legend td, th {
@@ -27,7 +29,9 @@ table.graph-legend {
     display: block;
     width: auto;
     padding-top: 5px;
-    padding-bottom: 5px
+    padding-bottom: 5px;
+    justify-content: center;
+    text-align: center;
 }
 
 .graph-legend th {
@@ -49,15 +53,12 @@ table.graph-legend {
 
 .graph-legend tbody {
     width: 100%;
-}
-
-.graph-legend tbody {
     display: inline;
     overflow-y: auto;
 }
 
 .graph-legend .graph-column {
-    flex: 0;
+    flex: 1;
 }
 
 .graph-column div {
@@ -69,18 +70,15 @@ td.graph-column, th.graph-column {
 }
 
 .graph-legend .graph-col {
-    width: 100%;
-    width: calc((100% - 110px) / 7);
+    flex: 1;
 }
 
 .graph-legend .graph-col-small {
-    width: 100%;
-    max-width: 55px;
+    flex: 0 0 55px;
 }
 
 .graph-legend .graph-col-med {
-    width: 100%;
-    max-width: 80px;
+    flex: 0 0 80px;
 }
 
 .imgContainer {
@@ -115,7 +113,7 @@ td.graph-column, th.graph-column {
     display: flex;
     flex-grow: 1;
     flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: center;
 }
 
 .control-block {
@@ -152,6 +150,12 @@ td.graph-column, th.graph-column {
 
 .col.s10.body {
     max-height: 400px;
-    width: 100%;
     overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.row.graph-row {
+    width: 100%;
 }

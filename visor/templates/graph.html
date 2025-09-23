@@ -29,8 +29,8 @@
     {% if graphResults %}
         <div style="margin-left: 40px; margin-right: 40px">
             <div class="card page-container" style="background:#e3e7e9">
-                <div class="container" style="max-width: 90vw;">
-                    <div class="row"
+                <div class="container">
+                    <div class="row graph-row"
                          style="margin-bottom: 0; margin-left:0; margin-right: 0;">
                         <div class="col s11">
                             <div class="chart-container" id="graphJtron"
@@ -45,7 +45,7 @@
                     <div class="slider" id="x-slider"
                          style="margin-left: 13%; margin-bottom: 2%; width: 75%;">
                     </div>
-                    <div class="row" style="margin-bottom: 5px">
+                    <div class="row graph-row" style="margin-bottom: 5px">
                         <div class="col" id="window"
                              style="font-size: 16pt; font-weight: bold; width:12%; margin-left: 3%; margin-top: 2px; border-right: thick solid #1c2023;">
                             Graph<br>Window
@@ -292,7 +292,7 @@
                         <br>
                     </div>
 
-                    <div class="row" style="height:fit-content">
+                    <div class="row graph-row" style="height:fit-content">
                         <div class="col s1" style="flex-shrink:1">
                         </div>
                         <div class="col s10 body">
@@ -357,7 +357,7 @@
                                                 for="option{{ result.id }}"> {{ result.origin.name }} </label>
                                         </td>
                                         <td><label class="graph-col"
-                                                for="option{{ result.id }}"> {{ result.material_class }} </label>
+                                                for="option{{ result.id }}"> {{ result.sample_type.first }} </label>
                                         </td>
                                         <td><label class="graph-col"
                                                 for="option{{ result.id }}"> {{ result.grain_size }} </label>
