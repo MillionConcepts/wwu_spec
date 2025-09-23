@@ -218,6 +218,10 @@ def graph(request, template="graph.html") -> HttpResponse:
 
     search_formset = concealed_search_factory(request)(request.GET)
     samples = Sample.objects.filter(id__in=selections)
+    # Don't try to graph more than 50 samples at a time
+    num_samples = samples.count()
+    if num_samples > 50:
+        return HttpResponse("Cannot graph more than 50 samples at once", status=400)
     sample_json = json.dumps([sample.as_json() for sample in samples])
     filtersets = [
         filterset.short_name

@@ -5,7 +5,7 @@
 
     {% if search_results %}
         <div class="container section">
-            <div class="card section warm-content">
+            <div class="card section warm-content page-container">
                 <form id="resultsForm" method="GET" name="results">
                     <div class="section center-align">
                         <button type="submit" name="graph"
@@ -147,24 +147,6 @@
                             <tbody id='results-body' style='max-height:1024px; overflow-y: auto'>
                             </tbody>
                         </table>
-                        <div class="section center-align">
-                            <button type="submit" name="graph"
-                                    formaction="/visor/graph/"
-                                    class="btn btn-success">Graph
-                            </button>
-                            <button type="submit" name="export"
-                                    formaction="/visor/export/"
-                                    class="btn btn-success">Export
-                            </button>
-                            <button type="submit" name="meta"
-                                    formaction="/visor/meta/"
-                                    class="btn btn-success">View Metadata
-                            </button>
-                            <button type="button" class = "btn btn-success"
-                                onclick="pickUpSelected()">Pick Up
-                            </button>
-                            <br>
-                        </div>
                     </div>
                     <!--- holding search form data -- perhaps awkward? --->
                     <div style="display:None">

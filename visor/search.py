@@ -7,6 +7,7 @@ from operator import or_
 
 from django.core.paginator import Paginator
 from django.db import models
+from django.db.models import Q
 from dustgoggles.func import gmap
 from numpy import inf
 
@@ -15,23 +16,32 @@ from visor.models import Sample, Library
 
 
 def search_all_samples(entry: str) -> models.QuerySet:
-    queries = [
-        {field.name + "__icontains": entry}
-        for field in Sample._meta.fields
-        if field.name not in list(Sample.unprintable_fields) + [
-            "origin",
-            "sample_type",
-            "min_wavelength",
-            "max_wavelength",
-            "date_added"
+    # Updated to take multiple inputs in "search all" field separated by commas
+    query_set = [query.strip() for query in entry.split(',') if query.strip()]
+    if len(query_set) == 0:
+        return Sample.objects.all()
+    result_set = Q()
+    for query in query_set:
+        filter_list = Q()
+        queries = [
+            {field.name + "__icontains": query}
+            for field in Sample._meta.fields
+            if field.name not in list(Sample.unprintable_fields) + [
+                "origin",
+                "sample_type",
+                "min_wavelength",
+                "max_wavelength",
+                "date_added"
+            ]
         ]
-    ]
-    queries += [
-        {field + "__name__icontains": entry}
-        for field in ["origin", "sample_type"]
-    ]
-    filter_list = [Sample.objects.filter(**query) for query in queries]
-    return reduce(or_, filter_list)
+        queries += [
+            {field + "__name__icontains": query}
+            for field in ["origin", "sample_type"]
+        ]
+        for query_dict in queries:
+            filter_list |= Q(**query_dict)
+        result_set &= filter_list
+    return Sample.objects.filter(result_set)
 
 
 def wavelength_range_filter(form_results, wavelength_query):

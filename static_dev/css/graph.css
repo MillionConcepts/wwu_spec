@@ -1,0 +1,161 @@
+.graph-legend {
+    width: 100%;
+    border: 0;
+    overflow: visible;
+    border-collapse: collapse;
+    white-space: normal;
+    word-wrap: break-word;
+    min-width: 100%;
+}
+
+table.graph-legend {
+    width: auto;
+    table-layout: auto;
+    align-items: stretch;
+    height: fit-content;
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.graph-legend tr {
+    display: flex;
+    align-items: stretch;
+    min-width: 100%;
+}
+
+.graph-legend td, th {
+    flex-grow: 1;
+    flex-shrink: 1;
+    display: block;
+    width: auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    justify-content: center;
+    text-align: center;
+}
+
+.graph-legend th {
+    height: 25px;
+}
+
+/*.graph-legend td {*/
+/*    padding-bottom:0.1rem;*/
+/*    padding-top:0.1rem*/
+/*}*/
+
+.graph-legend thead {
+    width: 100%;
+    position: sticky;
+    top: 0;
+    background:#e3e7e9;
+    z-index: 10;
+}
+
+.graph-legend tbody {
+    width: 100%;
+    display: inline;
+    overflow-y: auto;
+}
+
+.graph-legend .graph-column {
+    flex: 1;
+}
+
+.graph-column div {
+    position: relative
+}
+
+td.graph-column, th.graph-column {
+    padding-right: 2rem
+}
+
+.graph-legend .graph-col {
+    flex: 1;
+}
+
+.graph-legend .graph-col-small {
+    flex: 0 0 55px;
+}
+
+.graph-legend .graph-col-med {
+    flex: 0 0 80px;
+}
+
+.imgContainer {
+    width: 100%;
+    padding-top: 100%;
+    position: relative;
+}
+
+.flex-buffer {
+    display: flex;
+    flex-shrink: 1;
+    flex-grow: 0
+}
+
+.card.page-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.controls {
+    border-top: thin solid gray;
+    display: flex;
+    align-items: baseline;
+    flex-direction: row;
+}
+
+.control-section {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.control-block {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: baseline;
+    justify-content: center;
+    margin-bottom: 2rem;
+
+}
+
+.control-block form,
+.control-block select {
+    display: flex
+}
+
+.control-block input[type="radio"] + label,
+.control-block .switch {
+    height: fit-content;
+    min-height: 1.9rem
+}
+
+.control-header {
+    font-size: 12pt;
+    font-weight: bold;
+    align-self: center;
+    margin-bottom: 0.8rem
+}
+
+.control-block .switch {
+    display: flex
+}
+
+.col.s10.body {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.row.graph-row {
+    width: 100%;
+}
