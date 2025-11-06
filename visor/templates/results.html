@@ -5,8 +5,9 @@
 
     {% if search_results %}
         <div class="container section">
-            <div class="card section warm-content page-container">
+            <div class="card section warm-content">
                 <form id="resultsForm" method="GET" name="results">
+                <div class="sticky-controls">
                     <div class="section center-align">
                         <button type="submit" name="graph"
                                 formaction="/visor/graph/"
@@ -61,6 +62,7 @@
                             <span>Select All</span>
                         </label>
                         </div>
+                    </div>
                     </div>
                     <div class="results-table-container">
                         <table class="results res-table">

@@ -1,11 +1,3 @@
-.container.section:has(.page-container) {
-    height: 95vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 0;
-}
-
 .results {
     width: 100%;
     border: 0;
@@ -123,5 +115,11 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: hidden;
+}
+
+.sticky-controls {
+    position: sticky;
+    top: 0;
+    z-index: 9998;
+    background-color: #f5f6f7;
 }
