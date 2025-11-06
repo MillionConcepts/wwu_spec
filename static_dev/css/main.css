@@ -321,3 +321,7 @@ th {
     width: fit-content;
     background: rgba(255, 255, 255, 0.7);
 }
+
+.results-form {
+    max-height: fit-content;
+}

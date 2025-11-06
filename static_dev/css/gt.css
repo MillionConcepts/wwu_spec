@@ -1,0 +1,115 @@
+.graph-legend {
+    width: 100%;
+    border: 0;
+    overflow: visible;
+    border-collapse: collapse;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+table.graph-legend {
+    max-width: 80vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: fit-content;
+}
+
+.graph-legend tr {
+    display: flex;
+    align-items: center;
+}
+
+.graph-legend td, th {
+    flex-grow: 1;
+    flex-shrink: 1;
+    display: block;
+    width: auto;
+    max-width: 160px;
+    padding-top: 5px;
+    padding-bottom: 5px
+}
+
+/*.graph-legend td {*/
+/*    padding-bottom:0.1rem;*/
+/*    padding-top:0.1rem*/
+/*}*/
+
+.graph-legend thead, tbody {
+    width: 100%;
+}
+
+.graph-legend tbody {
+    display: inline;
+    overflow-y: auto;
+}
+
+.graph-legend .graph-column {
+    flex: 0;
+}
+
+.graph-column div {
+    position: relative
+}
+
+td.graph-column, th.graph-column {
+    padding-right: 2rem
+}
+
+.imgContainer {
+    width: 100%;
+    padding-top: 100%;
+    position: relative;
+}
+
+.flex-buffer {
+    display: flex;
+    flex-shrink: 1;
+    flex-grow: 0
+}
+
+.controls {
+    border-top: thin solid gray;
+    display: flex;
+    align-items: baseline;
+    flex-direction: row;
+}
+
+.control-section {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.control-block {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: baseline;
+    justify-content: center;
+    margin-bottom: 2rem;
+
+}
+
+.control-block form,
+.control-block select {
+    display: flex
+}
+
+.control-block input[type="radio"] + label,
+.control-block .switch {
+    height: fit-content;
+    min-height: 1.9rem
+}
+
+.control-header {
+    font-size: 12pt;
+    font-weight: bold;
+    align-self: center;
+    margin-bottom: 0.8rem
+}
+
+.control-block .switch {
+    display: flex
+}
