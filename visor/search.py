@@ -62,8 +62,10 @@ def make_grain_size_dicts(search_results):
     nums, objs, unk = defaultdict(set), set(), set()
     unknown = {'Unknown', 'Unspecified Particulate', ''}
     for v in values:
-        # TODO: this replace() should not be necessary. db needs cleaning.
-        i, g = v['id'], v['grain_size'].replace("_", ",")
+        # TODO: all this string manip should not be needed. db needs cleaning.
+        i, g = v['id'], v['grain_size'].replace("_", ",").replace("-", ",")
+        if "," in g and not g.startswith("("):
+            g = f"({g})"
         if g.startswith("("):
             tup = ast.literal_eval(g)
             if quant := {g for g in tup if isinstance(g, float)}:
