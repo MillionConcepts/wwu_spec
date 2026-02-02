@@ -1,3 +1,4 @@
+import warnings
 from ast import literal_eval
 from functools import cached_property
 from io import StringIO
@@ -20,6 +21,11 @@ from toolz import valmap
 
 from visor.dj_utils import model_values
 from visor.spectral import simulate_spectrum
+
+
+class DupeCheckWarning(UserWarning):
+    """can't perform duplicate check during Sample.save()"""
+    pass
 
 
 class FilterSet(models.Model):
@@ -428,9 +434,10 @@ class Sample(models.Model):
         return valmap(literal_eval, literal_eval(self.simulated_spectra))
 
     def _raise_for_duplicates(self):
-        for sample in Sample.objects.filter(
+        matches = Sample.objects.filter(
             sample_id__icontains=self.original_sample_id
-        ).all():
+        ).all()
+        for sample in matches:
             if sample.id == self.id:
                 continue  # it's a modification
             if self.reflectance == sample.reflectance:
@@ -447,7 +454,15 @@ class Sample(models.Model):
         ids = model_values(Sample, "sample_id")
         if self.sample_id not in ids:
             return
-        self._raise_for_duplicates()
+        if self.original_sample_id != '':
+            self._raise_for_duplicates()
+        else:
+            warnings.warn(
+                f"{self.sample_name}: {self.sample_id} has no "
+                f"original_sample_id. Unable to perform standard duplicate "
+                f"check.",
+                DupeCheckWarning
+            )
         # add incrementing numbers after an underscore with an 'f'
         naturals = accumulate(repeat(1), add)
         while (new_id := self.sample_id + f"_f{next(naturals)}") in ids:
