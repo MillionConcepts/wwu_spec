@@ -2,14 +2,15 @@ name: visor
 channels:
   - conda-forge
 dependencies:
-  - clize
   - django
   - django-extensions
   - git
   - jupyter
   - marslab
-  - notebook=6.2.0
+  # django-extensions is _still_ not compatible with jupyter v7
+  # https://github.com/django-extensions/django-extensions/issues/1830
+  - notebook<7.0.0
   - pip
-  - python=3.9
+  - python=3.11
   - pip:
       - django-mass-edit
