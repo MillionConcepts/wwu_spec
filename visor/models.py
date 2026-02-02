@@ -341,7 +341,7 @@ class Sample(models.Model):
         sims = dict(json.loads(self.simulated_spectra))
         frames = {}
         for instrument in sims.keys():
-            frame = pd.read_json(sims[instrument])
+            frame = pd.read_json(StringIO(sims[instrument]))
             frame.index = frame['filter']
             output = {}
             for filt in frame.index:
