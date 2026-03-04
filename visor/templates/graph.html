@@ -56,11 +56,11 @@
                         </div>
                         <div class="col"
                              style="width:13%; text-align:center; margin-top: 3px;">
-                            <label for="max-x-input"></label>
-                            <input id="max-x-input" step="20" type="number" class="graph-number-input"/>
-
                             <label for="min-x-input"></label>
-                            <input id="min-x-input" step="20" type="number" class="graph-number-input"
+                            <input id="min-x-input" step="20" type="number" class="graph-number-input"/>
+
+                            <label for="max-x-input"></label>
+                            <input id="max-x-input" step="20" type="number" class="graph-number-input"
                                    style="margin-bottom: 10px"/>
                         </div>
                         <div class="col"
@@ -69,12 +69,12 @@
                         </div>
                         <div class="col"
                              style="width:13%; text-align:center; padding:0; margin-top:3px; ">
-                            <label for="max-y-input"></label>
-                            <input id="max-y-input" step=".01" class="graph-number-input"
+                            <label for="min-y-input"></label>
+                            <input id="min-y-input" step=".01" class="graph-number-input"
                                    type="number"/>
 
-                            <label for="min-y-input"></label>
-                            <input id="min-y-input" step=".01" type="number" class="graph-number-input"
+                            <label for="max-y-input"></label>
+                            <input id="max-y-input" step=".01" type="number" class="graph-number-input"
                                    style="margin-bottom: 10px"/>
                         </div>
                         <div class="col s1" style="width: 12%">
@@ -275,7 +275,12 @@
                             <thead>
                             <tr style="height:2rem">
                                 <th class="graph-column">
-                                    <label>Line</label></th>
+                                    <label>
+                                        <input type="checkbox" 
+                                            id="toggle-all-lines" 
+                                            checked="checked"
+                                            onclick="toggleAllSpectra(this)"/>
+                                    <span>Line</span></label></th>
                                 <th class="graph-column">
                                     <label>Color</label></th>
                                 <th><label>Name</label></th>
@@ -318,7 +323,7 @@
                                                for="option{{ result.id }}"> {{ result.origin.name }} </label>
                                     </td>
                                     <td><label class="truncate"
-                                               for="option{{ result.id }}"> {{ result.material_class }} </label>
+                                               for="option{{ result.id }}"> {{ result.sample_type.first }} </label>
                                     </td>
                                     <td><label class="truncate"
                                                for="option{{ result.id }}"> {{ result.grain_size }} </label>
