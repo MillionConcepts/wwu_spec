@@ -239,7 +239,7 @@ class Sample(models.Model):
         "Resolution", blank=True, max_length=40, db_index=True
     )
     material_class = models.CharField(
-        "Material Class", blank=True, max_length=40
+        "Material Class", blank=True, max_length=40, db_index=True
     )
     sample_desc = models.TextField(
         "Sample Description", blank=True, db_index=True
