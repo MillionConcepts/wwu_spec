@@ -16,6 +16,7 @@ import pandas as pd
 import PIL
 import PIL.ImageFile
 from PIL import Image
+from sympy import true
 from toolz.curried import valfilter
 from toolz import valmap
 
@@ -260,6 +261,57 @@ class Sample(models.Model):
     view_geom = models.CharField(
         "Viewing Geometry", blank=True, max_length=40, db_index=True
     )
+    #Adding in Dans CTAPE metadata fields here
+    directory = models.CharField(
+        "Directory", blank=True, max_length=255, db_index=True
+    )
+    basename = models.CharField(
+        "Basename", blank=True, max_length=40, db_index=True
+    )
+    sample_number = models.CharField(
+        "Sample #", blank=True, max_length=40, db_index=True
+    )
+    integration_time = models.CharField(
+        "Integration Time", blank=True, max_length=255, db_index=True
+    )
+    number_of_spectrum_avg= models.CharField(
+        "# of Spectrum Avg ", blank=True, max_length=255, db_index=True
+    )
+    boxcar_zero_fill= models.CharField(
+        "Boxcar/Zero Fill", blank=True, max_length=255, db_index=True
+    )
+    atmosphere= models.CharField(
+        "Atmosphere", blank=True, max_length=255, db_index=True
+    )
+    sample_temperature = models.CharField(
+        "Sample Temperature", blank=True, max_length=255, db_index=True
+    )
+    sample_cup = models.CharField(
+        "Sample Cup", blank=True, max_length=255, db_index=True
+    )
+    light_source = models.CharField(
+        "Light Source", blank=True, max_length=255, db_index=True
+    )
+    depolarizer = models.CharField(
+        "Depolarizer", blank=True, max_length=255, db_index=True
+    )
+    sample_spun = models.CharField(
+        "Sample Spun", blank=True, max_length=255, db_index=True
+    )
+    pickup_fiber = models.CharField(
+        "Pickup Fiber", blank=True, max_length=255, db_index=True
+    )
+    approx_measured_area = models.CharField(
+        "Approximate Measured Area", blank=True, max_length=255, db_index=True
+    )
+    sample_prep = models.CharField(
+        "Sample Prep", blank=True, max_length=255, db_index=True
+    )
+    spectralon_correction_file = models.TextField(
+        "Spectralon Correction File", blank=True, max_length=300, db_index=True
+    )
+
+
     # fields we view as "private" or "data"
     unprintable_fields = (
         "image",
