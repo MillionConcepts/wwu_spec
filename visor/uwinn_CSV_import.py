@@ -3,6 +3,8 @@ import pandas as pd
 import django
 import os
 
+#from visor_programming_manual import csv_files
+
 os.environ.setdefault(
     'DJANGO_SETTINGS_MODULE',
     'wwu_spec.settings')
@@ -12,8 +14,22 @@ from visor.models import Sample, Database
 
 print("number of samples in DB", Sample.objects.count())
 
-# matching excels decimal point, but in diplay only the full precision remains intact
+# matching excels decimal point, but in display only the full precision remains intact
 pd.set_option("display.float_format", "{:.6f}".format)
+
+workbook_path = r"C:\Users\12048\PycharmProjects\Parser\output\1_Master_synthetic_elemental_fo_CTAPE_site_mar_2_2021"
+workbook_folder= Path(r"C:\Users\12048\PycharmProjects\Parser\output\1_Master_synthetic_elemental_fo_CTAPE_site_mar_2_2021")
+print (list(workbook_folder.glob("*.csv")))
+#choosing my sheets i want ignoring the rest
+csv_files=[
+    file for file in workbook_folder.glob("*.csv")
+    if any (
+        name.lower() in file.name.lower()
+        for name in ["ASD","Vertex"]
+    )
+]
+for file in csv_files:
+    print(file.name )
 
 CSV_path = r"C:\Users\12048\PycharmProjects\Parser\output\1_Master_synthetic_elemental_fo_CTAPE_site_mar_2_2021\1_ASD_and_Vertex70edit__AA-BB.csv"
 df = pd.read_csv(CSV_path)
@@ -33,7 +49,7 @@ data = data.apply(pd.to_numeric, errors="coerce")
 
 print("metadata rows: ", len(metadata))
 print("Data rows: ", len(data))
-print("first couple metdata data labels: ")
+print("first couple metadata data labels: ")
 print(metadata[first_col].head(20).to_list())
 print("first few wavelengths: ")
 print(data.head())
@@ -42,15 +58,15 @@ print("\nAvailable DB:)")
 
 for database in Database.objects.all():
     print(database.id,database.name, database.short_name)
-
+origin_database=Database.objects.get(id=2)
 for spectrum_type in df.columns[1:]:
     metadata_dictionary = dict(
         zip(
             metadata[first_col],
-            metadata[spectrum_type]python manage.py
+            metadata[spectrum_type]
         )
     )
-    # testing to make sure my dictionary is being made correctly and that i can retrieve a value from it can remove later
+    # testing to make sure my dictionary is being made correctly and that I can retrieve a value from it can remove later
     # print(metadata_dictionary)
     # print("Directory:", metadata_dictionary.get("directory"))
     # print("Sample #:", metadata_dictionary.get("sample #"))
@@ -60,9 +76,11 @@ for spectrum_type in df.columns[1:]:
 
 # making sure that it maps correctly into Django by creating a test object
     sample = Sample(
-        sample_id=spectrum_type,
-        original_sample_id=spectrum_type,
+        origin=origin_database,
+        sample_id=f"CTAPE_Test{spectrum_type}",
+        original_sample_id=f"CTAPE_TEST_{spectrum_type}",
         reflectance=reflectance,
+        sample_name=metadata_dictionary.get("sample description"),
         sample_number=metadata_dictionary.get("sample #"),
         directory=metadata_dictionary.get("directory"),
         sample_desc=metadata_dictionary.get("sample description"),
@@ -83,6 +101,12 @@ for spectrum_type in df.columns[1:]:
 
 
         )
+    #remove testing after I figure out what made it crash
+    print("testing to see if this is what made it crash????")
+    sample.clean()
+    sample.save(convolve=False)
+    print ("saved!", sample.sample_id)
+    print("didnt crash")
     print(
         spectrum_type,
         "| sample #:",
