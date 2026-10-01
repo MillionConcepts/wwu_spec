@@ -454,6 +454,11 @@ class Sample(models.Model):
         ids = model_values(Sample, "sample_id")
         if self.sample_id not in ids:
             return
+        matches = Sample.objects.filter(
+            sample_id__iexact=self.sample_id
+        ).all()
+        if len(matches) == 1 and matches[0].id == self.id:
+            return # reprocessing an existing sample
         if self.original_sample_id != '':
             self._raise_for_duplicates()
         else:
