@@ -6,6 +6,7 @@ from itertools import accumulate, repeat
 import json
 from operator import add
 import os
+import re
 
 from django import forms
 from django.conf import settings
@@ -470,6 +471,11 @@ class Sample(models.Model):
             )
         # add incrementing numbers after an underscore with an 'f'
         naturals = accumulate(repeat(1), add)
+        # check if the sample_id already includes a _f suffix
+        suffix_exists = re.search('_f[0-9]+$', self.sample_id)
+        if suffix_exists:
+            # reset the _f suffix, then assign the lowest available number
+            self.sample_id = self.sample_id.replace(suffix_exists.group(), '')
         while (new_id := self.sample_id + f"_f{next(naturals)}") in ids:
             continue
         self._warnings.append(
